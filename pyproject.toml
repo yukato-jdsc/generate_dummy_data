@@ -1,0 +1,9 @@
+[project]
+name = "generate-dummy-data"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "faker>=40.15.0",
+]
