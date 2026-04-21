@@ -42,7 +42,7 @@ def main() -> None:
     if "campaign" in targets:
         write_csv(
             output_dir / OUTPUT_FILES["campaign"],
-            [column.name for column in specs["campaign"]],
+            [column.header_label for column in specs["campaign"]],
             generator.campaign_rows(),
         )
 
@@ -52,6 +52,6 @@ def main() -> None:
     if "product" in targets:
         write_csv(
             output_dir / OUTPUT_FILES["product"],
-            [column.name for column in specs["product"]],
+            [column.header_label for column in specs["product"]],
             generator.product_rows(),
         )

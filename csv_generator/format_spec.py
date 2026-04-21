@@ -32,12 +32,14 @@ def parse_section_columns(lines: list[str]) -> list[ColumnSpec]:
         parts = [part.strip() for part in line.strip().strip("|").split("|")]
         if len(parts) < 8 or not parts[3].startswith("`"):
             continue
+        item_label = parts[2]
         name = parts[3].strip("`")
         if name == "id":
             continue
         columns.append(
             ColumnSpec(
                 name=name,
+                header_label=item_label,
                 data_type=parts[4],
                 max_length=parse_max_length(parts[5]),
             )

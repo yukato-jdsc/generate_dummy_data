@@ -106,6 +106,21 @@ class GenerateCsvCliTests(unittest.TestCase):
                 header, _ = self.read_csv(output_dir, name)
                 self.assertNotIn("id", header)
 
+    def test_csv_headers_use_japanese_labels_from_format_spec(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+            self.run_script(tmp_dir)
+
+            campaign_header, _ = self.read_csv(output_dir, "m_campaign_all.csv")
+            agency_header, _ = self.read_csv(output_dir, "m_agency_all.csv")
+            diff_header, _ = self.read_csv(output_dir, "m_agency_diff.csv")
+            product_header, _ = self.read_csv(output_dir, "m_product_all.csv")
+
+            self.assertEqual(campaign_header[:3], ["キャンペーンid", "キャンペーン名称", "説明"])
+            self.assertEqual(agency_header[:3], ["取次店コード", "有効開始日", "有効終了日"])
+            self.assertEqual(product_header[:3], ["商品コード", "有効開始日", "有効開始時間"])
+            self.assertEqual(agency_header, diff_header)
+
     def test_agency_diff_is_subset_of_agency_all(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             output_dir = Path(tmp_dir)
@@ -115,7 +130,7 @@ class GenerateCsvCliTests(unittest.TestCase):
             diff_header, diff_rows = self.read_csv(output_dir, "m_agency_diff.csv")
             self.assertEqual(agency_header, diff_header)
 
-            index = agency_header.index("agent_code")
+            index = agency_header.index("取次店コード")
             agency_codes = {row[index] for row in agency_rows}
             diff_codes = [row[index] for row in diff_rows]
             self.assertEqual(len(diff_codes), 53)

@@ -56,7 +56,7 @@ class CsvGenerator:
 
     def write_agency_files(self, output_dir: Path) -> None:
         """取次店の全量CSVと差分CSVを同時に出力する。"""
-        headers = [column.name for column in self.specs["agency"]]
+        headers = [column.header_label for column in self.specs["agency"]]
         sampled: list[list[str]] = []
         sampler = random.Random(self.seed)
         handle, writer = open_csv_writer(output_dir / OUTPUT_FILES["agency_all"])

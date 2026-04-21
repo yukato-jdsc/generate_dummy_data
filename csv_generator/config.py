@@ -35,6 +35,7 @@ BASE_DATE = date(2026, 4, 21)
 @dataclass(frozen=True)
 class ColumnSpec:
     name: str
+    header_label: str
     data_type: str
     max_length: int | None
 
