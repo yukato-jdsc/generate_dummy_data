@@ -1,7 +1,7 @@
 # (Mars)キャンペーン
 
 - DWH公開名: `m_キャンペーン`
-- CSVファイル名： `m_campaign`
+- CSVファイル名： `m_campaign_all.csv`
 - 全量更新 or 差分更新: 全量更新
 - 更新頻度: 日次
 - データ数: 全件（1,612件）
@@ -26,7 +26,7 @@
 # (Mars)取次店
 
 - DWH公開名: `m_取次店`
-- CSVファイル名: `m_agency_all.csv`
+- CSVファイル名: `m_agency_all.csv`, `m_agency_diff.csv`
 - 全量更新 or 差分更新: 差分更新
 - 更新頻度: 日次
 - データ数: 全件（120万件）、差分更新（53件）
