@@ -165,6 +165,13 @@ def test_write_target_csv_can_write_gzip(tmp_path: Path) -> None:
     assert rows == [["列1", "列2"], ["a", "b"]]
 
 
+def test_write_target_csv_always_quotes_all_string_values(tmp_path: Path) -> None:
+    """ヘッダーと空文字を含む全文字列が常にダブルクォートされる。"""
+    write_target_csv(tmp_path, "sample.csv", ["列1", "列2"], [["", "値"]], compress=False)
+
+    assert (tmp_path / "sample.csv").read_text(encoding="utf-8-sig").splitlines() == ['"列1","列2"', '"","値"']
+
+
 def test_csv_headers_start_with_business_keys(tmp_path: Path) -> None:
     run_script(str(tmp_path))
 

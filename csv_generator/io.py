@@ -6,6 +6,11 @@ from pathlib import Path
 from typing import TextIO
 
 
+def _create_csv_writer(handle: TextIO) -> csv.writer:
+    """全文字列を常にダブルクォートするCSV writerを生成する。"""
+    return csv.writer(handle, quoting=csv.QUOTE_ALL)
+
+
 def _open_text_writer(path: Path) -> TextIO:
     """CSVを書き込むためのテキストストリームを開く。"""
     if path.suffix == ".gz":
@@ -24,7 +29,7 @@ def build_output_path(output_dir: Path, output_name: str, compress: bool) -> Pat
 def write_csv(path: Path, headers: list[str], rows: list[list[str]]) -> None:
     """BOM付きUTF-8でCSVを一括書き出しする。"""
     with _open_text_writer(path) as fh:
-        writer = csv.writer(fh)
+        writer = _create_csv_writer(fh)
         writer.writerow(headers)
         writer.writerows(rows)
 
@@ -32,4 +37,4 @@ def write_csv(path: Path, headers: list[str], rows: list[list[str]]) -> None:
 def open_csv_writer(path: Path) -> tuple[TextIO, csv.writer]:
     """逐次書き込み用のCSV writerを返す。"""
     handle = _open_text_writer(path)
-    return handle, csv.writer(handle)
+    return handle, _create_csv_writer(handle)
