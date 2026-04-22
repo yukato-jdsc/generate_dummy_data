@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Callable
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -45,11 +46,11 @@ class CsvGenerator:
     def _build_row_adjusters(self) -> dict[str, RowSizeAdjuster]:
         """出力種別ごとのサイズ調整器を初期化する。"""
         return {
-            "campaign": self._build_row_adjuster("campaign", "campaign", {"id"}),
+            "campaign": self._build_row_adjuster("campaign", "campaign"),
             "agency_all": self._build_row_adjuster("agency_all", "agency", AGENCY_ALL_KEEP_COLUMNS),
-            "agency_diff": self._build_row_adjuster("agency_diff", "agency", {"id", "agent_code"}),
-            "compass": self._build_row_adjuster("compass", "compass", {"id"}),
-            "product": self._build_row_adjuster("product", "product", {"id"}),
+            "agency_diff": self._build_row_adjuster("agency_diff", "agency", {"agent_code"}),
+            "compass": self._build_row_adjuster("compass", "compass"),
+            "product": self._build_row_adjuster("product", "product"),
             "bfs_all": self._build_row_adjuster("bfs_all", "bfs", BFS_KEEP_COLUMNS),
             "bfs_diff": self._build_row_adjuster("bfs_diff", "bfs", BFS_KEEP_COLUMNS),
         }
@@ -68,24 +69,48 @@ class CsvGenerator:
             build_row_size_profile(columns, output_key, keep_columns=keep_columns),
         )
 
+    def _build_rows(self, output_key: str, count: int, row_factory: Callable[[int], list[str]]) -> list[list[str]]:
+        """指定件数ぶんの行をまとめて生成する。"""
+        rows: list[list[str]] = []
+        for index in range(count):
+            rows.append(self._fit_row(output_key, row_factory(index)))
+        return rows
+
+    def _write_rows(
+        self,
+        path: Path,
+        headers: list[str],
+        output_key: str,
+        count: int,
+        row_factory: Callable[[int], list[str]],
+    ) -> None:
+        """指定件数ぶんの行を逐次書き出す。"""
+        handle, writer = open_csv_writer(path)
+        try:
+            writer.writerow(headers)
+            for index in range(count):
+                writer.writerow(self._fit_row(output_key, row_factory(index)))
+        finally:
+            handle.close()
+
     def campaign_rows(self) -> list[list[str]]:
         """キャンペーンCSVの全行をメモリ上で生成する。"""
-        rows = []
-        for index in range(self.counts["campaign"]):
-            start = BASE_DATE - timedelta(days=index % 180)
-            end = start + timedelta(days=90 + (index % 180))
-            name = self._campaign_name(index)
-            context = {
-                "id": self.values.sequential_id(index),
-                "campaign_id": self.values.code("CP", index + 1, 10),
-                "campaign_name": name,
-                "description": f"{name}のテスト投入用データ",
-                "effective_start_date": ymd(start),
-                "effective_end_date": ymd(end),
-                "old_flag": "" if index % 5 else "1",
-            }
-            rows.append(self._fit_row("campaign", self._row_from_context(self.specs["campaign"], context)))
-        return rows
+        return self._build_rows("campaign", self.counts["campaign"], self._campaign_row)
+
+    def _campaign_row(self, index: int) -> list[str]:
+        """キャンペーン1行ぶんの列値を組み立てる。"""
+        start = BASE_DATE - timedelta(days=index % 180)
+        end = start + timedelta(days=90 + (index % 180))
+        name = self._campaign_name(index)
+        context = {
+            "campaign_id": self.values.code("CP", index + 1, 10),
+            "campaign_name": name,
+            "description": f"{name}のテスト投入用データ",
+            "effective_start_date": ymd(start),
+            "effective_end_date": ymd(end),
+            "old_flag": "" if index % 5 else "1",
+        }
+        return self._row_from_context(self.specs["campaign"], context)
 
     def _campaign_name(self, index: int) -> str:
         """キャンペーン名テンプレートをインデックスから組み立てる。"""
@@ -119,13 +144,13 @@ class CsvGenerator:
     def write_compass_file(self, output_dir: Path) -> None:
         """営業決裁CSVを逐次書き出しする。"""
         headers = self._header_labels("compass")
-        handle, writer = open_csv_writer(output_dir / OUTPUT_FILES["compass"])
-        try:
-            writer.writerow(headers)
-            for index in range(self.counts["compass"]):
-                writer.writerow(self._fit_row("compass", self._compass_row(self._compass_context(index), index)))
-        finally:
-            handle.close()
+        self._write_rows(
+            output_dir / OUTPUT_FILES["compass"],
+            headers,
+            "compass",
+            self.counts["compass"],
+            lambda index: self._compass_row(self._compass_context(index), index),
+        )
 
     def _update_reservoir(
         self,
@@ -167,7 +192,6 @@ class CsvGenerator:
         primary_index = (index // 10) + 1
         aggregated_index = (index // 5) + 1
         return {
-            "id": self.values.sequential_id(index),
             "agent_code": self.values.code("AG", index + 1, 10),
             "valid_start_date": ymd(start),
             "valid_end_date": ymd(end),
@@ -405,18 +429,19 @@ class CsvGenerator:
 
     def product_rows(self) -> list[list[str]]:
         """商品CSVの全行をメモリ上で生成する。"""
-        rows = []
-        for index in range(self.counts["product"]):
-            context = self._product_context(index)
-            rows.append(self._fit_row("product", self._product_row(context, index)))
-        return rows
+        return self._build_rows(
+            "product",
+            self.counts["product"],
+            lambda index: self._product_row(self._product_context(index), index),
+        )
 
     def compass_rows(self) -> list[list[str]]:
         """営業決裁CSVの全行をメモリ上で生成する。"""
-        rows = []
-        for index in range(self.counts["compass"]):
-            rows.append(self._fit_row("compass", self._compass_row(self._compass_context(index), index)))
-        return rows
+        return self._build_rows(
+            "compass",
+            self.counts["compass"],
+            lambda index: self._compass_row(self._compass_context(index), index),
+        )
 
     def _product_row(self, context: dict[str, str], index: int) -> list[str]:
         """商品文脈を列順の行へ変換する。"""
@@ -457,7 +482,6 @@ class CsvGenerator:
             f"提案条件: 法人向け標準プランをベースに個別調整を実施"
         )
         return {
-            "id": self.values.compass_id(index),
             "approval_number": approval_number,
             "approval_subject": f"{company_name}向け営業決裁 {index % 30 + 1}",
             "status": "承認",
@@ -664,7 +688,6 @@ class CsvGenerator:
         start = BASE_DATE - timedelta(days=index % 400)
         end = start + timedelta(days=730)
         return {
-            "id": self.values.sequential_id(index),
             "product_code": self.values.code("PRD", index + 1, 10),
             "validity_start_date": ymd(start),
             "validity_start_time": hms(9, index % 60),
@@ -827,14 +850,13 @@ class CsvGenerator:
 
     def _write_bfs_file(self, path: Path, headers: list[str], output_key: str, variant: str) -> None:
         """BFSエントリCSVを1ファイルずつ逐次出力する。"""
-        handle, writer = open_csv_writer(path)
-        try:
-            writer.writerow(headers)
-            for index in range(self.counts[output_key]):
-                context = self._bfs_context(index, variant)
-                writer.writerow(self._fit_row(output_key, self._bfs_row(context, index)))
-        finally:
-            handle.close()
+        self._write_rows(
+            path,
+            headers,
+            output_key,
+            self.counts[output_key],
+            lambda index: self._bfs_row(self._bfs_context(index, variant), index),
+        )
 
     def _bfs_row(self, context: dict[str, str], index: int) -> list[str]:
         """BFS文脈を列順の行へ変換する。"""
@@ -894,7 +916,6 @@ class CsvGenerator:
         context: dict[str, str] = {
             "base_index": str(base_index),
             "variant": variant,
-            "id": self.values.sequential_id(index),
             "entry_number": entry_number,
             "subject": f"{company_name}向けBFSエントリ {base_index % 500 + 1}",
             "creation_category": "新規" if base_index % 3 == 0 else "変更" if base_index % 3 == 1 else "追加",

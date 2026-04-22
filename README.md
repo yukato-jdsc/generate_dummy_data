@@ -12,7 +12,7 @@
 - `bfs_entry_informations_all.csv`
 - `bfs_entry_informations_diff.csv`
 
-`docs/format.md` は索引で、実体の定義は `docs/format/` 配下にあります。`id` 列も、出力CSVに含めます。
+`docs/format.md` は索引で、実体の定義は `docs/format/` 配下にあります。
 
 ## 前提
 
@@ -63,12 +63,12 @@ uv run python generate_csv.py --seed 7
 - `compass` を含む場合は `compass_sales_approval.csv` を生成します
 - `product` を含む場合は `m_product_all.csv` を生成します
 - `bfs` を含む場合は `bfs_entry_informations_all.csv` と `bfs_entry_informations_diff.csv` を生成します
-- `id` 列は `campaign` / `agency` / `product` / `bfs` では数値連番、`compass` では業務コード風文字列で出力します
+- 各CSVは `docs/format/` の列定義どおりに出力します
 
 ## 取次店差分CSVについて
 
 `m_agency_diff.csv` は独立生成ではなく、同じ実行で作られた `m_agency_all.csv` の母集団から 53 件を抽出して生成します。  
-そのため、`m_agency_diff.csv` の `id` と `agent_code` は常に `m_agency_all.csv` の部分集合になります。
+そのため、`m_agency_diff.csv` は `m_agency_all.csv` の部分集合になります。
 
 ## 生成ルール
 

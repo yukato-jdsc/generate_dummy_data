@@ -117,7 +117,6 @@ SIZE_FILLER_TEXT = {
     "bfs_diff": "BFSエントリ情報",
 }
 BFS_KEEP_COLUMNS = {
-    "id",
     "entry_number",
     "subject",
     "salesperson_code",
@@ -140,7 +139,6 @@ BFS_KEEP_COLUMNS = {
     "rental_used_period_months",
 }
 COMPASS_KEEP_COLUMNS = {
-    "id",
     "approval_number",
     "approval_subject",
     "status",
@@ -242,7 +240,6 @@ COMPASS_SHRINK_PRIORITY_COLUMNS = (
     "project_summary_2_summary",
 )
 AGENCY_ALL_KEEP_COLUMNS = {
-    "id",
     "agent_code",
     "valid_start_date",
     "valid_end_date",

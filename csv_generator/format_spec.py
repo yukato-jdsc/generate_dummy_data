@@ -33,22 +33,31 @@ def parse_section_columns(lines: list[str]) -> list[ColumnSpec]:
     """Markdownの1セクションから、列定義を抽出する。"""
     columns: list[ColumnSpec] = []
     for line in lines:
-        if not line.startswith("|") or "`" not in line:
+        parsed = _parse_column_row(line)
+        if parsed is None:
             continue
-        parts = [part.strip() for part in line.strip().strip("|").split("|")]
-        if len(parts) < 8 or not parts[3].startswith("`"):
-            continue
-        item_label = parts[2]
-        name = parts[3].strip("`")
+        item_label, name, data_type, max_length_text = parsed
         columns.append(
             ColumnSpec(
                 name=name,
                 header_label=item_label,
-                data_type=parts[4],
-                max_length=parse_max_length(parts[5]),
+                data_type=data_type,
+                max_length=parse_max_length(max_length_text),
             )
         )
     return columns
+
+
+def _parse_column_row(line: str) -> tuple[str, str, str, str] | None:
+    """列定義のMarkdown行を、表示名・列名・型・桁に分解する。"""
+    if not line.startswith("|") or "`" not in line:
+        return None
+    parts = [part.strip() for part in line.strip().strip("|").split("|")]
+    if len(parts) < 7:
+        return None
+    if len(parts) == 7:
+        return parts[1], parts[2].strip("`"), parts[3], parts[4]
+    return parts[2], parts[3].strip("`"), parts[4], parts[5]
 
 
 def parse_max_length(length_text: str) -> int | None:

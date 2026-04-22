@@ -56,14 +56,6 @@ class ValueFactory:
         """接頭辞付きの業務コード風文字列を生成する。"""
         return f"{prefix}{self.number_string(width, number)}"
 
-    def sequential_id(self, index: int) -> str:
-        """数値連番の `id` を1始まりの文字列で返す。"""
-        return str(index + 1)
-
-    def compass_id(self, index: int) -> str:
-        """営業決裁CSV向けの業務コード風 `id` を返す。"""
-        return self.code("CM", index + 1, 10)
-
     def katakana_word(self, index: int) -> str:
         words = ["ソフト", "モバイル", "リンク", "プラン", "サービス", "ネット", "ビジネス", "テック"]
         return words[index % len(words)]
