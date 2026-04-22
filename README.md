@@ -39,7 +39,7 @@ uv run python generate_csv.py --seed 7
 | --- | --- |
 | `--output-dir` | 出力先ディレクトリ。既定値は `generated_data` |
 | `--targets` | 生成対象。`campaign,agency,compass,product,bfs` をカンマ区切りで指定 |
-| `--full` | 本番想定件数で生成 |
+| `--full` | 本番想定件数で生成し、出力は gzip 圧縮された `*.csv.gz` になる |
 | `--seed` | 乱数シード。既定値は `42` |
 
 ## 件数

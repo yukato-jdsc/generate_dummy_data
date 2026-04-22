@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import gzip
 import subprocess
 import sys
 from pathlib import Path
@@ -9,6 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from csv_generator.format_spec import load_specs
+from csv_generator.cli import write_target_csv
+from csv_generator.io import build_output_path
 
 SCRIPT = ROOT / "generate_csv.py"
 TARGET_SIZES = {
@@ -58,14 +61,19 @@ def run_script(output_dir: str, *args: str, expect_success: bool = True) -> subp
 
 def read_csv(directory: Path, name: str) -> tuple[list[str], list[list[str]]]:
     """CSV のヘッダーとデータ行を読み込む。"""
-    with (directory / name).open("r", encoding="utf-8-sig", newline="") as fh:
+    path = directory / name
+    if path.suffix == ".gz":
+        handle = gzip.open(path, "rt", encoding="utf-8-sig", newline="")
+    else:
+        handle = path.open("r", encoding="utf-8-sig", newline="")
+    with handle as fh:
         rows = list(csv.reader(fh))
     return rows[0], rows[1:]
 
 
 def generated_files(directory: Path) -> list[str]:
     """生成された CSV ファイル名をソートして返す。"""
-    return sorted(path.name for path in directory.glob("*.csv"))
+    return sorted(path.name for path in directory.iterdir() if path.is_file())
 
 
 def assert_size_within_tolerance(path: Path, expected_size: float, tolerance: float = 0.10) -> None:
@@ -157,6 +165,25 @@ def test_same_seed_is_deterministic(tmp_path: Path) -> None:
         assert (first_tmp / name).read_text(encoding="utf-8-sig") == (second_tmp / name).read_text(
             encoding="utf-8-sig"
         )
+
+
+def test_output_path_adds_gzip_suffix_when_compressing(tmp_path: Path) -> None:
+    """圧縮時は実ファイル名が `.csv.gz` になる。"""
+    actual = build_output_path(tmp_path, "sample.csv", True)
+    assert actual.name == "sample.csv.gz"
+
+
+def test_write_target_csv_can_write_gzip(tmp_path: Path) -> None:
+    """圧縮書き込みでもCSVとして読み戻せる。"""
+    write_target_csv(tmp_path, "sample.csv", ["列1", "列2"], [["a", "b"]], compress=True)
+
+    path = tmp_path / "sample.csv.gz"
+    assert path.exists()
+
+    with gzip.open(path, "rt", encoding="utf-8-sig", newline="") as fh:
+        rows = list(csv.reader(fh))
+
+    assert rows == [["列1", "列2"], ["a", "b"]]
 
 
 def test_csv_headers_start_with_business_keys(tmp_path: Path) -> None:

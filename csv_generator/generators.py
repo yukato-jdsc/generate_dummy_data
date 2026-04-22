@@ -27,7 +27,7 @@ from .config import (
     PRODUCT_TEMPLATES,
     ColumnSpec,
 )
-from .io import open_csv_writer, write_csv
+from .io import build_output_path, open_csv_writer, write_csv
 from .size_control import RowSizeAdjuster, build_row_size_profile, target_row_size_bytes
 from .values import ValueFactory, clip, hms, ymd, ymd_dash, ymdhm, ymdhms_millis
 
@@ -116,12 +116,12 @@ class CsvGenerator:
         """キャンペーン名テンプレートをインデックスから組み立てる。"""
         return f"{CAMPAIGN_PREFIXES[index % len(CAMPAIGN_PREFIXES)]}{CAMPAIGN_SUFFIXES[index % len(CAMPAIGN_SUFFIXES)]}"
 
-    def write_agency_files(self, output_dir: Path) -> None:
+    def write_agency_files(self, output_dir: Path, compress: bool = False) -> None:
         """取次店の全量CSVと差分CSVを同時に出力する。"""
         headers = self._header_labels("agency")
         sampled: list[tuple[int, dict[str, str]]] = []
         sampler = random.Random(self.seed)
-        handle, writer = open_csv_writer(output_dir / OUTPUT_FILES["agency_all"])
+        handle, writer = open_csv_writer(build_output_path(output_dir, OUTPUT_FILES["agency_all"], compress))
         try:
             writer.writerow(headers)
             for index in range(self.counts["agency_all"]):
@@ -135,17 +135,17 @@ class CsvGenerator:
             self._fit_row("agency_diff", self._agency_row(context, index))
             for index, context in sampled
         ]
-        write_csv(output_dir / OUTPUT_FILES["agency_diff"], headers, diff_rows)
+        write_csv(build_output_path(output_dir, OUTPUT_FILES["agency_diff"], compress), headers, diff_rows)
 
     def _header_labels(self, spec_key: str) -> list[str]:
         """指定した仕様キーのヘッダー表示名一覧を返す。"""
         return [column.header_label for column in self.specs[spec_key]]
 
-    def write_compass_file(self, output_dir: Path) -> None:
+    def write_compass_file(self, output_dir: Path, compress: bool = False) -> None:
         """営業決裁CSVを逐次書き出しする。"""
         headers = self._header_labels("compass")
         self._write_rows(
-            output_dir / OUTPUT_FILES["compass"],
+            build_output_path(output_dir, OUTPUT_FILES["compass"], compress),
             headers,
             "compass",
             self.counts["compass"],
@@ -842,11 +842,21 @@ class CsvGenerator:
         """出力種別ごとの目標サイズへ行を調整する。"""
         return self.row_adjusters[output_key].fit(row)
 
-    def write_bfs_files(self, output_dir: Path) -> None:
+    def write_bfs_files(self, output_dir: Path, compress: bool = False) -> None:
         """BFSエントリCSVの全量版と差分版を逐次書き出す。"""
         headers = self._header_labels("bfs")
-        self._write_bfs_file(output_dir / OUTPUT_FILES["bfs_all"], headers, "bfs_all", "all")
-        self._write_bfs_file(output_dir / OUTPUT_FILES["bfs_diff"], headers, "bfs_diff", "diff")
+        self._write_bfs_file(
+            build_output_path(output_dir, OUTPUT_FILES["bfs_all"], compress),
+            headers,
+            "bfs_all",
+            "all",
+        )
+        self._write_bfs_file(
+            build_output_path(output_dir, OUTPUT_FILES["bfs_diff"], compress),
+            headers,
+            "bfs_diff",
+            "diff",
+        )
 
     def _write_bfs_file(self, path: Path, headers: list[str], output_key: str, variant: str) -> None:
         """BFSエントリCSVを1ファイルずつ逐次出力する。"""
