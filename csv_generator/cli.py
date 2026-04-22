@@ -16,7 +16,7 @@ def announce_output(path: Path) -> None:
 
 def parse_args() -> argparse.Namespace:
     """CSV生成CLIの引数を解釈する。"""
-    parser = argparse.ArgumentParser(description="Generate dummy CSV files from docs/format.md")
+    parser = argparse.ArgumentParser(description="Generate dummy CSV files from docs/format/")
     parser.add_argument("--output-dir", default="generated_data")
     parser.add_argument("--targets", default="campaign,agency,compass,product")
     parser.add_argument("--full", action="store_true")
@@ -58,7 +58,7 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    specs = load_specs(Path("docs/format.md"))
+    specs = load_specs(Path("docs/format"))
     generator = CsvGenerator(specs=specs, seed=args.seed, counts=counts)
 
     if "campaign" in targets:

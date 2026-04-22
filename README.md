@@ -1,6 +1,6 @@
 # generate_dummy_data
 
-`docs/format.md` の定義をもとに、アプリ取り込み用のテストCSVを生成します。
+`docs/format/` 配下の定義をもとに、アプリ取り込み用のテストCSVを生成します。
 
 対象は次の5ファイルです。
 
@@ -10,7 +10,7 @@
 - `compass_sales_approval.csv`
 - `m_product_all.csv`
 
-`docs/format.md` に定義された `id` 列も、出力CSVに含めます。
+`docs/format.md` は索引で、実体の定義は `docs/format/` 配下にあります。`id` 列も、出力CSVに含めます。
 
 ## 前提
 
@@ -83,7 +83,7 @@ uv run pytest
 
 - `generate_csv.py`: CLI の薄い入口
 - `csv_generator/cli.py`: 引数解釈と高レベル制御
-- `csv_generator/format_spec.py`: `docs/format.md` の列定義読込
+- `csv_generator/format_spec.py`: `docs/format/` の列定義読込
 - `csv_generator/generators.py`: 各CSVの行生成
 - `csv_generator/values.py`: 共通の値生成
 - `csv_generator/io.py`: CSV書き出し

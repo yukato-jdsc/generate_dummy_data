@@ -7,7 +7,13 @@ from .config import ColumnSpec, SECTION_KEYS
 
 
 def load_specs(path: Path) -> dict[str, list[ColumnSpec]]:
-    """`docs/format.md` を読み込み、CSVごとの列定義へ変換する。"""
+    """`docs/format.md` または `docs/format/` を読み込み、CSVごとの列定義へ変換する。"""
+    if path.is_dir():
+        specs: dict[str, list[ColumnSpec]] = {}
+        for markdown_path in sorted(path.glob("*.md")):
+            specs.update(load_specs(markdown_path))
+        return specs
+
     text = path.read_text(encoding="utf-8")
     sections = re.split(r"^# ", text, flags=re.MULTILINE)
     specs: dict[str, list[ColumnSpec]] = {}
