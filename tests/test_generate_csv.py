@@ -9,8 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from csv_generator.cli import write_target_csv
-from csv_generator.format_spec import load_specs
+from csv_generator.cli import parse_targets, write_target_csv
+from csv_generator.format_spec import load_specs, parse_section_columns
 from csv_generator.io import build_output_path
 
 SCRIPT = ROOT / "generate_csv.py"
@@ -111,6 +111,12 @@ def test_targets_bfs_only_generates_two_files(tmp_path: Path) -> None:
         "bfs_entry_informations_all.csv",
         "bfs_entry_informations_diff.csv",
     ]
+
+
+def test_parse_targets_trims_values_and_defaults_when_empty() -> None:
+    """target指定は前後空白を除去し、空なら全対象へ戻す。"""
+    assert parse_targets(" campaign , bfs ") == ["campaign", "bfs"]
+    assert parse_targets(" , ") == ["agency", "bfs", "campaign", "compass", "product"]
 
 
 def test_console_outputs_generated_file_names(tmp_path: Path) -> None:
@@ -253,6 +259,24 @@ def test_load_specs_can_read_a_directory_of_markdown_files(tmp_path: Path) -> No
     assert list(specs) == ["campaign"]
     assert [column.name for column in specs["campaign"]] == ["campaign_id"]
     assert [column.header_label for column in specs["campaign"]] == ["キャンペーンid"]
+
+
+def test_parse_section_columns_supports_multiple_markdown_row_formats() -> None:
+    """列定義の行形式差異を吸収して同じ ColumnSpec に変換する。"""
+    columns = parse_section_columns(
+        [
+            "| 項目名 | カラム名 | 型 | 桁 | 仮名化 | 説明 |",
+            "| キャンペーンid | `campaign_id` | VARCHAR | 40 | － | - |",
+            "| No | 項目名 | カラム名 | 型 | 桁 | 仮名化 | 説明 | 備考 |",
+            "| 1 | 取次店コード | `agent_code` | VARCHAR | 10 | － | - | - |",
+            "| No | 項目名 | カラム名 | 型 | 桁 | 説明 |",
+            "| 1 | 決裁番号 | `approval_number` | VARCHAR | 20 | - |",
+        ]
+    )
+
+    assert [column.header_label for column in columns] == ["キャンペーンid", "取次店コード", "決裁番号"]
+    assert [column.name for column in columns] == ["campaign_id", "agent_code", "approval_number"]
+    assert [column.max_length for column in columns] == [40, 10, 20]
 
 
 def test_load_specs_includes_bfs_entry_information() -> None:

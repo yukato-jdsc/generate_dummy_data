@@ -9,15 +9,11 @@ from .config import ColumnSpec, SECTION_KEYS
 def load_specs(path: Path) -> dict[str, list[ColumnSpec]]:
     """`docs/format.md` または `docs/format/` を読み込み、CSVごとの列定義へ変換する。"""
     if path.is_dir():
-        specs: dict[str, list[ColumnSpec]] = {}
-        for markdown_path in sorted(path.glob("*.md")):
-            specs.update(load_specs(markdown_path))
-        return specs
+        return _load_specs_from_directory(path)
 
     text = path.read_text(encoding="utf-8")
-    sections = re.split(r"^# ", text, flags=re.MULTILINE)
     specs: dict[str, list[ColumnSpec]] = {}
-    for section in sections:
+    for section in re.split(r"^# ", text, flags=re.MULTILINE):
         if not section.strip():
             continue
         lines = section.splitlines()
@@ -26,6 +22,14 @@ def load_specs(path: Path) -> dict[str, list[ColumnSpec]]:
         if key is None:
             continue
         specs[key] = parse_section_columns(lines)
+    return specs
+
+
+def _load_specs_from_directory(path: Path) -> dict[str, list[ColumnSpec]]:
+    """Markdown ディレクトリ内の全仕様を読み込む。"""
+    specs: dict[str, list[ColumnSpec]] = {}
+    for markdown_path in sorted(path.glob("*.md")):
+        specs.update(load_specs(markdown_path))
     return specs
 
 
@@ -53,13 +57,23 @@ def _parse_column_row(line: str) -> tuple[str, str, str, str] | None:
     if not line.startswith("|") or "`" not in line:
         return None
     parts = [part.strip() for part in line.strip().strip("|").split("|")]
-    if len(parts) < 6:
+    column_name_index = _find_column_name_index(parts)
+    if column_name_index is None or column_name_index == 0 or column_name_index + 2 >= len(parts):
         return None
-    if len(parts) == 6:
-        return parts[0], parts[1].strip("`"), parts[2], parts[3]
-    if len(parts) == 8:
-        return parts[2], parts[3].strip("`"), parts[4], parts[5]
-    return parts[1], parts[2].strip("`"), parts[3], parts[4]
+    return (
+        parts[column_name_index - 1],
+        parts[column_name_index].strip("`"),
+        parts[column_name_index + 1],
+        parts[column_name_index + 2],
+    )
+
+
+def _find_column_name_index(parts: list[str]) -> int | None:
+    """backtick 付きのカラム名セル位置を返す。"""
+    for index, part in enumerate(parts):
+        if part.startswith("`") and part.endswith("`"):
+            return index
+    return None
 
 
 def parse_max_length(length_text: str) -> int | None:

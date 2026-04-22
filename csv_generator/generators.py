@@ -408,15 +408,15 @@ class CsvGenerator:
 
     def _product_row(self, context: dict[str, str], index: int) -> list[str]:
         """商品文脈を列順の行へ変換する。"""
-        return [clip(self.resolve_product_value(column, context, index), column.max_length) for column in self.specs["product"]]
+        return self._resolved_row(self.specs["product"], context, index, self.resolve_product_value)
 
     def _agency_row(self, context: dict[str, str], index: int) -> list[str]:
         """取次店文脈を列順の行へ変換する。"""
-        return [clip(self.resolve_agency_value(column, context, index), column.max_length) for column in self.specs["agency"]]
+        return self._resolved_row(self.specs["agency"], context, index, self.resolve_agency_value)
 
     def _compass_row(self, context: dict[str, str], index: int) -> list[str]:
         """営業決裁文脈を列順の行へ変換する。"""
-        return [clip(self.resolve_compass_value(column, context, index), column.max_length) for column in self.specs["compass"]]
+        return self._resolved_row(self.specs["compass"], context, index, self.resolve_compass_value)
 
     def _compass_context(self, index: int) -> dict[str, str]:
         """営業決裁1行ぶんの主要属性を組み立てる。"""
@@ -801,6 +801,16 @@ class CsvGenerator:
         """列定義順に文脈値を並べ替え、最大長を適用した1行へ変換する。"""
         return [clip(context[column.name], column.max_length) for column in columns]
 
+    def _resolved_row(
+        self,
+        columns: list[ColumnSpec],
+        context: dict[str, str],
+        index: int,
+        resolver: Callable[[ColumnSpec, dict[str, str], int], str],
+    ) -> list[str]:
+        """列ごとの補完規則を使って1行を組み立てる。"""
+        return [clip(resolver(column, context, index), column.max_length) for column in columns]
+
     def write_bfs_files(self, output_dir: Path, compress: bool = False) -> None:
         """BFSエントリCSVの全量版と差分版を逐次書き出す。"""
         headers = self._header_labels("bfs")
@@ -828,7 +838,7 @@ class CsvGenerator:
 
     def _bfs_row(self, context: dict[str, str], index: int) -> list[str]:
         """BFS文脈を列順の行へ変換する。"""
-        return [clip(self.resolve_bfs_value(column, context, index), column.max_length) for column in self.specs["bfs"]]
+        return self._resolved_row(self.specs["bfs"], context, index, self.resolve_bfs_value)
 
     def _bfs_context(self, index: int, variant: str) -> dict[str, str]:
         """BFS 1行ぶんの主要属性を組み立てる。"""

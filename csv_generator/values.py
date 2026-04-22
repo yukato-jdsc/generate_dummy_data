@@ -7,6 +7,10 @@ from faker import Faker
 
 from .config import COMPANY_WORDS
 
+KATAKANA_WORDS = ["ソフト", "モバイル", "リンク", "プラン", "サービス", "ネット", "ビジネス", "テック"]
+ENGLISH_WORDS = ["Mobile", "Business", "Cloud", "Link", "Smart", "Edge", "Network", "Store"]
+PERSON_NAME_KANAS = ["サトウタロウ", "スズキハナコ", "タナカイチロウ", "イノウエミホ", "ヤマモトケン"]
+
 
 def clip(value: str, max_length: int | None) -> str:
     """文字列を列定義の最大長に収める。"""
@@ -57,12 +61,12 @@ class ValueFactory:
         return f"{prefix}{self.number_string(width, number)}"
 
     def katakana_word(self, index: int) -> str:
-        words = ["ソフト", "モバイル", "リンク", "プラン", "サービス", "ネット", "ビジネス", "テック"]
-        return words[index % len(words)]
+        """カタカナ語の固定語彙を巡回して返す。"""
+        return self._cycled_word(KATAKANA_WORDS, index)
 
     def english_word(self, index: int) -> str:
-        words = ["Mobile", "Business", "Cloud", "Link", "Smart", "Edge", "Network", "Store"]
-        return words[index % len(words)]
+        """英単語の固定語彙を巡回して返す。"""
+        return self._cycled_word(ENGLISH_WORDS, index)
 
     def company_name(self, index: int) -> str:
         return f"株式会社{self.katakana_word(index)}{COMPANY_WORDS[index % len(COMPANY_WORDS)]}"
@@ -75,8 +79,8 @@ class ValueFactory:
         return self.faker.name().replace(" ", "")
 
     def person_name_kana(self, index: int) -> str:
-        names = ["サトウタロウ", "スズキハナコ", "タナカイチロウ", "イノウエミホ", "ヤマモトケン"]
-        return names[index % len(names)]
+        """固定のカナ氏名を巡回して返す。"""
+        return self._cycled_word(PERSON_NAME_KANAS, index)
 
     def phone(self, area: str, number: int) -> str:
         """市外局番を考慮した電話番号風文字列を生成する。"""
@@ -103,3 +107,7 @@ class ValueFactory:
     def email(self, index: int) -> str:
         """共有用メールアドレス向けの文字列を返す。"""
         return f"shared{index % 1000:03d}@example.jp"
+
+    def _cycled_word(self, words: list[str], index: int) -> str:
+        """固定語彙リストからインデックスに応じた要素を返す。"""
+        return words[index % len(words)]

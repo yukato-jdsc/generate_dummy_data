@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from .config import DEFAULT_COUNTS, DEFAULT_SEED, FULL_COUNTS, OUTPUT_FILES, VALID_TARGETS
+from .config import ColumnSpec, DEFAULT_COUNTS, DEFAULT_SEED, FULL_COUNTS, OUTPUT_FILES, VALID_TARGETS
 from .format_spec import load_specs
 from .generators import CsvGenerator
 from .io import build_output_path, write_csv
@@ -33,9 +33,15 @@ def parse_targets(raw_targets: str) -> list[str]:
     return targets or sorted(VALID_TARGETS)
 
 
-def header_labels(specs: dict[str, list], spec_key: str) -> list[str]:
+def header_labels(specs: dict[str, list[ColumnSpec]], spec_key: str) -> list[str]:
     """指定したCSV仕様からヘッダー表示名の一覧を取り出す。"""
     return [column.header_label for column in specs[spec_key]]
+
+
+def announce_outputs(paths: list[Path]) -> None:
+    """複数の出力先を順に表示する。"""
+    for path in paths:
+        announce_output(path)
 
 
 def write_target_csv(
@@ -51,6 +57,66 @@ def write_target_csv(
     write_csv(path, headers, rows)
 
 
+def _write_campaign_csv(
+    output_dir: Path,
+    specs: dict[str, list[ColumnSpec]],
+    generator: CsvGenerator,
+    compress: bool,
+) -> None:
+    """campaign 対象のCSVを書き出す。"""
+    write_target_csv(
+        output_dir,
+        OUTPUT_FILES["campaign"],
+        header_labels(specs, "campaign"),
+        generator.campaign_rows(),
+        compress=compress,
+    )
+
+
+def _write_product_csv(
+    output_dir: Path,
+    specs: dict[str, list[ColumnSpec]],
+    generator: CsvGenerator,
+    compress: bool,
+) -> None:
+    """product 対象のCSVを書き出す。"""
+    write_target_csv(
+        output_dir,
+        OUTPUT_FILES["product"],
+        header_labels(specs, "product"),
+        generator.product_rows(),
+        compress=compress,
+    )
+
+
+def _write_agency_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) -> None:
+    """agency 対象の全量・差分CSVを書き出す。"""
+    announce_outputs(
+        [
+            build_output_path(output_dir, OUTPUT_FILES["agency_all"], compress),
+            build_output_path(output_dir, OUTPUT_FILES["agency_diff"], compress),
+        ]
+    )
+    generator.write_agency_files(output_dir, compress=compress)
+
+
+def _write_compass_csv(output_dir: Path, generator: CsvGenerator, compress: bool) -> None:
+    """compass 対象のCSVを書き出す。"""
+    announce_output(build_output_path(output_dir, OUTPUT_FILES["compass"], compress))
+    generator.write_compass_file(output_dir, compress=compress)
+
+
+def _write_bfs_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) -> None:
+    """bfs 対象の全量・差分CSVを書き出す。"""
+    announce_outputs(
+        [
+            build_output_path(output_dir, OUTPUT_FILES["bfs_all"], compress),
+            build_output_path(output_dir, OUTPUT_FILES["bfs_diff"], compress),
+        ]
+    )
+    generator.write_bfs_files(output_dir, compress=compress)
+
+
 def main() -> None:
     """CLIの入口として、仕様読込からCSV出力までを統括する。"""
     args = parse_args()
@@ -62,35 +128,14 @@ def main() -> None:
 
     specs = load_specs(Path("docs/format"))
     generator = CsvGenerator(specs=specs, seed=args.seed, counts=counts)
-
-    if "campaign" in targets:
-        write_target_csv(
-            output_dir,
-            OUTPUT_FILES["campaign"],
-            header_labels(specs, "campaign"),
-            generator.campaign_rows(),
-            compress=compress,
-        )
-
-    if "agency" in targets:
-        announce_output(build_output_path(output_dir, OUTPUT_FILES["agency_all"], compress))
-        announce_output(build_output_path(output_dir, OUTPUT_FILES["agency_diff"], compress))
-        generator.write_agency_files(output_dir, compress=compress)
-
-    if "product" in targets:
-        write_target_csv(
-            output_dir,
-            OUTPUT_FILES["product"],
-            header_labels(specs, "product"),
-            generator.product_rows(),
-            compress=compress,
-        )
-
-    if "compass" in targets:
-        announce_output(build_output_path(output_dir, OUTPUT_FILES["compass"], compress))
-        generator.write_compass_file(output_dir, compress=compress)
-
-    if "bfs" in targets:
-        announce_output(build_output_path(output_dir, OUTPUT_FILES["bfs_all"], compress))
-        announce_output(build_output_path(output_dir, OUTPUT_FILES["bfs_diff"], compress))
-        generator.write_bfs_files(output_dir, compress=compress)
+    for target in targets:
+        if target == "campaign":
+            _write_campaign_csv(output_dir, specs, generator, compress)
+        elif target == "agency":
+            _write_agency_csvs(output_dir, generator, compress)
+        elif target == "product":
+            _write_product_csv(output_dir, specs, generator, compress)
+        elif target == "compass":
+            _write_compass_csv(output_dir, generator, compress)
+        elif target == "bfs":
+            _write_bfs_csvs(output_dir, generator, compress)
