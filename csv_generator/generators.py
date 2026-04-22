@@ -5,6 +5,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from .config import (
+    AGENCY_ALL_KEEP_COLUMNS,
     BASE_DATE,
     CAMPAIGN_PREFIXES,
     CAMPAIGN_SUFFIXES,
@@ -19,6 +20,7 @@ from .config import (
     ColumnSpec,
 )
 from .io import open_csv_writer, write_csv
+from .size_control import RowSizeAdjuster, build_row_size_profile, target_row_size_bytes
 from .values import ValueFactory, clip, hms, ymd
 
 
@@ -31,6 +33,30 @@ class CsvGenerator:
         self.counts = counts
         self.values = ValueFactory(seed)
         self.diff_sample_size = counts["agency_diff"]
+        self.row_adjusters = self._build_row_adjusters()
+
+    def _build_row_adjusters(self) -> dict[str, RowSizeAdjuster]:
+        """出力種別ごとのサイズ調整器を初期化する。"""
+        return {
+            "campaign": self._build_row_adjuster("campaign", "campaign"),
+            "agency_all": self._build_row_adjuster("agency_all", "agency", AGENCY_ALL_KEEP_COLUMNS),
+            "agency_diff": self._build_row_adjuster("agency_diff", "agency", {"agent_code"}),
+            "product": self._build_row_adjuster("product", "product"),
+        }
+
+    def _build_row_adjuster(
+        self,
+        output_key: str,
+        spec_key: str,
+        keep_columns: set[str] | None = None,
+    ) -> RowSizeAdjuster:
+        """単一CSV向けのサイズ調整器を構築する。"""
+        columns = self.specs[spec_key]
+        return RowSizeAdjuster(
+            columns,
+            target_row_size_bytes(columns, output_key, self.counts[output_key]),
+            build_row_size_profile(columns, output_key, keep_columns=keep_columns),
+        )
 
     def campaign_rows(self) -> list[list[str]]:
         """キャンペーンCSVの全行をメモリ上で生成する。"""
@@ -47,7 +73,7 @@ class CsvGenerator:
                 "effective_end_date": ymd(end),
                 "old_flag": "" if index % 5 else "1",
             }
-            rows.append(self._row_from_context(self.specs["campaign"], context))
+            rows.append(self._fit_row("campaign", self._row_from_context(self.specs["campaign"], context)))
         return rows
 
     def _campaign_name(self, index: int) -> str:
@@ -56,25 +82,33 @@ class CsvGenerator:
 
     def write_agency_files(self, output_dir: Path) -> None:
         """取次店の全量CSVと差分CSVを同時に出力する。"""
-        headers = [column.header_label for column in self.specs["agency"]]
-        sampled: list[list[str]] = []
+        headers = self._header_labels("agency")
+        sampled: list[tuple[int, dict[str, str]]] = []
         sampler = random.Random(self.seed)
         handle, writer = open_csv_writer(output_dir / OUTPUT_FILES["agency_all"])
         try:
             writer.writerow(headers)
             for index in range(self.counts["agency_all"]):
-                row = self.agency_row(index)
-                writer.writerow(row)
-                self._update_reservoir(sampled, row, index, sampler)
+                context = self.agency_context(index)
+                writer.writerow(self._fit_row("agency_all", self._agency_row(context, index)))
+                self._update_reservoir(sampled, (index, context), index, sampler)
         finally:
             handle.close()
-        sampled.sort(key=lambda row: row[0])
-        write_csv(output_dir / OUTPUT_FILES["agency_diff"], headers, sampled)
+        sampled.sort(key=lambda item: item[1]["agent_code"])
+        diff_rows = [
+            self._fit_row("agency_diff", self._agency_row(context, index))
+            for index, context in sampled
+        ]
+        write_csv(output_dir / OUTPUT_FILES["agency_diff"], headers, diff_rows)
+
+    def _header_labels(self, spec_key: str) -> list[str]:
+        """指定した仕様キーのヘッダー表示名一覧を返す。"""
+        return [column.header_label for column in self.specs[spec_key]]
 
     def _update_reservoir(
         self,
-        sampled: list[list[str]],
-        row: list[str],
+        sampled: list[tuple[int, dict[str, str]]],
+        row: tuple[int, dict[str, str]],
         index: int,
         sampler: random.Random,
     ) -> None:
@@ -86,8 +120,8 @@ class CsvGenerator:
         if choice < self.diff_sample_size:
             sampled[choice] = row
 
-    def agency_row(self, index: int) -> list[str]:
-        """取次店1行ぶんの文脈を組み立て、列順に並べた値へ変換する。"""
+    def agency_context(self, index: int) -> dict[str, str]:
+        """取次店1行ぶんの文脈を組み立てる。"""
         context = {}
         context.update(self._agency_base_context(index))
         context.update(self._agency_category_context(index))
@@ -97,10 +131,12 @@ class CsvGenerator:
         context.update(self._agency_operation_context(index))
         context.update(self._agency_billing_context(index))
         context.update(self._agency_misc_context(index))
-        return [
-            clip(self.resolve_agency_value(column, context, index), column.max_length)
-            for column in self.specs["agency"]
-        ]
+        return context
+
+    def agency_row(self, index: int) -> list[str]:
+        """取次店1行ぶんを全量CSV向けのサイズで生成する。"""
+        context = self.agency_context(index)
+        return self._fit_row("agency_all", self._agency_row(context, index))
 
     def _agency_base_context(self, index: int) -> dict[str, str]:
         """取次店の識別子・有効期間などの基本属性を生成する。"""
@@ -349,10 +385,16 @@ class CsvGenerator:
         rows = []
         for index in range(self.counts["product"]):
             context = self._product_context(index)
-            rows.append(
-                [clip(self.resolve_product_value(column, context, index), column.max_length) for column in self.specs["product"]]
-            )
+            rows.append(self._fit_row("product", self._product_row(context, index)))
         return rows
+
+    def _product_row(self, context: dict[str, str], index: int) -> list[str]:
+        """商品文脈を列順の行へ変換する。"""
+        return [clip(self.resolve_product_value(column, context, index), column.max_length) for column in self.specs["product"]]
+
+    def _agency_row(self, context: dict[str, str], index: int) -> list[str]:
+        """取次店文脈を列順の行へ変換する。"""
+        return [clip(self.resolve_agency_value(column, context, index), column.max_length) for column in self.specs["agency"]]
 
     def _product_context(self, index: int) -> dict[str, str]:
         """商品1行ぶんの主要属性をテンプレートから組み立てる。"""
@@ -484,3 +526,7 @@ class CsvGenerator:
     def _row_from_context(self, columns: list[ColumnSpec], context: dict[str, str]) -> list[str]:
         """列定義順に文脈値を並べ替え、最大長を適用した1行へ変換する。"""
         return [clip(context[column.name], column.max_length) for column in columns]
+
+    def _fit_row(self, output_key: str, row: list[str]) -> list[str]:
+        """出力種別ごとの目標サイズへ行を調整する。"""
+        return self.row_adjusters[output_key].fit(row)

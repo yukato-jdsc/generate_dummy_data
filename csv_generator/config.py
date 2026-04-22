@@ -17,6 +17,12 @@ FULL_COUNTS = {
     "agency_diff": 53,
     "product": 122_802,
 }
+DOCUMENT_TARGET_SIZES = {
+    "campaign": 400 * 1024,
+    "agency_all": 300 * 1024 * 1024,
+    "agency_diff": 80 * 1024,
+    "product": int(219.76 * 1024 * 1024),
+}
 SECTION_KEYS = {
     "(Mars)キャンペーン": "campaign",
     "(Mars)取次店": "agency",
@@ -30,6 +36,55 @@ OUTPUT_FILES = {
 }
 VALID_TARGETS = {"campaign", "agency", "product"}
 BASE_DATE = date(2026, 4, 21)
+SIZE_GROW_COLUMNS = {
+    "campaign": ("description", "campaign_name"),
+    "agency_all": (),
+    "agency_diff": (
+        "aggregator_official_name",
+        "aggregator_name_katakana",
+        "aggregator_store_name_in_english",
+        "registered_corporate_name",
+        "department_name_of_person_in_charge",
+        "name_of_person_in_charge",
+        "position_of_person_in_charge",
+        "organization_name",
+        "corporate_name",
+        "manager_name",
+    ),
+    "product": (
+        "packaging_specifications_etc",
+        "product_official_name",
+        "product_name_in_kana",
+        "product_name_in_english",
+        "product_subcategory_official_name",
+        "product_small_category_official_name",
+        "product_middle_category_official_name",
+        "product_major_category_official_name",
+        "manufacturer_official_name",
+        "bundle_plan_nm",
+    ),
+}
+SIZE_FILLER_TEXT = {
+    "campaign": "キャンペーン案内",
+    "agency_diff": "取次店情報",
+    "product": "商品仕様情報",
+}
+AGENCY_ALL_KEEP_COLUMNS = {
+    "agent_code",
+    "valid_start_date",
+    "valid_end_date",
+    "common_store_code",
+    "primary_agent_code",
+    "aggregated_agent_code",
+    "company_category",
+    "store_type_code",
+    "prefecture_code",
+    "city_code",
+    "agent_postal_code",
+    "agent_tel_no",
+    "billing_flag",
+    "operating_store_flag",
+}
 
 
 @dataclass(frozen=True)
