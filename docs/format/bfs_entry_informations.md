@@ -1,7 +1,7 @@
 # (BFSエントリ)モバイル_エントリ情報
 
 - マート名: `b_hjn_bfs_モバイル_エントリ情報`
-- CSVファイル名: `bfs_entry_informations.csv`
+- CSVファイル名: `bfs_entry_informations_all.csv`, `bfs_entry_informations_diff.csv`
 - 全量更新 or 差分更新: 差分更新
 - 更新頻度: 日次
 - データ数: 全件参考（10,282,621件）、初期移行（2,000,000件）、日次差分（5,921件）
