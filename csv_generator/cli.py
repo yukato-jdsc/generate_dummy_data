@@ -8,6 +8,8 @@ from .format_spec import load_specs
 from .generators import CsvGenerator
 from .io import build_output_path, write_csv
 
+CORP_OUTPUT_KEYS = ("dwh_all_1", "dwh_all_2", "dwh_diff")
+
 
 def announce_output(path: Path) -> None:
     """これから生成するCSVファイルの出力先をコンソールへ表示する。"""
@@ -18,7 +20,7 @@ def parse_args() -> argparse.Namespace:
     """CSV生成CLIの引数を解釈する。"""
     parser = argparse.ArgumentParser(description="Generate dummy CSV files from docs/format/")
     parser.add_argument("--output-dir", default="generated_data")
-    parser.add_argument("--targets", default="campaign,agency,compass,product,bfs")
+    parser.add_argument("--targets", default="campaign,agency,compass,product,corp,bfs")
     parser.add_argument("--full", action="store_true")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     return parser.parse_args()
@@ -112,9 +114,21 @@ def _write_bfs_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) -
         [
             build_output_path(output_dir, OUTPUT_FILES["bfs_all"], compress),
             build_output_path(output_dir, OUTPUT_FILES["bfs_diff"], compress),
+            build_output_path(output_dir, OUTPUT_FILES["bfs_device_all"], compress),
+            build_output_path(output_dir, OUTPUT_FILES["bfs_device_diff"], compress),
+            build_output_path(output_dir, OUTPUT_FILES["bfs_accessories_all"], compress),
+            build_output_path(output_dir, OUTPUT_FILES["bfs_accessories_diff"], compress),
         ]
     )
     generator.write_bfs_files(output_dir, compress=compress)
+
+
+def _write_corp_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) -> None:
+    """corp 対象の全量・差分CSVを書き出す。"""
+    announce_outputs(
+        [build_output_path(output_dir, OUTPUT_FILES[output_key], compress) for output_key in CORP_OUTPUT_KEYS]
+    )
+    generator.write_dwh_files(output_dir, compress=compress)
 
 
 def main() -> None:
@@ -137,5 +151,7 @@ def main() -> None:
             _write_product_csv(output_dir, specs, generator, compress)
         elif target == "compass":
             _write_compass_csv(output_dir, generator, compress)
+        elif target == "corp":
+            _write_corp_csvs(output_dir, generator, compress)
         elif target == "bfs":
             _write_bfs_csvs(output_dir, generator, compress)

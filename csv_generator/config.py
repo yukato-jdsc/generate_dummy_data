@@ -11,8 +11,15 @@ DEFAULT_COUNTS = {
     "agency_diff": 53,
     "compass": 100,
     "product": 1_000,
+    "dwh_all_1": 500,
+    "dwh_all_2": 500,
+    "dwh_diff": 100,
     "bfs_all": 1_000,
     "bfs_diff": 100,
+    "bfs_device_all": 1_000,
+    "bfs_device_diff": 100,
+    "bfs_accessories_all": 1_000,
+    "bfs_accessories_diff": 100,
 }
 FULL_COUNTS = {
     "campaign": 1_612,
@@ -20,15 +27,25 @@ FULL_COUNTS = {
     "agency_diff": 53,
     "compass": 160_000,
     "product": 122_802,
+    "dwh_all_1": 1_500_000,
+    "dwh_all_2": 1_500_000,
+    "dwh_diff": 46_021,
     "bfs_all": 2_000_000,
     "bfs_diff": 5_921,
+    "bfs_device_all": 1_200_000,
+    "bfs_device_diff": 1_210,
+    "bfs_accessories_all": 300_000,
+    "bfs_accessories_diff": 3_907,
 }
 SECTION_KEYS = {
     "(Mars)キャンペーン": "campaign",
     "(Mars)取次店": "agency",
     "(COMPASS)営業決裁": "compass",
     "(Mars)商品": "product",
+    "(DWH)統一企業情報": "dwh",
     "(BFSエントリ)モバイル_エントリ情報": "bfs",
+    "(BFSエントリ)モバイル_サービスサマリ_端末": "bfs_device",
+    "(BFSエントリ)モバイル_サービスサマリ_付属品": "bfs_accessories",
 }
 OUTPUT_FILES = {
     "campaign": "m_campaign_all.csv",
@@ -36,10 +53,17 @@ OUTPUT_FILES = {
     "agency_diff": "m_agency_diff.csv",
     "compass": "compass_sales_approval.csv",
     "product": "m_product_all.csv",
+    "dwh_all_1": "corp_customer_info_all_1.csv",
+    "dwh_all_2": "corp_customer_info_all_2.csv",
+    "dwh_diff": "corp_customer_info_diff.csv",
     "bfs_all": "bfs_entry_informations_all.csv",
     "bfs_diff": "bfs_entry_informations_diff.csv",
+    "bfs_device_all": "bfs_service_summary_devices_all.csv",
+    "bfs_device_diff": "bfs_service_summary_devices_diff.csv",
+    "bfs_accessories_all": "bfs_service_summary_accessories_all.csv",
+    "bfs_accessories_diff": "bfs_service_summary_accessories_diff.csv",
 }
-VALID_TARGETS = {"campaign", "agency", "compass", "product", "bfs"}
+VALID_TARGETS = {"campaign", "agency", "compass", "product", "corp", "bfs"}
 BASE_DATE = date(2026, 4, 21)
 @dataclass(frozen=True)
 class ColumnSpec:

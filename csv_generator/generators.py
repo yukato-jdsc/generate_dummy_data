@@ -28,6 +28,51 @@ from .config import (
 from .io import build_output_path, open_csv_writer, write_csv
 from .values import ValueFactory, clip, hms, ymd, ymd_dash, ymdhm, ymdhms_millis
 
+BFS_FAMILY_FILES = (
+    ("bfs", "bfs_all", "all"),
+    ("bfs", "bfs_diff", "diff"),
+    ("bfs_device", "bfs_device_all", "all"),
+    ("bfs_device", "bfs_device_diff", "diff"),
+    ("bfs_accessories", "bfs_accessories_all", "all"),
+    ("bfs_accessories", "bfs_accessories_diff", "diff"),
+)
+DWH_FAMILY_FILES = (
+    ("dwh_all_1", "all_1"),
+    ("dwh_all_2", "all_2"),
+    ("dwh_diff", "diff"),
+)
+DWH_PRIMARY_INDUSTRY_NAMES = ["情報サービス業", "総合工事業", "保険業", "銀行業", "専門サービス業"]
+DWH_SECONDARY_INDUSTRY_NAMES = ["情報通信機械製造業", "総合工事業", "保険業", "銀行業", "専門サービス業"]
+DWH_ORGANIZATION_TYPES = ["内資", "外資", "公共"]
+DWH_CORPORATE_POSITIONS = ["代表取締役", "代表社員", "理事長"]
+DWH_INVALID_REASONS = ("10", "20", "30", "40")
+DWH_SB_LARGE_CATEGORIES = ["情報通信", "建設", "金融"]
+DWH_SB_MIDDLE_CATEGORIES = ["ソフトウェア", "設備工事", "保険"]
+DWH_SB_SMALL_CATEGORIES = ["SaaS", "通信設備", "法人保険"]
+DEVICE_MANUFACTURERS = ["Apple", "Samsung", "Sony", "Google", "SHARP"]
+DEVICE_CLASSES = ["スマートフォン", "タブレット", "モバイルルーター", "フィーチャーフォン", "PC"]
+DEVICE_MODEL_NAMES = ["iPhone 14", "Galaxy S23", "Xperia 10 IV", "Pixel 8", "AQUOS sense8"]
+DEVICE_PLANS = ["メリハリ無制限", "ミニフィットプラン+", "スマホデビュープラン+", "ペイトク無制限", "法人基本プラン"]
+DEVICE_OPTION_CATEGORIES = ["セキュリティ", "通信", "運用", "保守", "国際"]
+DEVICE_OPTION_SERVICES = [
+    "スマートセキュリティ",
+    "データシェアプラス",
+    "あんしん遠隔サポート",
+    "端末補償サービス",
+    "海外あんしん定額",
+]
+DEVICE_RELATIVE_CATEGORIES = ["通信", "音声", "保守", "クラウド", "国際"]
+DEVICE_RELATIVE_NAMES = ["高速データ", "通話定額", "保守パック", "クラウド連携", "国際ローミング"]
+DISCOUNT_METHODS = ["定額", "定率", "従量"]
+ACCESSORY_MANUFACTURERS = ["Apple", "Samsung", "Anker", "ELECOM", "SoftBank SELECTION"]
+ACCESSORY_PRODUCT_NAMES = [
+    "USB-C充電ケーブル(1m)",
+    "USB-C充電ケーブル(1.5m)",
+    "USB-C充電ケーブル(2m)",
+    "急速充電アダプタ",
+    "Bluetoothヘッドセット",
+]
+
 
 class CsvGenerator:
     """各CSVの行データを生成し、必要に応じてファイルへ出力する。"""
@@ -811,38 +856,183 @@ class CsvGenerator:
         """列ごとの補完規則を使って1行を組み立てる。"""
         return [clip(resolver(column, context, index), column.max_length) for column in columns]
 
-    def write_bfs_files(self, output_dir: Path, compress: bool = False) -> None:
-        """BFSエントリCSVの全量版と差分版を逐次書き出す。"""
-        headers = self._header_labels("bfs")
-        self._write_bfs_file(
-            build_output_path(output_dir, OUTPUT_FILES["bfs_all"], compress),
-            headers,
-            "bfs_all",
-            "all",
-        )
-        self._write_bfs_file(
-            build_output_path(output_dir, OUTPUT_FILES["bfs_diff"], compress),
-            headers,
-            "bfs_diff",
-            "diff",
-        )
+    def write_dwh_files(self, output_dir: Path, compress: bool = False) -> None:
+        """DWH統一企業情報の全量2分割と差分を逐次書き出す。"""
+        headers = self._header_labels("dwh")
+        for output_key, variant in DWH_FAMILY_FILES:
+            self._write_rows(
+                build_output_path(output_dir, OUTPUT_FILES[output_key], compress),
+                headers,
+                self.counts[output_key],
+                lambda index, current_variant=variant: self._dwh_row(self._dwh_context(index, current_variant)),
+            )
 
-    def _write_bfs_file(self, path: Path, headers: list[str], output_key: str, variant: str) -> None:
-        """BFSエントリCSVを1ファイルずつ逐次出力する。"""
+    def _dwh_row(self, context: dict[str, str]) -> list[str]:
+        """DWH統一企業情報の文脈を列順の1行へ変換する。"""
+        return self._row_from_context(self.specs["dwh"], context)
+
+    def _dwh_context(self, index: int, variant: str) -> dict[str, str]:
+        """DWH統一企業情報1行ぶんの主要属性を組み立てる。"""
+        base_index = self._dwh_base_index(index, variant)
+        pref = PREFECTURES[base_index % len(PREFECTURES)]
+        company_code = self.values.code("UC", base_index + 1, 8)
+        parent_code = self.values.code("UC", ((base_index // 7) + 1), 8)
+        postal_code = self.values.postal_code(1_000_000 + base_index)
+        address_3 = pref["common_name_kanji"]
+        address_4 = f"{(base_index % 8) + 1}-{(base_index % 20) + 1}-{(base_index % 30) + 1}"
+        address_5 = f"{self.values.company_short_name(base_index)}ビル"
+        full_address = f"{pref['prefecture_kanji']}{pref['city_kanji']}{address_3}{address_4}{address_5}"
+        company_name = self.values.company_name(base_index)
+        company_name_kana_half = self.values.company_short_name_kana_half()
+        company_name_kana_full = self.values.company_short_name_kana_full()
+        representative_name = self.values.person_name()
+        representative_kana_half = self.values.company_short_name_kana_half()
+        representative_kana_full = self.values.company_short_name_kana_full()
+        invalid_flag = "1" if base_index % 9 == 0 else "0"
+        invalid_reason = DWH_INVALID_REASONS[base_index % len(DWH_INVALID_REASONS)] if invalid_flag == "1" else "0"
+        parent_flag = "1" if base_index % 5 == 0 else "0"
+        registered_at = datetime(2020, 1, 1, 9, 0) + timedelta(days=base_index % 1200, minutes=base_index % 60)
+        updated_at = registered_at + timedelta(days=(base_index % 30) + 1, minutes=15)
+        registered_at_text = registered_at.strftime("%Y/%m/%d %H:%M")
+        updated_at_text = updated_at.strftime("%Y/%m/%d %H:%M")
+        primary_code = str(300 + (base_index % 600))
+        secondary_code = str(600 + (base_index % 300))
+        primary_name = DWH_PRIMARY_INDUSTRY_NAMES[base_index % len(DWH_PRIMARY_INDUSTRY_NAMES)]
+        secondary_name = DWH_SECONDARY_INDUSTRY_NAMES[(base_index + 1) % len(DWH_SECONDARY_INDUSTRY_NAMES)]
+        dunsnumber = self.values.number_string(9, 690_000_000 + base_index)
+        securities_code = self.values.number_string(4, 1000 + (base_index % 8000))
+        merged_company_code = self.values.code("UC", 5_000_000 + base_index + 1, 8) if invalid_reason == "10" else "0"
+        local_name = f"{company_name}日本法人"
+        english_name = self.values.company_english_name(base_index)
+        customer_note = f"法人番号:{self.values.number_string(13, 3_010_000_000_000 + base_index)}"
+        country_code = "JPN"
+        city = pref["city_kanji"]
+        district = address_3 + address_4
+        parent_company_code = company_code if parent_flag == "1" else parent_code
+        legal_code = str(base_index % 2)
+        url = f"https://www.{self.values.english_word(base_index).lower()}-{self.values.english_word(base_index + 1).lower()}.co.jp"
+        business_description = f"{company_name}向けにモバイル、ネットワーク、運用支援サービスを提供"
+        operator_rank = str((base_index % 3) + 1)
+        mnc_name = f"{company_name}管理名称"
+        note_1 = "1" if base_index % 4 == 0 else "0"
+        note_2 = f"LBC{self.values.number_string(6, base_index + 1)}"
+        note_3 = self.values.number_string(4, 1000 + (base_index % 9000))
+        return {
+            "統一企業コード": company_code,
+            "法人管理番号": self.values.code("WM", base_index + 1, 8),
+            "dunsnumber": dunsnumber,
+            "法人格コード": legal_code,
+            "企業名カナ": company_name_kana_half,
+            "企業名カナ全角": company_name_kana_full,
+            "企業名": company_name,
+            "検索用企業名カナ": company_name_kana_half,
+            "検索用企業名カナ全角": company_name_kana_full,
+            "検索用企業名": company_name,
+            "郵便番号": postal_code,
+            "住所": full_address,
+            "住所１_都道府県": pref["prefecture_kanji"],
+            "住所２_市区群町村": pref["city_kanji"],
+            "住所３_字名丁目": address_3,
+            "住所４_番地": address_4,
+            "住所５_ビル建物名": address_5,
+            "電話番号": self.values.phone(pref["phone_area"], 10_000_000 + base_index),
+            "主業コード": primary_code,
+            "従業コード": secondary_code,
+            "代表者役職名": DWH_CORPORATE_POSITIONS[base_index % len(DWH_CORPORATE_POSITIONS)],
+            "代表者氏名カナ": representative_kana_half,
+            "代表者氏名カナ全角": representative_kana_full,
+            "代表者氏名": representative_name,
+            "主業名": primary_name,
+            "従業名": secondary_name,
+            "組織区分": DWH_ORGANIZATION_TYPES[base_index % len(DWH_ORGANIZATION_TYPES)],
+            "事業内容": business_description,
+            "重要度ランク": operator_rank,
+            "証券コード": securities_code,
+            "ＵＲＬ": url,
+            "合併企業番号": merged_company_code,
+            "親企業フラグ": parent_flag,
+            "親企業番号": parent_company_code,
+            "sb業種大": DWH_SB_LARGE_CATEGORIES[base_index % len(DWH_SB_LARGE_CATEGORIES)],
+            "sb業種中": DWH_SB_MIDDLE_CATEGORIES[base_index % len(DWH_SB_MIDDLE_CATEGORIES)],
+            "sb業種小": DWH_SB_SMALL_CATEGORIES[base_index % len(DWH_SB_SMALL_CATEGORIES)],
+            "備考1": note_1,
+            "備考2": note_2,
+            "備考3": note_3,
+            "備考4": "未使用",
+            "備考5": "未使用",
+            "有効無効フラグ": invalid_flag,
+            "無効理由": invalid_reason,
+            "登録日": registered_at_text,
+            "更新日": updated_at_text,
+            "登録者": "new",
+            "更新者": "company",
+            "削除フラグ": "0",
+            "登録日時": registered_at_text,
+            "更新日時": updated_at_text,
+            "登録者名": "新情報系",
+            "更新者名": "company",
+            "data_universal_number": self.values.code("DUN", base_index + 1, 9),
+            "mnc_management_name": mnc_name,
+            "postal_code": postal_code,
+            "country_code": country_code,
+            "city": city,
+            "country_calling_code": "81",
+            "district": district,
+            "現地法人名_日本語": local_name,
+            "customer_name": english_name,
+            "備考": customer_note,
+        }
+
+    def _dwh_base_index(self, index: int, variant: str) -> int:
+        """DWHファイル種別ごとの基準インデックスを返す。"""
+        if variant == "all_1":
+            return index
+        if variant == "all_2":
+            return self.counts["dwh_all_1"] + index
+        return self.counts["dwh_all_1"] + self.counts["dwh_all_2"] + index
+
+    def write_bfs_files(self, output_dir: Path, compress: bool = False) -> None:
+        """BFS関連CSVをまとめて逐次書き出す。"""
+        row_factories = {
+            "bfs": self._bfs_row,
+            "bfs_device": self._bfs_device_row,
+            "bfs_accessories": self._bfs_accessories_row,
+        }
+        for spec_key, output_key, variant in BFS_FAMILY_FILES:
+            self._write_bfs_family_file(
+                output_dir,
+                compress,
+                spec_key,
+                output_key,
+                variant,
+                row_factories[spec_key],
+            )
+
+    def _write_bfs_family_file(
+        self,
+        output_dir: Path,
+        compress: bool,
+        spec_key: str,
+        output_key: str,
+        variant: str,
+        row_factory: Callable[[dict[str, str], int], list[str]],
+    ) -> None:
+        """BFSファミリーの1ファイルを仕様キー別に逐次出力する。"""
+        headers = self._header_labels(spec_key)
         self._write_rows(
-            path,
+            build_output_path(output_dir, OUTPUT_FILES[output_key], compress),
             headers,
             self.counts[output_key],
-            lambda index: self._bfs_row(self._bfs_context(index, variant), index),
+            lambda index: row_factory(self._bfs_service_context(index, variant), index),
         )
 
     def _bfs_row(self, context: dict[str, str], index: int) -> list[str]:
         """BFS文脈を列順の行へ変換する。"""
         return self._resolved_row(self.specs["bfs"], context, index, self.resolve_bfs_value)
 
-    def _bfs_context(self, index: int, variant: str) -> dict[str, str]:
-        """BFS 1行ぶんの主要属性を組み立てる。"""
-        base_index = index if variant == "all" else 2_000_000 + index
+    def _bfs_service_context(self, index: int, variant: str) -> dict[str, str]:
+        """BFSエントリとサービスサマリで共有する文脈を組み立てる。"""
+        base_index = self._bfs_base_index(index, variant)
         created_at = datetime(2025, 12, 1, 9, 0) + timedelta(hours=base_index % 240, minutes=(base_index * 7) % 60)
         updated_at = created_at + timedelta(minutes=30)
         application_date = BASE_DATE - timedelta(days=base_index % 21)
@@ -861,6 +1051,7 @@ class CsvGenerator:
         salesperson_code = self.values.employee_id(base_index)
         agency_code = self.values.code("AGT", base_index + 1, 6)
         entry_number = f"EN{BASE_DATE:%Y%m%d}{self.values.number_string(6, base_index + 1)}"
+        summary_number = f"SM{BASE_DATE:%Y%m%d}{self.values.number_string(6, base_index + 1)}"
         approval_numbers = [self.values.code("LS", base_index + i + 1, 7) for i in range(5)]
         plan_names = [
             "基本プラン",
@@ -895,6 +1086,7 @@ class CsvGenerator:
             "base_index": str(base_index),
             "variant": variant,
             "entry_number": entry_number,
+            "summary_number": summary_number,
             "subject": f"{company_name}向けBFSエントリ {base_index % 500 + 1}",
             "creation_category": "新規" if base_index % 3 == 0 else "変更" if base_index % 3 == 1 else "追加",
             "order_type": ["新規契約", "変更契約", "追加契約"][base_index % 3],
@@ -1073,6 +1265,243 @@ class CsvGenerator:
             context[f"other_options_{other_index}"] = other_option
         return context
 
+    def _bfs_base_index(self, index: int, variant: str) -> int:
+        """全量・差分の種別からBFS採番用の基準インデックスを返す。"""
+        if variant == "all":
+            return index
+        return 2_000_000 + index
+
+    def _bfs_device_summary_context(self, context: dict[str, str]) -> dict[str, str]:
+        """BFSサービスサマリ端末の基本列をまとめて構築する。"""
+        base_index = int(context["base_index"])
+        created_at = datetime(2025, 12, 21, 11, 0, 0) + timedelta(hours=base_index % 48)
+        updated_at = created_at + timedelta(minutes=15)
+        return {
+            "number_of_lines": str(10 + (base_index % 90)),
+            "rental_set_device": ["無", "有"][base_index % 2],
+            "mnp": ["無", "有"][(base_index // 2) % 2],
+            "product_code": self.values.code("P", base_index + 1, 3),
+            "manufacturer": DEVICE_MANUFACTURERS[base_index % len(DEVICE_MANUFACTURERS)],
+            "mobile_device_classification": DEVICE_CLASSES[base_index % len(DEVICE_CLASSES)],
+            "model_name": DEVICE_MODEL_NAMES[base_index % len(DEVICE_MODEL_NAMES)],
+            "color_1": COLORS[base_index % len(COLORS)][0],
+            "quantity_1": str(10 + (base_index % 20) * 5),
+            "color_2": COLORS[(base_index + 1) % len(COLORS)][0],
+            "quantity_2": str(1 + (base_index % 10)),
+            "color_3": COLORS[(base_index + 2) % len(COLORS)][0],
+            "quantity_3": str(1 + ((base_index + 1) % 8)),
+            "color_4": COLORS[(base_index + 3) % len(COLORS)][0],
+            "quantity_4": str(1 + ((base_index + 2) % 6)),
+            "color_5": COLORS[(base_index + 4) % len(COLORS)][0],
+            "quantity_5": str(1 + ((base_index + 3) % 4)),
+            "standard_device_price": str(85_000 + (base_index % 8) * 5_000),
+            "provision_fee": str(1_000 + (base_index % 5) * 500),
+            "points_used": str((base_index % 5) * 100),
+            "rental_fee": str(2_600 + (base_index % 7) * 100),
+            "actual_rental_provision_fee": str(1_500 + (base_index % 7) * 100),
+            "campaign_1": f"端末導入キャンペーン{base_index % 10 + 1}",
+            "campaign_2": f"月額割引キャンペーン{base_index % 8 + 1}",
+            "campaign_3": f"法人特典キャンペーン{base_index % 6 + 1}",
+            "campaign_4": f"保守優待キャンペーン{base_index % 4 + 1}",
+            "campaign_5": f"更新特典キャンペーン{base_index % 3 + 1}",
+            "benefit_code_1": self.values.code("BN", base_index + 1, 4),
+            "benefit_code_2": self.values.code("BN", base_index + 2, 4),
+            "benefit_code_3": self.values.code("BN", base_index + 3, 4),
+            "benefit_code_4": self.values.code("BN", base_index + 4, 4),
+            "urgent_campaign_1": "緊急値引適用",
+            "urgent_campaign_2": "納期優先施策",
+            "urgent_campaign_3": "案件別調整",
+            "plan": DEVICE_PLANS[base_index % len(DEVICE_PLANS)],
+            "white_corporate": ["有", "無"][base_index % 2],
+            "call_discount_w_white": ["有", "無"][(base_index + 1) % 2],
+            "call_discount_l_white": ["有", "無"][base_index % 2],
+            "flat_rate_calling_24_hour": ["有", "無"][(base_index + 1) % 2],
+            "white_office": ["有", "無"][base_index % 2],
+            "continuing_discount": ["有", "無"][(base_index + 1) % 2],
+            "breaking_contract_gold_annual_contract": ["有", "無"][base_index % 2],
+            "s_basic_pack": "加入",
+            "data_communication_basic_fee_4g": "適用",
+            "basic_fee_5g": "適用",
+            "packet_discount": "適用",
+            "data_speed_​​limit_removal": "申込済",
+            "flat_rate_calls___anyone": "適用",
+            "wifi": "有",
+            "tethering": "有",
+            "flat_sp9": "無",
+            "option_pack": "標準",
+            "anshin_guarantee_pack": ["加入", "未加入"][base_index % 2],
+            "app": "法人コンシェル",
+            "global_mobile_phone": ["有", "無"][(base_index + 1) % 2],
+            "overseas_packet_discount": "有",
+            "call_billing_details": "送付",
+            "it_connection_basic_fee": "適用",
+            "share_settings": "有",
+            "share_option": "基本シェア",
+            "grp_representative_share_option": "代表回線適用",
+            "grp_representative_data_speed_​​limit": "制限解除",
+            "rnt_campaign_1": "レンタル値引1",
+            "rnt_campaign_2": "レンタル値引2",
+            "rnt_campaign_3": "レンタル値引3",
+            "campaign_code_1": self.values.code("CP", base_index + 1, 6),
+            "campaign_code_2": self.values.code("CP", base_index + 2, 6),
+            "rnt_urgent_campaign_1": "レンタル緊急1",
+            "rnt_urgent_campaign_2": "レンタル緊急2",
+            "rnt_urgent_campaign_3": "レンタル緊急3",
+            "new_service_fee_exemption": "無",
+            "model_upgrade_fee_exemption": "有" if base_index % 3 == 0 else "無",
+            "contract_change_service_fee_exemption": "無",
+            "annual_contract_penalty_exemption": "無",
+            "applicable_relative_discount_end_date": ymd(BASE_DATE + timedelta(days=(base_index % 180) + 30)),
+            "summary_creation_staff_id": self.values.code("USR", base_index + 1, 3),
+            "summary_creation_date_and_time": created_at.strftime("%Y/%m/%d %H:%M:%S"),
+            "summary_updater_id": self.values.code("USR", base_index + 1, 3),
+            "summary_update_date_and_time": updated_at.strftime("%Y/%m/%d %H:%M:%S"),
+            "minimum_number_of_lines": str(1 + (base_index % 20)),
+            "provision_generation_type": ["4G", "5G"][base_index % 2],
+        }
+
+    def _populate_bfs_device_option_context(self, device_context: dict[str, str], base_index: int) -> None:
+        """BFSサービスサマリ端末の繰り返し項目を埋める。"""
+        for option_index in range(1, 11):
+            device_context[f"option_category_{option_index}"] = DEVICE_OPTION_CATEGORIES[
+                (base_index + option_index - 1) % len(DEVICE_OPTION_CATEGORIES)
+            ]
+            device_context[f"option_service_{option_index}"] = DEVICE_OPTION_SERVICES[
+                (base_index + option_index - 1) % len(DEVICE_OPTION_SERVICES)
+            ]
+            device_context[f"optional_category_{option_index}"] = DEVICE_OPTION_CATEGORIES[
+                (base_index + option_index) % len(DEVICE_OPTION_CATEGORIES)
+            ]
+            device_context[f"optional_service_{option_index}"] = DEVICE_OPTION_SERVICES[
+                (base_index + option_index) % len(DEVICE_OPTION_SERVICES)
+            ]
+            device_context[f"rntopt_category_{option_index}"] = f"レンタルカテゴリ{option_index}"
+            device_context[f"rntopt_plan_{option_index}"] = f"レンタルプラン{option_index}"
+            device_context[f"rntoptatt_category_{option_index}"] = f"レンタル付帯カテゴリ{option_index}"
+            device_context[f"rntoptatt_plan_{option_index}"] = f"レンタル付帯プラン{option_index}"
+
+    def _populate_bfs_device_relative_context(self, device_context: dict[str, str], base_index: int) -> None:
+        """BFSサービスサマリ端末の相対割引系の繰り返し項目を埋める。"""
+        for option_index in range(1, 10):
+            device_context[f"relative_pd_category_{option_index}"] = DEVICE_RELATIVE_CATEGORIES[
+                (base_index + option_index - 1) % len(DEVICE_RELATIVE_CATEGORIES)
+            ]
+            device_context[f"relative_pd_name_{option_index}"] = DEVICE_RELATIVE_NAMES[
+                (base_index + option_index - 1) % len(DEVICE_RELATIVE_NAMES)
+            ]
+            device_context[f"relative_discount_method_{option_index}"] = DISCOUNT_METHODS[
+                (base_index + option_index - 1) % len(DISCOUNT_METHODS)
+            ]
+            device_context[f"relative_effective_start_date_{option_index}"] = ymd(
+                BASE_DATE - timedelta(days=(base_index + option_index) % 120)
+            )
+            device_context[f"relative_effective_end_date_{option_index}"] = ymd(
+                BASE_DATE + timedelta(days=(base_index + option_index) % 120)
+            )
+            device_context[f"relative_invoice_amount_{option_index}"] = str(4_000 + option_index * 500)
+            device_context[f"relative_billing_amount_{option_index}"] = str(4_000 + option_index * 500)
+            device_context[f"relative_discount_amount_{option_index}"] = str(500 + option_index * 100)
+            device_context[f"relative_discount_rate_{option_index}"] = str(5 + option_index)
+            device_context[f"relative_discount_start_month_{option_index}"] = f"2025{option_index:02d}"
+            device_context[f"relative_period_{option_index}"] = str(12 + option_index)
+
+    def _populate_bfs_device_other_relative_context(self, device_context: dict[str, str]) -> None:
+        """BFSサービスサマリ端末のその他相対割引系の繰り返し項目を埋める。"""
+        for option_index in range(1, 6):
+            device_context[f"relative_other_pd_category_{option_index}"] = f"相対他カテゴリ{option_index}"
+            device_context[f"relative_other_pd_name_{option_index}"] = f"相対他名称{option_index}"
+            device_context[f"relative_other_discount_method_{option_index}"] = DISCOUNT_METHODS[
+                (option_index - 1) % len(DISCOUNT_METHODS)
+            ]
+            device_context[f"relative_other_effective_start_date_{option_index}"] = ymd(
+                BASE_DATE - timedelta(days=option_index * 3)
+            )
+            device_context[f"relative_other_effective_end_date_{option_index}"] = ymd(
+                BASE_DATE + timedelta(days=option_index * 30)
+            )
+            device_context[f"relative_other_invoice_amount_{option_index}"] = str(3_000 + option_index * 400)
+            device_context[f"relative_other_discount_amount_{option_index}"] = str(300 + option_index * 50)
+            device_context[f"relative_other_discount_rate_{option_index}"] = str(3 + option_index)
+            device_context[f"relative_other_discount_start_month_{option_index}"] = f"2025{option_index:02d}"
+            device_context[f"relative_other_period_{option_index}"] = str(6 + option_index)
+            device_context[f"r_relative_op_{option_index}"] = f"r相対op{option_index}"
+            device_context[f"r_relative_plan_{option_index}"] = f"r相対プラン{option_index}"
+            device_context[f"r_relative_discount_method_{option_index}"] = DISCOUNT_METHODS[
+                (option_index - 1) % len(DISCOUNT_METHODS)
+            ]
+            device_context[f"r_relative_effective_start_date_{option_index}"] = ymd(
+                BASE_DATE - timedelta(days=option_index * 5)
+            )
+            device_context[f"r_relative_effective_end_date_{option_index}"] = ymd(
+                BASE_DATE + timedelta(days=option_index * 40)
+            )
+            device_context[f"r_relative_amount_{option_index}"] = str(2_000 + option_index * 300)
+            device_context[f"r_relative_period_{option_index}"] = str(12 + option_index)
+            device_context[f"r_relative_other_pd_name_{option_index}"] = f"r相対他名称{option_index}"
+            device_context[f"r_relative_other_discount_method_{option_index}"] = DISCOUNT_METHODS[
+                (option_index - 1) % len(DISCOUNT_METHODS)
+            ]
+            device_context[f"r_relative_other_effective_start_date_{option_index}"] = ymd(
+                BASE_DATE - timedelta(days=option_index * 4)
+            )
+            device_context[f"r_relative_other_effective_end_date_{option_index}"] = ymd(
+                BASE_DATE + timedelta(days=option_index * 25)
+            )
+            device_context[f"r_relative_other_amount_{option_index}"] = str(1_500 + option_index * 200)
+            device_context[f"r_relative_other_period_{option_index}"] = str(6 + option_index)
+
+    def _bfs_accessories_summary_context(self, context: dict[str, str]) -> dict[str, str]:
+        """BFSサービスサマリ付属品の基本列をまとめて構築する。"""
+        base_index = int(context["base_index"])
+        summary_number = f"{context['summary_number']}001"
+        return {
+            "summary_number": summary_number,
+            "serial_number_accessories": ["有", "無"][base_index % 2],
+            "product_code": self.values.code("ACC", base_index + 1, 3),
+            "manufacturer": ACCESSORY_MANUFACTURERS[base_index % len(ACCESSORY_MANUFACTURERS)],
+            "product_name": ACCESSORY_PRODUCT_NAMES[base_index % len(ACCESSORY_PRODUCT_NAMES)],
+            "color_1": COLORS[base_index % len(COLORS)][0],
+            "quantity_1": str(10 + (base_index % 4) * 5),
+            "color_2": COLORS[(base_index + 1) % len(COLORS)][0],
+            "quantity_2": str(5 + (base_index % 3) * 5),
+            "color_3": COLORS[(base_index + 2) % len(COLORS)][0],
+            "quantity_3": str(1 + (base_index % 5)),
+            "color_4": COLORS[(base_index + 3) % len(COLORS)][0],
+            "quantity_4": str(1 + ((base_index + 1) % 4)),
+            "color_5": COLORS[(base_index + 4) % len(COLORS)][0],
+            "quantity_5": str(1 + ((base_index + 2) % 3)),
+            "standard_price_of_accessories": str(2_800 + (base_index % 6) * 400),
+            "provision_fee": str(2_000 + (base_index % 6) * 300),
+            "usage_points": str((base_index % 4) * 100),
+            "cost": str(1_200 + (base_index % 6) * 200),
+            "linked_summary_number": summary_number,
+            "cost_contingency": str(100 + (base_index % 8) * 20),
+        }
+
+    def _bfs_device_row(self, context: dict[str, str], index: int) -> list[str]:
+        """BFSサービスサマリ端末の1行を生成する。"""
+        device_context = dict(context)
+        base_index = int(context["base_index"])
+        device_context.update(self._bfs_device_summary_context(context))
+        self._populate_bfs_device_option_context(device_context, base_index)
+        self._populate_bfs_device_relative_context(device_context, base_index)
+        self._populate_bfs_device_other_relative_context(device_context)
+        for scope_index in range(1, 10):
+            device_context[f"plan_change_permission_range_{scope_index}"] = f"範囲{scope_index}"
+            device_context[f"consultation_regarding_relative_{scope_index}"] = f"相対相談{scope_index}"
+        return self._resolved_row(self.specs["bfs_device"], device_context, index, self.resolve_bfs_device_value)
+
+    def _bfs_accessories_row(self, context: dict[str, str], index: int) -> list[str]:
+        """BFSサービスサマリ付属品の1行を生成する。"""
+        accessories_context = dict(context)
+        accessories_context.update(self._bfs_accessories_summary_context(context))
+        return self._resolved_row(
+            self.specs["bfs_accessories"],
+            accessories_context,
+            index,
+            self.resolve_bfs_accessories_value,
+        )
+
     def resolve_bfs_value(self, column: ColumnSpec, context: dict[str, str], index: int) -> str:
         """BFS列の明示値が無い場合に、列名規則から既定値を補完する。"""
         if column.name in context:
@@ -1141,4 +1570,52 @@ class CsvGenerator:
             return self.values.code("BFS", base_index + 1, 10)
         if "name" in name:
             return f"BFSサンプル{base_index % 100:02d}"
+        return f"VAL{base_index % 1000}"
+
+    def resolve_bfs_device_value(self, column: ColumnSpec, context: dict[str, str], index: int) -> str:
+        """BFSサービスサマリ端末の未指定列を列名規則で補完する。"""
+        if column.name in context:
+            return context[column.name]
+        name = column.name
+        base_index = int(context["base_index"])
+        if column.data_type.startswith("DECIMAL"):
+            return str(1 + (base_index % 99))
+        if "date_and_time" in name:
+            base = datetime(2025, 12, 21, 9, 0, 0) + timedelta(hours=base_index % 72)
+            return base.strftime("%Y/%m/%d %H:%M:%S")
+        if name.endswith("_date"):
+            return ymd(BASE_DATE + timedelta(days=base_index % 180))
+        if "month" in name:
+            return f"2025/{(base_index % 12) + 1:02d}"
+        if "rate" in name or "ratio" in name:
+            return str(5 + (base_index % 20))
+        if "amount" in name or "price" in name or "cost" in name or "fee" in name or "capex" in name or "discount" in name:
+            return str(1_000 + (base_index % 20) * 100)
+        if "code" in name or name.endswith("_id") or "number" in name:
+            return self.values.code("DV", base_index + 1, 6)
+        if "category" in name:
+            return f"カテゴリ{(base_index % 5) + 1}"
+        if "plan" in name:
+            return f"プラン{(base_index % 10) + 1}"
+        if "campaign" in name:
+            return f"キャンペーン{(base_index % 10) + 1}"
+        if "service" in name:
+            return f"サービス{(base_index % 10) + 1}"
+        if "name" in name:
+            return f"名称{(base_index % 20) + 1}"
+        return f"VAL{base_index % 1000}"
+
+    def resolve_bfs_accessories_value(self, column: ColumnSpec, context: dict[str, str], index: int) -> str:
+        """BFSサービスサマリ付属品の未指定列を列名規則で補完する。"""
+        if column.name in context:
+            return context[column.name]
+        base_index = int(context["base_index"])
+        if column.data_type.startswith("DECIMAL"):
+            return str(1 + (base_index % 50))
+        if "code" in column.name or "number" in column.name or column.name.endswith("_id"):
+            return self.values.code("AC", base_index + 1, 6)
+        if "color" in column.name:
+            return COLORS[base_index % len(COLORS)][0]
+        if "name" in column.name:
+            return f"付属品{(base_index % 20) + 1}"
         return f"VAL{base_index % 1000}"

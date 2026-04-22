@@ -71,7 +71,14 @@ def test_default_run_generates_all_expected_files(tmp_path: Path) -> None:
     assert files == [
         "bfs_entry_informations_all.csv",
         "bfs_entry_informations_diff.csv",
+        "bfs_service_summary_accessories_all.csv",
+        "bfs_service_summary_accessories_diff.csv",
+        "bfs_service_summary_devices_all.csv",
+        "bfs_service_summary_devices_diff.csv",
         "compass_sales_approval.csv",
+        "corp_customer_info_all_1.csv",
+        "corp_customer_info_all_2.csv",
+        "corp_customer_info_diff.csv",
         "m_agency_all.csv",
         "m_agency_diff.csv",
         "m_campaign_all.csv",
@@ -85,6 +92,13 @@ def test_default_run_generates_all_expected_files(tmp_path: Path) -> None:
     _, product_rows = read_csv(tmp_path, "m_product_all.csv")
     _, bfs_all_rows = read_csv(tmp_path, "bfs_entry_informations_all.csv")
     _, bfs_diff_rows = read_csv(tmp_path, "bfs_entry_informations_diff.csv")
+    _, bfs_device_all_rows = read_csv(tmp_path, "bfs_service_summary_devices_all.csv")
+    _, bfs_device_diff_rows = read_csv(tmp_path, "bfs_service_summary_devices_diff.csv")
+    _, bfs_accessories_all_rows = read_csv(tmp_path, "bfs_service_summary_accessories_all.csv")
+    _, bfs_accessories_diff_rows = read_csv(tmp_path, "bfs_service_summary_accessories_diff.csv")
+    _, dwh_all_1_rows = read_csv(tmp_path, "corp_customer_info_all_1.csv")
+    _, dwh_all_2_rows = read_csv(tmp_path, "corp_customer_info_all_2.csv")
+    _, dwh_diff_rows = read_csv(tmp_path, "corp_customer_info_diff.csv")
 
     assert len(campaign_rows) == 50
     assert len(agency_rows) == 1000
@@ -93,6 +107,13 @@ def test_default_run_generates_all_expected_files(tmp_path: Path) -> None:
     assert len(product_rows) == 1000
     assert len(bfs_all_rows) == 1000
     assert len(bfs_diff_rows) == 100
+    assert len(bfs_device_all_rows) == 1000
+    assert len(bfs_device_diff_rows) == 100
+    assert len(bfs_accessories_all_rows) == 1000
+    assert len(bfs_accessories_diff_rows) == 100
+    assert len(dwh_all_1_rows) == 500
+    assert len(dwh_all_2_rows) == 500
+    assert len(dwh_diff_rows) == 100
 
 
 def test_targets_campaign_only_generates_single_file(tmp_path: Path) -> None:
@@ -110,22 +131,39 @@ def test_targets_bfs_only_generates_two_files(tmp_path: Path) -> None:
     assert generated_files(tmp_path) == [
         "bfs_entry_informations_all.csv",
         "bfs_entry_informations_diff.csv",
+        "bfs_service_summary_accessories_all.csv",
+        "bfs_service_summary_accessories_diff.csv",
+        "bfs_service_summary_devices_all.csv",
+        "bfs_service_summary_devices_diff.csv",
+    ]
+
+
+def test_targets_corp_only_generates_three_files(tmp_path: Path) -> None:
+    """corp 指定では統一企業情報の3ファイルだけを生成する。"""
+    run_script(str(tmp_path), "--targets", "corp")
+    assert generated_files(tmp_path) == [
+        "corp_customer_info_all_1.csv",
+        "corp_customer_info_all_2.csv",
+        "corp_customer_info_diff.csv",
     ]
 
 
 def test_parse_targets_trims_values_and_defaults_when_empty() -> None:
     """target指定は前後空白を除去し、空なら全対象へ戻す。"""
     assert parse_targets(" campaign , bfs ") == ["campaign", "bfs"]
-    assert parse_targets(" , ") == ["agency", "bfs", "campaign", "compass", "product"]
+    assert parse_targets(" , ") == ["agency", "bfs", "campaign", "compass", "corp", "product"]
 
 
 def test_console_outputs_generated_file_names(tmp_path: Path) -> None:
-    completed = run_script(str(tmp_path), "--targets", "campaign,agency,compass")
+    completed = run_script(str(tmp_path), "--targets", "campaign,agency,compass,corp")
 
     assert "m_campaign_all.csv" in completed.stdout
     assert "m_agency_all.csv" in completed.stdout
     assert "m_agency_diff.csv" in completed.stdout
     assert "compass_sales_approval.csv" in completed.stdout
+    assert "corp_customer_info_all_1.csv" in completed.stdout
+    assert "corp_customer_info_all_2.csv" in completed.stdout
+    assert "corp_customer_info_diff.csv" in completed.stdout
     assert "m_product_all.csv" not in completed.stdout
 
 
@@ -141,6 +179,13 @@ def test_same_seed_is_deterministic(tmp_path: Path) -> None:
     for name in [
         "bfs_entry_informations_all.csv",
         "bfs_entry_informations_diff.csv",
+        "bfs_service_summary_accessories_all.csv",
+        "bfs_service_summary_accessories_diff.csv",
+        "bfs_service_summary_devices_all.csv",
+        "bfs_service_summary_devices_diff.csv",
+        "corp_customer_info_all_1.csv",
+        "corp_customer_info_all_2.csv",
+        "corp_customer_info_diff.csv",
         "m_campaign_all.csv",
         "m_agency_all.csv",
         "m_agency_diff.csv",
@@ -188,6 +233,13 @@ def test_csv_headers_start_with_business_keys(tmp_path: Path) -> None:
     product_header, _ = read_csv(tmp_path, "m_product_all.csv")
     bfs_all_header, _ = read_csv(tmp_path, "bfs_entry_informations_all.csv")
     bfs_diff_header, _ = read_csv(tmp_path, "bfs_entry_informations_diff.csv")
+    bfs_device_all_header, _ = read_csv(tmp_path, "bfs_service_summary_devices_all.csv")
+    bfs_device_diff_header, _ = read_csv(tmp_path, "bfs_service_summary_devices_diff.csv")
+    bfs_accessories_all_header, _ = read_csv(tmp_path, "bfs_service_summary_accessories_all.csv")
+    bfs_accessories_diff_header, _ = read_csv(tmp_path, "bfs_service_summary_accessories_diff.csv")
+    dwh_all_1_header, _ = read_csv(tmp_path, "corp_customer_info_all_1.csv")
+    dwh_all_2_header, _ = read_csv(tmp_path, "corp_customer_info_all_2.csv")
+    dwh_diff_header, _ = read_csv(tmp_path, "corp_customer_info_diff.csv")
 
     assert campaign_header[0] == "キャンペーンid"
     assert agency_header[0] == "取次店コード"
@@ -196,6 +248,13 @@ def test_csv_headers_start_with_business_keys(tmp_path: Path) -> None:
     assert product_header[0] == "商品コード"
     assert bfs_all_header[0] == "エントリ番号"
     assert bfs_diff_header[0] == "エントリ番号"
+    assert bfs_device_all_header[0] == "エントリ番号"
+    assert bfs_device_diff_header[0] == "エントリ番号"
+    assert bfs_accessories_all_header[0] == "エントリ番号"
+    assert bfs_accessories_diff_header[0] == "エントリ番号"
+    assert dwh_all_1_header[0] == "統一企業コード"
+    assert dwh_all_2_header[0] == "統一企業コード"
+    assert dwh_diff_header[0] == "統一企業コード"
     for header in (
         campaign_header,
         agency_header,
@@ -203,6 +262,13 @@ def test_csv_headers_start_with_business_keys(tmp_path: Path) -> None:
         product_header,
         bfs_all_header,
         bfs_diff_header,
+        bfs_device_all_header,
+        bfs_device_diff_header,
+        bfs_accessories_all_header,
+        bfs_accessories_diff_header,
+        dwh_all_1_header,
+        dwh_all_2_header,
+        dwh_diff_header,
     ):
         assert "id" not in header
 
@@ -217,6 +283,13 @@ def test_csv_headers_use_japanese_labels_from_format_spec(tmp_path: Path) -> Non
     product_header, _ = read_csv(tmp_path, "m_product_all.csv")
     bfs_all_header, _ = read_csv(tmp_path, "bfs_entry_informations_all.csv")
     bfs_diff_header, _ = read_csv(tmp_path, "bfs_entry_informations_diff.csv")
+    bfs_device_all_header, _ = read_csv(tmp_path, "bfs_service_summary_devices_all.csv")
+    bfs_device_diff_header, _ = read_csv(tmp_path, "bfs_service_summary_devices_diff.csv")
+    bfs_accessories_all_header, _ = read_csv(tmp_path, "bfs_service_summary_accessories_all.csv")
+    bfs_accessories_diff_header, _ = read_csv(tmp_path, "bfs_service_summary_accessories_diff.csv")
+    dwh_all_1_header, _ = read_csv(tmp_path, "corp_customer_info_all_1.csv")
+    dwh_all_2_header, _ = read_csv(tmp_path, "corp_customer_info_all_2.csv")
+    dwh_diff_header, _ = read_csv(tmp_path, "corp_customer_info_diff.csv")
 
     expected_headers = {
         "campaign": ["キャンペーンid", "キャンペーン名称", "説明", "有効開始日"],
@@ -224,6 +297,9 @@ def test_csv_headers_use_japanese_labels_from_format_spec(tmp_path: Path) -> Non
         "compass": ["決裁番号", "決裁件名", "ステータス", "申請日時"],
         "product": ["商品コード", "有効開始日", "有効開始時間", "有効終了日"],
         "bfs": ["エントリ番号", "件名", "作成区分", "オーダ種別"],
+        "bfs_device": ["エントリ番号", "サマリ番号", "回線数", "レンタルセット端末"],
+        "bfs_accessories": ["エントリ番号", "サマリ番号", "シリアル付付属品", "商品コード"],
+        "dwh": ["統一企業コード", "法人管理番号", "dunsnumber", "法人格コード"],
     }
 
     assert campaign_header[:4] == expected_headers["campaign"]
@@ -233,6 +309,13 @@ def test_csv_headers_use_japanese_labels_from_format_spec(tmp_path: Path) -> Non
     assert agency_header == diff_header
     assert bfs_all_header[:4] == expected_headers["bfs"]
     assert bfs_all_header == bfs_diff_header
+    assert bfs_device_all_header[:4] == expected_headers["bfs_device"]
+    assert bfs_device_all_header == bfs_device_diff_header
+    assert bfs_accessories_all_header[:4] == expected_headers["bfs_accessories"]
+    assert bfs_accessories_all_header == bfs_accessories_diff_header
+    assert dwh_all_1_header[:4] == expected_headers["dwh"]
+    assert dwh_all_1_header == dwh_all_2_header
+    assert dwh_all_1_header == dwh_diff_header
 
 
 def test_load_specs_can_read_a_directory_of_markdown_files(tmp_path: Path) -> None:
@@ -284,9 +367,57 @@ def test_load_specs_includes_bfs_entry_information() -> None:
     specs = load_specs(ROOT / "docs/format")
 
     assert "bfs" in specs
+    assert "bfs_device" in specs
+    assert "bfs_accessories" in specs
     assert len(specs["bfs"]) == 216
+    assert len(specs["bfs_device"]) == 502
+    assert len(specs["bfs_accessories"]) == 22
     assert [column.name for column in specs["bfs"][:4]] == ["entry_number", "subject", "creation_category", "order_type"]
     assert [column.header_label for column in specs["bfs"][:4]] == ["エントリ番号", "件名", "作成区分", "オーダ種別"]
+    assert [column.name for column in specs["bfs_device"][:4]] == [
+        "entry_number",
+        "summary_number",
+        "number_of_lines",
+        "rental_set_device",
+    ]
+    assert [column.header_label for column in specs["bfs_device"][:4]] == [
+        "エントリ番号",
+        "サマリ番号",
+        "回線数",
+        "レンタルセット端末",
+    ]
+    assert [column.name for column in specs["bfs_accessories"][:4]] == [
+        "entry_number",
+        "summary_number",
+        "serial_number_accessories",
+        "product_code",
+    ]
+    assert [column.header_label for column in specs["bfs_accessories"][:4]] == [
+        "エントリ番号",
+        "サマリ番号",
+        "シリアル付付属品",
+        "商品コード",
+    ]
+
+
+def test_load_specs_includes_dwh_unified_company_information() -> None:
+    """実フォーマットの DWH 統一企業情報定義が読み込める。"""
+    specs = load_specs(ROOT / "docs/format")
+
+    assert "dwh" in specs
+    assert len(specs["dwh"]) == 63
+    assert [column.name for column in specs["dwh"][:4]] == [
+        "統一企業コード",
+        "法人管理番号",
+        "dunsnumber",
+        "法人格コード",
+    ]
+    assert [column.header_label for column in specs["dwh"][:4]] == [
+        "統一企業コード",
+        "法人管理番号",
+        "dunsnumber",
+        "法人格コード",
+    ]
 
 
 def test_csv_rows_start_with_primary_business_keys(tmp_path: Path) -> None:
@@ -298,6 +429,13 @@ def test_csv_rows_start_with_primary_business_keys(tmp_path: Path) -> None:
     _, product_rows = read_csv(tmp_path, "m_product_all.csv")
     _, bfs_all_rows = read_csv(tmp_path, "bfs_entry_informations_all.csv")
     _, bfs_diff_rows = read_csv(tmp_path, "bfs_entry_informations_diff.csv")
+    _, bfs_device_all_rows = read_csv(tmp_path, "bfs_service_summary_devices_all.csv")
+    _, bfs_device_diff_rows = read_csv(tmp_path, "bfs_service_summary_devices_diff.csv")
+    _, bfs_accessories_all_rows = read_csv(tmp_path, "bfs_service_summary_accessories_all.csv")
+    _, bfs_accessories_diff_rows = read_csv(tmp_path, "bfs_service_summary_accessories_diff.csv")
+    _, dwh_all_1_rows = read_csv(tmp_path, "corp_customer_info_all_1.csv")
+    _, dwh_all_2_rows = read_csv(tmp_path, "corp_customer_info_all_2.csv")
+    _, dwh_diff_rows = read_csv(tmp_path, "corp_customer_info_diff.csv")
 
     expected_prefixes = {
         "campaign": "CP",
@@ -306,6 +444,13 @@ def test_csv_rows_start_with_primary_business_keys(tmp_path: Path) -> None:
         "compass": "LS",
         "bfs_all": "EN",
         "bfs_diff": "EN",
+        "bfs_device_all": "EN",
+        "bfs_device_diff": "EN",
+        "bfs_accessories_all": "EN",
+        "bfs_accessories_diff": "EN",
+        "dwh_all_1": "",
+        "dwh_all_2": "",
+        "dwh_diff": "",
     }
 
     for row in campaign_rows[:2]:
@@ -320,6 +465,45 @@ def test_csv_rows_start_with_primary_business_keys(tmp_path: Path) -> None:
         assert row[0].startswith(expected_prefixes["bfs_all"])
     for row in bfs_diff_rows[:2]:
         assert row[0].startswith(expected_prefixes["bfs_diff"])
+    for row in bfs_device_all_rows[:2]:
+        assert row[0].startswith(expected_prefixes["bfs_device_all"])
+    for row in bfs_device_diff_rows[:2]:
+        assert row[0].startswith(expected_prefixes["bfs_device_diff"])
+    for row in bfs_accessories_all_rows[:2]:
+        assert row[0].startswith(expected_prefixes["bfs_accessories_all"])
+    for row in bfs_accessories_diff_rows[:2]:
+        assert row[0].startswith(expected_prefixes["bfs_accessories_diff"])
+    for row in dwh_all_1_rows[:2]:
+        assert len(row[0]) > 0
+    for row in dwh_all_2_rows[:2]:
+        assert len(row[0]) > 0
+    for row in dwh_diff_rows[:2]:
+        assert len(row[0]) > 0
+
+
+def test_bfs_summary_files_reference_generated_bfs_entries(tmp_path: Path) -> None:
+    """BFSサービスサマリのキーが同一実行のBFSエントリと整合することを確認する。"""
+    run_script(str(tmp_path), "--targets", "bfs", "--seed", "7")
+
+    bfs_all_header, bfs_all_rows = read_csv(tmp_path, "bfs_entry_informations_all.csv")
+    device_all_header, device_all_rows = read_csv(tmp_path, "bfs_service_summary_devices_all.csv")
+    accessories_all_header, accessories_all_rows = read_csv(tmp_path, "bfs_service_summary_accessories_all.csv")
+
+    bfs_entry_numbers = {row[bfs_all_header.index("エントリ番号")] for row in bfs_all_rows}
+    device_entry_index = device_all_header.index("エントリ番号")
+    device_summary_index = device_all_header.index("サマリ番号")
+    accessories_entry_index = accessories_all_header.index("エントリ番号")
+    accessories_summary_index = accessories_all_header.index("サマリ番号")
+    linked_summary_index = accessories_all_header.index("紐付けサマリ番号")
+
+    for row in device_all_rows[:20]:
+        assert row[device_entry_index] in bfs_entry_numbers
+        assert row[device_summary_index].startswith("SM")
+
+    for row in accessories_all_rows[:20]:
+        assert row[accessories_entry_index] in bfs_entry_numbers
+        assert row[accessories_summary_index].startswith("SM")
+        assert row[linked_summary_index] == row[accessories_summary_index]
 
 
 def test_agency_diff_is_subset_of_agency_all(tmp_path: Path) -> None:
@@ -344,6 +528,60 @@ def test_default_run_fills_every_cell_in_all_csvs(tmp_path: Path) -> None:
     for name in generated_files(tmp_path):
         header, rows = read_csv(tmp_path, name)
         assert_all_cells_filled(header, rows, name)
+
+
+def test_dwh_company_codes_do_not_overlap_between_full_splits(tmp_path: Path) -> None:
+    """DWH 全量2分割の統一企業コードは相互に重複しない。"""
+    run_script(str(tmp_path), "--targets", "corp", "--seed", "7")
+
+    all_1_header, all_1_rows = read_csv(tmp_path, "corp_customer_info_all_1.csv")
+    _, all_2_rows = read_csv(tmp_path, "corp_customer_info_all_2.csv")
+    code_index = all_1_header.index("統一企業コード")
+
+    codes_1 = {row[code_index] for row in all_1_rows}
+    codes_2 = {row[code_index] for row in all_2_rows}
+    assert not (codes_1 & codes_2)
+
+
+def test_dwh_parent_and_invalidity_fields_are_consistent(tmp_path: Path) -> None:
+    """DWH の親企業・無効理由関連の最低限の整合を確認する。"""
+    run_script(str(tmp_path), "--targets", "corp", "--seed", "7")
+
+    header, rows = read_csv(tmp_path, "corp_customer_info_diff.csv")
+    company_code_index = header.index("統一企業コード")
+    parent_flag_index = header.index("親企業フラグ")
+    parent_company_index = header.index("親企業番号")
+    invalid_flag_index = header.index("有効無効フラグ")
+    invalid_reason_index = header.index("無効理由")
+    merged_company_index = header.index("合併企業番号")
+    registered_at_index = header.index("登録日時")
+    updated_at_index = header.index("更新日時")
+
+    assert rows
+    for row in rows[:30]:
+        company_code = row[company_code_index]
+        parent_flag = row[parent_flag_index]
+        parent_company = row[parent_company_index]
+        invalid_flag = row[invalid_flag_index]
+        invalid_reason = row[invalid_reason_index]
+        merged_company = row[merged_company_index]
+
+        if parent_flag == "1":
+            assert parent_company == company_code
+        else:
+            assert parent_company != ""
+
+        if invalid_flag == "1":
+            assert invalid_reason in {"10", "20", "30", "40"}
+        else:
+            assert invalid_reason == "0"
+
+        if invalid_reason == "10":
+            assert merged_company != "0"
+        else:
+            assert merged_company != ""
+
+        assert row[registered_at_index] <= row[updated_at_index]
 
 
 def test_campaign_old_flag_is_always_filled(tmp_path: Path) -> None:

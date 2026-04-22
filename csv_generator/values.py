@@ -10,6 +10,7 @@ from .config import COMPANY_WORDS
 KATAKANA_WORDS = ["ソフト", "モバイル", "リンク", "プラン", "サービス", "ネット", "ビジネス", "テック"]
 ENGLISH_WORDS = ["Mobile", "Business", "Cloud", "Link", "Smart", "Edge", "Network", "Store"]
 PERSON_NAME_KANAS = ["サトウタロウ", "スズキハナコ", "タナカイチロウ", "イノウエミホ", "ヤマモトケン"]
+CORPORATE_KINDS = ["株式会社", "有限会社", "合同会社", "一般社団法人"]
 
 
 def clip(value: str, max_length: int | None) -> str:
@@ -69,10 +70,28 @@ class ValueFactory:
         return self._cycled_word(ENGLISH_WORDS, index)
 
     def company_name(self, index: int) -> str:
+        """法人格付きの企業名を返す。"""
         return f"株式会社{self.katakana_word(index)}{COMPANY_WORDS[index % len(COMPANY_WORDS)]}"
 
     def company_short_name(self, index: int) -> str:
+        """法人格を含まない企業名略称を返す。"""
         return f"{self.katakana_word(index)}{COMPANY_WORDS[index % len(COMPANY_WORDS)]}"
+
+    def company_short_name_kana_half(self) -> str:
+        """半角カナ風の社名略称を返す。"""
+        return clip(self.faker.kana_name().replace(" ", "").replace("　", ""), 12)
+
+    def company_short_name_kana_full(self) -> str:
+        """全角カナ風の社名略称を返す。"""
+        return clip(self.faker.first_kana_name() + self.faker.last_kana_name(), 24)
+
+    def company_english_name(self, index: int) -> str:
+        """英字社名風の文字列を返す。"""
+        return f"{self.english_word(index)} {self.english_word(index + 1)} Inc."
+
+    def corporate_kind(self, index: int) -> str:
+        """法人格名を固定語彙から返す。"""
+        return self._cycled_word(CORPORATE_KINDS, index)
 
     def person_name(self) -> str:
         """日本語の氏名をスペースなしで返す。"""
