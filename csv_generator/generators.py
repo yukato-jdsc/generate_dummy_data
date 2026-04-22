@@ -16,7 +16,6 @@ from .config import (
     COMPASS_CORP_KINDS,
     COMPASS_SALES_CHANNELS,
     COMPASS_SERVICE_TYPES,
-    COMPASS_STATUSES,
     COMPANY_CATEGORY_NAMES,
     DEPARTMENTS,
     OPERATION_PERMISSION_NAMES,
@@ -446,8 +445,8 @@ class CsvGenerator:
         incentive = int(sales_amount * 0.03)
         agency_code = self.values.code("AG", (index % 5000) + 1, 10)
         shared_email_1 = self.values.email(index)
-        shared_email_2 = self.values.email(index + 1) if index % 3 == 0 else ""
-        shared_email_3 = self.values.email(index + 2) if index % 7 == 0 else ""
+        shared_email_2 = self.values.email(index + 1)
+        shared_email_3 = self.values.email(index + 2)
         project_summary = (
             f"案件名: {project_name}\n"
             f"提案回線数: {line_count}回線\n"
@@ -458,7 +457,7 @@ class CsvGenerator:
             "id": self.values.compass_id(index),
             "approval_number": approval_number,
             "approval_subject": f"{company_name}向け営業決裁 {index % 30 + 1}",
-            "status": COMPASS_STATUSES[index % len(COMPASS_STATUSES)],
+            "status": "承認",
             "date_and_time_of_application": ymdhms_millis(created_at),
             "approval_type": COMPASS_APPROVAL_TYPES[index % len(COMPASS_APPROVAL_TYPES)],
             "mobile_type": self.values.bool_flag(index, 2),
@@ -505,8 +504,8 @@ class CsvGenerator:
             "agency_collaboration_conditions": "設定なし" if index % 2 == 0 else "代理店決裁基準内",
             "borderline_payment_amount": "代理店決裁基準で定めた水際金額範囲内",
             "pre_approval_flag": "無" if index % 10 else "有",
-            "name_of_approved_person": self.values.person_name() if index % 10 == 0 else "",
-            "reason_for_post_approval": "契約開始希望日が直近であり、先行承認のうえ事後起案となったため" if index % 10 == 0 else "",
+            "name_of_approved_person": self.values.person_name(),
+            "reason_for_post_approval": "契約開始希望日が直近であり、先行承認のうえ事後起案となったため",
             "approver": self.values.code("0057F", index + 1, 10),
             "applicant": self.values.code("0055H", index + 1, 10),
             "orgl_route_proposers_duties": "本務",
@@ -518,7 +517,7 @@ class CsvGenerator:
             "contact_name": contact_name,
             "contact_phone_number": self.values.phone("070", 12_000_000 + index),
             "pre_confirmation": "有" if index % 4 == 0 else "無",
-            "pre_approval_consultation_name": f"事前相談{index % 40 + 1}" if index % 4 == 0 else "",
+            "pre_approval_consultation_name": f"事前相談{index % 40 + 1}",
             "project_name": project_name,
             "project_id": self.values.code("0065H", index + 1, 10),
             "company_name": company_name,
@@ -542,6 +541,7 @@ class CsvGenerator:
             "proposal_type": "追加新規" if index % 2 == 0 else "機種変更",
             "project_summary_1_summary": project_summary,
             "project_summary_2_summary": "価格条件、保守体制、請求運用、開始スケジュールを関係部門と調整済み。",
+            "other": str(line_count + 20),
             "expected_number_of_lines_maximum": str(line_count + 20),
             "applicable_platform_discount_rate_percent": str(5 + (index % 20)),
             "channel": COMPASS_SALES_CHANNELS[index % len(COMPASS_SALES_CHANNELS)],
@@ -583,8 +583,8 @@ class CsvGenerator:
             "payment_date": f"{(execution_date + timedelta(days=30)):%Y/%m}",
             "total_sales_amount_yen": str(sales_amount + 120_000),
             "invoice_reissue": "無",
-            "related_approvals_compass": approval_number if index % 12 == 0 else "",
-            "approval_request_number_other_than_compass": f"RNG{index:06d}" if index % 7 == 0 else "",
+            "related_approvals_compass": approval_number,
+            "approval_request_number_other_than_compass": f"RNG{index:06d}",
             "solution_sales_management_system_quote_number": str(20_260_000 + index),
             "asset_db_number": self.values.code("AST", index + 1, 8),
             "agency_application_number": self.values.code("APN", index + 1, 8),
@@ -624,14 +624,14 @@ class CsvGenerator:
             "estimate_sheet_presence_absence": "有" if index % 2 == 0 else "無",
             "product_pre_consultation": "有" if index % 4 == 0 else "無",
             "mobile_p2p_consultation_approval_conditions": "粗利率、契約期間、回線数の条件を満たすこと",
-            "pre_consultation_approval_conditions": "部門長の事前確認を得ていること" if index % 4 == 0 else "",
+            "pre_consultation_approval_conditions": "部門長の事前確認を得ていること",
             "summary_supplement_applicant_only": "申請者メモ: 導入スケジュールに余裕がないため早期判断希望",
             "approval_date_and_time_unixtime": str(int(approval_at.timestamp())),
             "comment_1": "営業部一次確認済み",
             "comment_2": "法務確認不要" if index % 6 else "法務確認済み",
-            "comment_3": "与信確認結果反映済み" if index % 5 == 0 else "",
-            "comment_4": "",
-            "comment_5": "",
+            "comment_3": "与信確認結果反映済み",
+            "comment_4": "試算条件の差分を確認済み",
+            "comment_5": "関係部門へ共有済み",
             "shared_email_address_1": shared_email_1,
             "shared_email_address_2": shared_email_2,
             "shared_email_address_3": shared_email_3,
@@ -651,7 +651,7 @@ class CsvGenerator:
             "approvers_user_id": self.values.employee_id(index + 30),
             "approvers_user_name": self.values.person_name(),
             "last_processing_date_and_time": ymdhms_millis(approval_at + timedelta(hours=3)),
-            "approval_history": f"{ymd_dash(created_at.date())} 申請 / {ymd_dash(approval_at.date())} 承認 / 担当: {person_name}",
+            "approval_history": "",
         }
 
     def _product_context(self, index: int) -> dict[str, str]:

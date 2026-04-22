@@ -212,3 +212,53 @@ def test_default_output_sizes_follow_document_ratio_targets(tmp_path: Path) -> N
     for name, target_size in TARGET_SIZES.items():
         scaled_target = target_size * (DEFAULT_ROW_COUNTS[name] / FULL_ROW_COUNTS[name])
         assert_size_within_tolerance(tmp_path / name, scaled_target)
+
+
+def test_compass_rows_keep_major_business_columns_filled(tmp_path: Path) -> None:
+    """営業決裁の主要業務列が空欄化されないことを確認する。"""
+    run_script(str(tmp_path), "--targets", "compass", "--seed", "7")
+
+    header, rows = read_csv(tmp_path, "compass_sales_approval.csv")
+    target_columns = [
+        "ステータス",
+        "申請日時",
+        "決裁種別",
+        "起案者名",
+        "起案者電話番号",
+        "起案者の所属組織情報一覧",
+        "販路",
+        "案件名",
+        "企業名",
+        "売上（円）",
+        "営業利益（円）",
+        "閲覧範囲",
+        "追加・変更内容",
+        "承認日時",
+        "集約番号",
+        "請求形態",
+        "開通工事費無料",
+        "負担内容1",
+        "見込回線数（上限）",
+        "追加情報欄",
+        "要旨補足（申請者専用）",
+        "試算シート番号",
+        "起案者部署",
+        "申請者（ユーザー名）",
+    ]
+    indexes = [header.index(name) for name in target_columns]
+
+    for row in rows[:5]:
+        for index in indexes:
+            assert row[index] != ""
+
+
+def test_compass_status_is_fixed_to_approved_and_history_is_empty(tmp_path: Path) -> None:
+    """営業決裁のステータス固定と承認履歴空欄を確認する。"""
+    run_script(str(tmp_path), "--targets", "compass", "--seed", "7")
+
+    header, rows = read_csv(tmp_path, "compass_sales_approval.csv")
+    status_index = header.index("ステータス")
+    history_index = header.index("承認履歴")
+
+    assert {row[status_index] for row in rows} == {"承認"}
+    assert {row[history_index] for row in rows} == {""}

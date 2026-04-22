@@ -2,8 +2,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .config import ColumnSpec
-from .config import DOCUMENT_TARGET_SIZES, FULL_COUNTS, SIZE_FILLER_TEXT, SIZE_GROW_COLUMNS
+from .config import (
+    COMPASS_COMPACT_COLUMNS,
+    COMPASS_KEEP_COLUMNS,
+    COMPASS_SHRINK_PRIORITY_COLUMNS,
+    DOCUMENT_TARGET_SIZES,
+    FULL_COUNTS,
+    SIZE_FILLER_TEXT,
+    SIZE_GROW_COLUMNS,
+    ColumnSpec,
+)
 
 
 UTF8_BOM_SIZE = 3
@@ -15,6 +23,7 @@ class RowSizeProfile:
 
     grow_columns: tuple[str, ...]
     shrink_columns: tuple[str, ...]
+    compact_columns: tuple[str, ...]
     filler_text: str
 
 
@@ -40,13 +49,35 @@ def target_row_size_bytes(columns: list[ColumnSpec], output_key: str, row_count:
 
 def build_row_size_profile(columns: list[ColumnSpec], output_key: str, keep_columns: set[str] | None = None) -> RowSizeProfile:
     """列定義からCSV種別ごとのサイズ調整プロファイルを構築する。"""
-    keep_columns = keep_columns or set()
-    shrink_columns = tuple(column.name for column in columns if column.name not in keep_columns)
+    keep_columns = set(keep_columns or set())
+    compact_columns: tuple[str, ...] = ()
+    preferred_shrink_columns: tuple[str, ...] = ()
+    if output_key == "compass":
+        keep_columns.update(COMPASS_KEEP_COLUMNS)
+        compact_columns = COMPASS_COMPACT_COLUMNS
+        preferred_shrink_columns = COMPASS_SHRINK_PRIORITY_COLUMNS
+    remaining_columns = [column.name for column in columns if column.name not in keep_columns]
+    shrink_columns = _ordered_shrink_columns(remaining_columns, preferred_shrink_columns)
     return RowSizeProfile(
         grow_columns=SIZE_GROW_COLUMNS.get(output_key, ()),
         shrink_columns=shrink_columns,
+        compact_columns=compact_columns,
         filler_text=SIZE_FILLER_TEXT.get(output_key, "補足情報"),
     )
+
+
+def _ordered_shrink_columns(columns: list[str], preferred_columns: tuple[str, ...]) -> tuple[str, ...]:
+    """優先指定列を先頭にした縮小順を返す。"""
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for name in preferred_columns:
+        if name in columns and name not in seen:
+            ordered.append(name)
+            seen.add(name)
+    for name in columns:
+        if name not in seen:
+            ordered.append(name)
+    return tuple(ordered)
 
 
 class RowSizeAdjuster:
@@ -63,10 +94,23 @@ class RowSizeAdjuster:
         """行を目標バイト数へ近づくように短文化または補足語で調整する。"""
         current = row_size_bytes(row)
         if current > self.target_bytes:
+            current = self._compact(row, current)
+        if current > self.target_bytes:
             current = self._shrink(row, current)
         if current < self.target_bytes:
             self._grow(row, current)
         return row
+
+    def _compact(self, row: list[str], current: int) -> int:
+        """長文列を短文化して、重要列を残したまま行サイズを下げる。"""
+        for name in self.profile.compact_columns:
+            if current <= self.target_bytes:
+                break
+            index = self.name_to_index.get(name)
+            if index is None or not row[index]:
+                continue
+            current = self._compact_column(row, index, current)
+        return current
 
     def _shrink(self, row: list[str], current: int) -> int:
         """優先列を空欄化して行サイズを縮小する。"""
@@ -114,3 +158,24 @@ class RowSizeAdjuster:
                 break
         row[index] = value
         return current
+
+    def _compact_column(self, row: list[str], index: int, current: int) -> int:
+        """単一列を読みやすさを保つ最小限まで短文化する。"""
+        value = row[index]
+        max_length = self.max_lengths[index]
+        compact_value = self._truncate_text(value, 48, max_length)
+        if compact_value == value:
+            return current
+        current -= len(value.encode("utf-8"))
+        row[index] = compact_value
+        current += len(compact_value.encode("utf-8"))
+        return current
+
+    def _truncate_text(self, value: str, minimum_length: int, max_length: int | None) -> str:
+        """値の先頭情報を残したまま、短い要約長へ切り詰める。"""
+        if len(value) <= minimum_length:
+            return value
+        truncated = value[:minimum_length].rstrip()
+        if max_length is not None:
+            truncated = truncated[:max_length]
+        return truncated
