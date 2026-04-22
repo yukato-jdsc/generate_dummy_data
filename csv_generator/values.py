@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from datetime import date
+from datetime import date, datetime
 
 from faker import Faker
 
@@ -25,6 +25,16 @@ def hms(hour: int, minute: int, second: int = 0) -> str:
     return f"{hour:02d}:{minute:02d}:{second:02d}"
 
 
+def ymd_dash(value: date) -> str:
+    """日付を `YYYY-MM-DD` 形式へ変換する。"""
+    return value.strftime("%Y-%m-%d")
+
+
+def ymdhms_millis(value: datetime) -> str:
+    """日時をミリ秒付き `YYYY-MM-DDTHH:MM:SS.mmm` 形式へ変換する。"""
+    return value.strftime("%Y-%m-%dT%H:%M:%S.") + f"{value.microsecond // 1000:03d}"
+
+
 class ValueFactory:
     """ダミーデータ生成で再利用する文字列・コード・名称の共通生成器。"""
 
@@ -40,6 +50,14 @@ class ValueFactory:
     def code(self, prefix: str, number: int, width: int = 8) -> str:
         """接頭辞付きの業務コード風文字列を生成する。"""
         return f"{prefix}{self.number_string(width, number)}"
+
+    def sequential_id(self, index: int) -> str:
+        """数値連番の `id` を1始まりの文字列で返す。"""
+        return str(index + 1)
+
+    def compass_id(self, index: int) -> str:
+        """営業決裁CSV向けの業務コード風 `id` を返す。"""
+        return self.code("CM", index + 1, 10)
 
     def katakana_word(self, index: int) -> str:
         words = ["ソフト", "モバイル", "リンク", "プラン", "サービス", "ネット", "ビジネス", "テック"]
@@ -76,3 +94,15 @@ class ValueFactory:
     def decimal_value(self, index: int, modulo: int = 9, minimum: int = 0) -> str:
         """DECIMAL列向けの簡易な数値文字列を返す。"""
         return str(minimum + (index % modulo))
+
+    def bool_flag(self, index: int, true_every: int = 2) -> str:
+        """一定周期で `t` と `f` を返す。"""
+        return "t" if index % true_every == 0 else "f"
+
+    def employee_id(self, index: int) -> str:
+        """営業担当者向けの社員番号風文字列を返す。"""
+        return self.number_string(7, 1_100_000 + index)
+
+    def email(self, index: int) -> str:
+        """共有用メールアドレス向けの文字列を返す。"""
+        return f"shared{index % 1000:03d}@example.jp"

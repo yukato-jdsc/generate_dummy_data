@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from .config import (
@@ -10,6 +10,13 @@ from .config import (
     CAMPAIGN_PREFIXES,
     CAMPAIGN_SUFFIXES,
     COLORS,
+    COMPASS_APPROVAL_TYPES,
+    COMPASS_APPROVER_LAYERS,
+    COMPASS_BILLING_FORMS,
+    COMPASS_CORP_KINDS,
+    COMPASS_SALES_CHANNELS,
+    COMPASS_SERVICE_TYPES,
+    COMPASS_STATUSES,
     COMPANY_CATEGORY_NAMES,
     DEPARTMENTS,
     OPERATION_PERMISSION_NAMES,
@@ -21,7 +28,7 @@ from .config import (
 )
 from .io import open_csv_writer, write_csv
 from .size_control import RowSizeAdjuster, build_row_size_profile, target_row_size_bytes
-from .values import ValueFactory, clip, hms, ymd
+from .values import ValueFactory, clip, hms, ymd, ymd_dash, ymdhms_millis
 
 
 class CsvGenerator:
@@ -38,10 +45,11 @@ class CsvGenerator:
     def _build_row_adjusters(self) -> dict[str, RowSizeAdjuster]:
         """出力種別ごとのサイズ調整器を初期化する。"""
         return {
-            "campaign": self._build_row_adjuster("campaign", "campaign"),
+            "campaign": self._build_row_adjuster("campaign", "campaign", {"id"}),
             "agency_all": self._build_row_adjuster("agency_all", "agency", AGENCY_ALL_KEEP_COLUMNS),
-            "agency_diff": self._build_row_adjuster("agency_diff", "agency", {"agent_code"}),
-            "product": self._build_row_adjuster("product", "product"),
+            "agency_diff": self._build_row_adjuster("agency_diff", "agency", {"id", "agent_code"}),
+            "compass": self._build_row_adjuster("compass", "compass", {"id"}),
+            "product": self._build_row_adjuster("product", "product", {"id"}),
         }
 
     def _build_row_adjuster(
@@ -66,6 +74,7 @@ class CsvGenerator:
             end = start + timedelta(days=90 + (index % 180))
             name = self._campaign_name(index)
             context = {
+                "id": self.values.sequential_id(index),
                 "campaign_id": self.values.code("CP", index + 1, 10),
                 "campaign_name": name,
                 "description": f"{name}のテスト投入用データ",
@@ -104,6 +113,17 @@ class CsvGenerator:
     def _header_labels(self, spec_key: str) -> list[str]:
         """指定した仕様キーのヘッダー表示名一覧を返す。"""
         return [column.header_label for column in self.specs[spec_key]]
+
+    def write_compass_file(self, output_dir: Path) -> None:
+        """営業決裁CSVを逐次書き出しする。"""
+        headers = self._header_labels("compass")
+        handle, writer = open_csv_writer(output_dir / OUTPUT_FILES["compass"])
+        try:
+            writer.writerow(headers)
+            for index in range(self.counts["compass"]):
+                writer.writerow(self._fit_row("compass", self._compass_row(self._compass_context(index), index)))
+        finally:
+            handle.close()
 
     def _update_reservoir(
         self,
@@ -145,6 +165,7 @@ class CsvGenerator:
         primary_index = (index // 10) + 1
         aggregated_index = (index // 5) + 1
         return {
+            "id": self.values.sequential_id(index),
             "agent_code": self.values.code("AG", index + 1, 10),
             "valid_start_date": ymd(start),
             "valid_end_date": ymd(end),
@@ -388,6 +409,13 @@ class CsvGenerator:
             rows.append(self._fit_row("product", self._product_row(context, index)))
         return rows
 
+    def compass_rows(self) -> list[list[str]]:
+        """営業決裁CSVの全行をメモリ上で生成する。"""
+        rows = []
+        for index in range(self.counts["compass"]):
+            rows.append(self._fit_row("compass", self._compass_row(self._compass_context(index), index)))
+        return rows
+
     def _product_row(self, context: dict[str, str], index: int) -> list[str]:
         """商品文脈を列順の行へ変換する。"""
         return [clip(self.resolve_product_value(column, context, index), column.max_length) for column in self.specs["product"]]
@@ -396,6 +424,236 @@ class CsvGenerator:
         """取次店文脈を列順の行へ変換する。"""
         return [clip(self.resolve_agency_value(column, context, index), column.max_length) for column in self.specs["agency"]]
 
+    def _compass_row(self, context: dict[str, str], index: int) -> list[str]:
+        """営業決裁文脈を列順の行へ変換する。"""
+        return [clip(self.resolve_compass_value(column, context, index), column.max_length) for column in self.specs["compass"]]
+
+    def _compass_context(self, index: int) -> dict[str, str]:
+        """営業決裁1行ぶんの主要属性を組み立てる。"""
+        created_at = datetime(2025, 1, 1, 9, 0, 0) + timedelta(hours=index * 7)
+        approval_at = created_at + timedelta(days=(index % 5) + 1, minutes=30)
+        execution_date = BASE_DATE + timedelta(days=index % 90)
+        expiration_date = execution_date + timedelta(days=180)
+        company_name = self.values.company_name(index)
+        person_name = self.values.person_name()
+        contact_name = self.values.person_name()
+        approval_number = f"LS{1_000_000 + index:07d}"
+        project_name = f"{company_name}向けモバイル提案{index % 50 + 1}"
+        line_count = 10 + (index % 120)
+        sales_amount = 500_000 + (index % 500) * 25_000
+        contribution = int(sales_amount * 0.18)
+        operating_profit = int(sales_amount * 0.12)
+        incentive = int(sales_amount * 0.03)
+        agency_code = self.values.code("AG", (index % 5000) + 1, 10)
+        shared_email_1 = self.values.email(index)
+        shared_email_2 = self.values.email(index + 1) if index % 3 == 0 else ""
+        shared_email_3 = self.values.email(index + 2) if index % 7 == 0 else ""
+        project_summary = (
+            f"案件名: {project_name}\n"
+            f"提案回線数: {line_count}回線\n"
+            f"希望開始日: {ymd_dash(execution_date)}\n"
+            f"提案条件: 法人向け標準プランをベースに個別調整を実施"
+        )
+        return {
+            "id": self.values.compass_id(index),
+            "approval_number": approval_number,
+            "approval_subject": f"{company_name}向け営業決裁 {index % 30 + 1}",
+            "status": COMPASS_STATUSES[index % len(COMPASS_STATUSES)],
+            "date_and_time_of_application": ymdhms_millis(created_at),
+            "approval_type": COMPASS_APPROVAL_TYPES[index % len(COMPASS_APPROVAL_TYPES)],
+            "mobile_type": self.values.bool_flag(index, 2),
+            "voice_type": self.values.bool_flag(index + 1, 5),
+            "voice_otoku_hikari_type": self.values.bool_flag(index + 2, 9),
+            "id_data_type": self.values.bool_flag(index + 3, 4),
+            "is_ni_product_type": self.values.bool_flag(index + 4, 6),
+            "phs_type": "f",
+            "common_discounts_etc": self.values.bool_flag(index + 5, 3),
+            "common_corporate_consolidated_billing": self.values.bool_flag(index + 6, 4),
+            "common_test_lines": self.values.bool_flag(index + 7, 8),
+            "mobile_approval_pattern_a": self.values.bool_flag(index + 8, 2),
+            "mobile_approval_pattern_c": self.values.bool_flag(index + 9, 5),
+            "mobile_approval_pattern_e": self.values.bool_flag(index + 10, 7),
+            "mobile_incentive_adjustment_increase": self.values.bool_flag(index + 11, 6),
+            "mobile_resale_or_rental_companies": self.values.bool_flag(index + 12, 4),
+            "mobile_deposits_joint_guarantees_credit_relaxation": self.values.bool_flag(index + 13, 9),
+            "common_qa_review_cases": self.values.bool_flag(index + 14, 5),
+            "special_debt_collection": self.values.bool_flag(index + 15, 11),
+            "construction_industry_law": self.values.bool_flag(index + 16, 13),
+            "agency_code_change": self.values.bool_flag(index + 17, 10),
+            "refund_fee_reduction": self.values.bool_flag(index + 18, 6),
+            "agency_contract": self.values.bool_flag(index + 19, 4),
+            "reseller_contract": self.values.bool_flag(index + 20, 7),
+            "other_type": self.values.bool_flag(index + 21, 15),
+            "originators_name": person_name,
+            "originators_phone_number": self.values.phone("03", 10_000_000 + index),
+            "affiliated_org_address_list": f"{DEPARTMENTS[index % len(DEPARTMENTS)]}/法人営業統括/営業1課",
+            "source_aggregation_sheet_info": self.values.code("a7s", index + 1, 12),
+            "aggregation_number": str(20_250_000_000_000 + index),
+            "scheduled_execution_date": ymd_dash(execution_date),
+            "approval_document_period_months": str(12 + (index % 36)),
+            "credit_alert": "有" if index % 4 == 0 else "無",
+            "whether_credit_review": "有" if index % 5 == 0 else "無",
+            "credit_review_request_name_compass": f"CR{execution_date:%Y%m%d}{index % 1000:03d}" if index % 5 == 0 else "",
+            "credit_review_request_name_bfs": f"BFS{execution_date:%Y%m%d}{index % 1000:03d}" if index % 8 == 0 else "",
+            "whether_legal_pre_review_conducted": "有" if index % 6 == 0 else "無",
+            "legal_pre_review_request_number": f"LG{index:06d}" if index % 6 == 0 else "",
+            "re_approval_draft_flag": "有" if index % 9 == 0 else "無",
+            "service_type": COMPASS_SERVICE_TYPES[index % len(COMPASS_SERVICE_TYPES)],
+            "sales_channel": COMPASS_SALES_CHANNELS[index % len(COMPASS_SALES_CHANNELS)],
+            "legal_personal_classification": COMPASS_CORP_KINDS[index % len(COMPASS_CORP_KINDS)],
+            "billing_form": COMPASS_BILLING_FORMS[index % len(COMPASS_BILLING_FORMS)],
+            "agency_collaboration_conditions": "設定なし" if index % 2 == 0 else "代理店決裁基準内",
+            "borderline_payment_amount": "代理店決裁基準で定めた水際金額範囲内",
+            "pre_approval_flag": "無" if index % 10 else "有",
+            "name_of_approved_person": self.values.person_name() if index % 10 == 0 else "",
+            "reason_for_post_approval": "契約開始希望日が直近であり、先行承認のうえ事後起案となったため" if index % 10 == 0 else "",
+            "approver": self.values.code("0057F", index + 1, 10),
+            "applicant": self.values.code("0055H", index + 1, 10),
+            "orgl_route_proposers_duties": "本務",
+            "orgl_route_sales_duties": "本務",
+            "sales_representatives_list": f"{DEPARTMENTS[index % len(DEPARTMENTS)]}/法人営業第{index % 5 + 1}部",
+            "comprehensive_approval": self.values.bool_flag(index + 22, 8),
+            "group_comprehensive_approval": self.values.bool_flag(index + 23, 11),
+            "used_in_other_projects": self.values.bool_flag(index + 24, 9),
+            "contact_name": contact_name,
+            "contact_phone_number": self.values.phone("070", 12_000_000 + index),
+            "pre_confirmation": "有" if index % 4 == 0 else "無",
+            "pre_approval_consultation_name": f"事前相談{index % 40 + 1}" if index % 4 == 0 else "",
+            "project_name": project_name,
+            "project_id": self.values.code("0065H", index + 1, 10),
+            "company_name": company_name,
+            "uniform_company_code": self.values.code("UC", index + 1, 8),
+            "tsr_rating": str(50 + (index % 40)),
+            "number_of_lines": str(line_count),
+            "contract_period_months": str(12 + (index % 24)),
+            "contract_start_date": ymd_dash(execution_date),
+            "number_of_lines_attended_opening": str(index % 10),
+            "activation_installation_fee": "無料" if index % 3 == 0 else "有料",
+            "free_installation_and_additional_service_fee": "無料" if index % 4 == 0 else "有料",
+            "free_installation_fee": "開通工事費支援",
+            "banner_installation_fee_additional_services": str(3_000 + (index % 10) * 500),
+            "cost_1": str(10_000 + (index % 12) * 2_000),
+            "cost_monthly_per_yen1": "月額値引き",
+            "cost_lump_sum_per_yen1": str(1_000 + (index % 8) * 300),
+            "cost_monthly_per_yen2": str(5_000 + (index % 10) * 700),
+            "cost_lump_sum_per_yen2": "事務手数料減免",
+            "cost_monthly_per_yen3": str(800 + (index % 6) * 200),
+            "cost_lump_sum_per_yen3": str(3_000 + (index % 5) * 400),
+            "proposal_type": "追加新規" if index % 2 == 0 else "機種変更",
+            "project_summary_1_summary": project_summary,
+            "project_summary_2_summary": "価格条件、保守体制、請求運用、開始スケジュールを関係部門と調整済み。",
+            "expected_number_of_lines_maximum": str(line_count + 20),
+            "applicable_platform_discount_rate_percent": str(5 + (index % 20)),
+            "channel": COMPASS_SALES_CHANNELS[index % len(COMPASS_SALES_CHANNELS)],
+            "exemption_deduction": "有" if index % 3 == 0 else "無",
+            "exemption_amount_yen": str(50_000 + (index % 30) * 5_000 if index % 3 == 0 else 0),
+            "sales_yen": str(sales_amount),
+            "variable_operating_profit_yen": str(int(sales_amount * 0.25)),
+            "variable_operating_profit_margin_percent": str(25),
+            "operating_contribution_margin_yen": str(contribution),
+            "operating_contribution_margin_margin_percent": str(18),
+            "operating_profit_yen": str(operating_profit),
+            "operating_profit_margin_percent": str(12),
+            "voice_sales_contribution_margin_yen": str(int(sales_amount * 0.04)),
+            "voice_sales_contribution_margin_margin_percent": str(4),
+            "id_data_approval_base_profit_yen": str(int(sales_amount * 0.03)),
+            "id_data_approval_base_profit_margin_percent": str(3),
+            "is_ni_product_sales_approval_base_profit_yen": str(int(sales_amount * 0.02)),
+            "is_ni_product_sales_approval_base_profit_margin_percent": str(2),
+            "mobile_sales_contribution_margin_yen": str(int(sales_amount * 0.14)),
+            "mobile_sales_contribution_margin_margin_percent": str(14),
+            "agency_information_manual_input_flag": self.values.bool_flag(index + 25, 6),
+            "agency_name_reference": self.values.company_name(index + 20),
+            "agency_name_estimate": self.values.company_name(index + 30),
+            "agency_code": agency_code,
+            "commission_rate_percent_incent": str(3 + (index % 8)),
+            "incentive_amount_yen": str(incentive),
+            "reason_for_collaboration": "対応エリアおよび保守体制の要件を満たすため" if index % 2 else "",
+            "automatic_renewal": "有" if index % 2 == 0 else "無",
+            "sbm_line_count_upper": str(line_count),
+            "sbm_line_count_lower": str(max(1, line_count - 8)),
+            "mobile_ym_line_count_upper": str(index % 25),
+            "mobile_ym_line_count_lower": str(max(0, (index % 25) - 3)),
+            "total_external_expenses_purchases_yen": str(int(sales_amount * 0.35)),
+            "voice_otoku_hikari_phone_sales_contribution_margin_yen": str(int(sales_amount * 0.01)),
+            "voice_otoku_hikari_phone_sales_contribution_margin_rate_percent": "1",
+            "deduction_adjustment_refund_recovery_amount_yen": str(30_000 + (index % 10) * 1_000 if index % 3 == 0 else 0),
+            "total_external_expenses_yen": str(int(sales_amount * 0.28)),
+            "applicable_period": f"{execution_date:%Y/%m} - {(execution_date + timedelta(days=180)):%Y/%m}",
+            "payment_date": f"{(execution_date + timedelta(days=30)):%Y/%m}",
+            "total_sales_amount_yen": str(sales_amount + 120_000),
+            "invoice_reissue": "無",
+            "related_approvals_compass": approval_number if index % 12 == 0 else "",
+            "approval_request_number_other_than_compass": f"RNG{index:06d}" if index % 7 == 0 else "",
+            "solution_sales_management_system_quote_number": str(20_260_000 + index),
+            "asset_db_number": self.values.code("AST", index + 1, 8),
+            "agency_application_number": self.values.code("APN", index + 1, 8),
+            "agency_application_number_sd_wf": self.values.code("SDW", index + 1, 8),
+            "notes": f"案件{index % 100 + 1}の補足。先方要望に応じて社内確認済み。",
+            "viewability": "全社員に開示",
+            "additions_changes": "回線数、初期費用、保守条件を更新",
+            "inputter": self.values.person_name(),
+            "input_date": ymdhms_millis(created_at),
+            "contractual_condition_1": "開始希望日までに契約条件確認が完了していること",
+            "contractual_condition_2": "与信確認結果に重大懸念がないこと",
+            "create_sub_approval_from_flow_flag": self.values.bool_flag(index + 26, 9),
+            "private_flag": "f",
+            "approval_date": ymdhms_millis(approval_at),
+            "business_category": "モバイル",
+            "expiration_date": ymd_dash(expiration_date),
+            "additional_information_field": "営業判断メモおよび事前相談結果を記載",
+            "based_proposal_approval": f"PR{index:06d}" if index % 5 == 0 else "",
+            "approval_content": "【共通】値引きなど",
+            "approval_route_criteria": "営業担当者情報から申請者・同意者・承認者をセット",
+            "supplier_credit": "f",
+            "valid_flg": "t",
+            "record_id_formula": self.values.code("a1IJ2", index + 1, 10),
+            "creator_id": self.values.code("0057F", index + 1, 10),
+            "creation_date": ymdhms_millis(created_at - timedelta(days=2)),
+            "deleted_flg": "f",
+            "last_updated_by_id": self.values.code("0057F", index + 5, 10),
+            "last_updated_date": ymdhms_millis(approval_at + timedelta(days=1)),
+            "last_reference_date": ymdhms_millis(approval_at + timedelta(days=2)),
+            "last_viewed_date": ymdhms_millis(approval_at + timedelta(days=3)),
+            "owner_id": self.values.code("0057F", index + 3, 10),
+            "record_type_id": self.values.code("012J2", index + 1, 10),
+            "systemmodstamp": ymdhms_millis(approval_at + timedelta(days=1, hours=2)),
+            "estimate_sheet_number": f"SN{created_at:%Y%m%d}{index % 100000:05d}",
+            "summit_data_migration_flag": self.values.bool_flag(index + 27, 20),
+            "credit_review_request_name_compass_presence_absence": "t" if index % 5 == 0 else "f",
+            "estimate_sheet_presence_absence": "有" if index % 2 == 0 else "無",
+            "product_pre_consultation": "有" if index % 4 == 0 else "無",
+            "mobile_p2p_consultation_approval_conditions": "粗利率、契約期間、回線数の条件を満たすこと",
+            "pre_consultation_approval_conditions": "部門長の事前確認を得ていること" if index % 4 == 0 else "",
+            "summary_supplement_applicant_only": "申請者メモ: 導入スケジュールに余裕がないため早期判断希望",
+            "approval_date_and_time_unixtime": str(int(approval_at.timestamp())),
+            "comment_1": "営業部一次確認済み",
+            "comment_2": "法務確認不要" if index % 6 else "法務確認済み",
+            "comment_3": "与信確認結果反映済み" if index % 5 == 0 else "",
+            "comment_4": "",
+            "comment_5": "",
+            "shared_email_address_1": shared_email_1,
+            "shared_email_address_2": shared_email_2,
+            "shared_email_address_3": shared_email_3,
+            "proposers_common_employee_id": self.values.employee_id(index),
+            "proposers_dept": DEPARTMENTS[index % len(DEPARTMENTS)],
+            "proposal_dept_org_code_headquarters": self.values.code("HB", index + 1, 5),
+            "proposal_dept_org_general_affairs_dept": self.values.code("TB", index + 1, 5),
+            "proposal_dept_org_code_dept": self.values.code("DP", index + 1, 5),
+            "applicants_group_name": "申請者グループ",
+            "applicants_user_id": self.values.employee_id(index + 10),
+            "applicants_user_name": person_name,
+            "consenters_group_name": "同意者グループ",
+            "consenters_user_id": self.values.employee_id(index + 20),
+            "consenters_user_name": self.values.person_name(),
+            "approvers_layer": COMPASS_APPROVER_LAYERS[index % len(COMPASS_APPROVER_LAYERS)],
+            "approvers_group_name": "承認者グループ",
+            "approvers_user_id": self.values.employee_id(index + 30),
+            "approvers_user_name": self.values.person_name(),
+            "last_processing_date_and_time": ymdhms_millis(approval_at + timedelta(hours=3)),
+            "approval_history": f"{ymd_dash(created_at.date())} 申請 / {ymd_dash(approval_at.date())} 承認 / 担当: {person_name}",
+        }
+
     def _product_context(self, index: int) -> dict[str, str]:
         """商品1行ぶんの主要属性をテンプレートから組み立てる。"""
         template = PRODUCT_TEMPLATES[index % len(PRODUCT_TEMPLATES)]
@@ -403,6 +661,7 @@ class CsvGenerator:
         start = BASE_DATE - timedelta(days=index % 400)
         end = start + timedelta(days=730)
         return {
+            "id": self.values.sequential_id(index),
             "product_code": self.values.code("PRD", index + 1, 10),
             "validity_start_date": ymd(start),
             "validity_start_time": hms(9, index % 60),
@@ -521,6 +780,32 @@ class CsvGenerator:
             return f"商品サンプル{index % 100:02d}"
         if "code" in column.name or column.name.endswith("_id"):
             return self.values.code("P", index + 1, 8)
+        return f"VAL{index % 1000}"
+
+    def resolve_compass_value(self, column: ColumnSpec, context: dict[str, str], index: int) -> str:
+        """営業決裁列の明示値が無い場合に、列名規則から既定値を補完する。"""
+        if column.name in context:
+            return context[column.name]
+        name = column.name
+        if column.data_type.startswith("DECIMAL"):
+            return str(1 + (index % 50))
+        if name.endswith("_flag") or name.endswith("_flg") or name.endswith("_type"):
+            return self.values.bool_flag(index)
+        if "unixtime" in name:
+            return str(1_700_000_000 + index)
+        if "date_and_time" in name or name.endswith("_date") and column.max_length == 23:
+            base = datetime(2025, 1, 1, 9, 0, 0) + timedelta(hours=index)
+            return ymdhms_millis(base)
+        if name.endswith("_date"):
+            return ymd_dash(BASE_DATE + timedelta(days=index % 180))
+        if "email" in name:
+            return self.values.email(index)
+        if "phone" in name or "tel" in name or "fax" in name:
+            return self.values.phone("03", 13_000_000 + index)
+        if "name" in name or "subject" in name or "content" in name or "summary" in name or "notes" in name:
+            return f"営業決裁サンプル{index % 100:02d}"
+        if "code" in name or name.endswith("_id") or "number" in name:
+            return self.values.code("CP", index + 1, 8)
         return f"VAL{index % 1000}"
 
     def _row_from_context(self, columns: list[ColumnSpec], context: dict[str, str]) -> list[str]:

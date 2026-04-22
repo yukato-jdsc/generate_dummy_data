@@ -24,7 +24,7 @@ def load_specs(path: Path) -> dict[str, list[ColumnSpec]]:
 
 
 def parse_section_columns(lines: list[str]) -> list[ColumnSpec]:
-    """Markdownの1セクションから、`id` を除いた列定義だけを抽出する。"""
+    """Markdownの1セクションから、列定義を抽出する。"""
     columns: list[ColumnSpec] = []
     for line in lines:
         if not line.startswith("|") or "`" not in line:
@@ -34,8 +34,6 @@ def parse_section_columns(lines: list[str]) -> list[ColumnSpec]:
             continue
         item_label = parts[2]
         name = parts[3].strip("`")
-        if name == "id":
-            continue
         columns.append(
             ColumnSpec(
                 name=name,

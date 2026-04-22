@@ -2,20 +2,21 @@
 
 `docs/format.md` の定義をもとに、アプリ取り込み用のテストCSVを生成します。
 
-対象は次の4ファイルです。
+対象は次の5ファイルです。
 
 - `m_campaign_all.csv`
 - `m_agency_all.csv`
 - `m_agency_diff.csv`
+- `compass_sales_approval.csv`
 - `m_product_all.csv`
 
-`id` 列は DB 側の IDENTITY 採番を前提にしているため、出力CSVには含めません。
+`docs/format.md` に定義された `id` 列も、出力CSVに含めます。
 
 ## 前提
 
 - Python `3.12` 以上
 - `uv` が利用できること
-- 依存ライブラリは `faker` のみ
+- 依存ライブラリは `faker`、開発時テスト実行には `pytest`
 
 初回実行時は `uv` が仮想環境と依存関係を自動で準備します。
 
@@ -24,6 +25,7 @@
 ```bash
 uv run python generate_csv.py
 uv run python generate_csv.py --targets campaign
+uv run python generate_csv.py --targets compass
 uv run python generate_csv.py --full --output-dir generated_data/full
 uv run python generate_csv.py --seed 7
 ```
@@ -33,7 +35,7 @@ uv run python generate_csv.py --seed 7
 | オプション | 説明 |
 | --- | --- |
 | `--output-dir` | 出力先ディレクトリ。既定値は `generated_data` |
-| `--targets` | 生成対象。`campaign,agency,product` をカンマ区切りで指定 |
+| `--targets` | 生成対象。`campaign,agency,compass,product` をカンマ区切りで指定 |
 | `--full` | 本番想定件数で生成 |
 | `--seed` | 乱数シード。既定値は `42` |
 
@@ -46,18 +48,21 @@ uv run python generate_csv.py --seed 7
 | `m_campaign_all.csv` | 50 | 1,612 |
 | `m_agency_all.csv` | 1,000 | 1,200,000 |
 | `m_agency_diff.csv` | 53 | 53 |
+| `compass_sales_approval.csv` | 100 | 160,000 |
 | `m_product_all.csv` | 1,000 | 122,802 |
 
 ## Output
 
 - `campaign` を含む場合は `m_campaign_all.csv` を生成します
 - `agency` を含む場合は `m_agency_all.csv` と `m_agency_diff.csv` を同時に生成します
+- `compass` を含む場合は `compass_sales_approval.csv` を生成します
 - `product` を含む場合は `m_product_all.csv` を生成します
+- `id` 列は `campaign` / `agency` / `product` では数値連番、`compass` では業務コード風文字列で出力します
 
 ## 取次店差分CSVについて
 
 `m_agency_diff.csv` は独立生成ではなく、同じ実行で作られた `m_agency_all.csv` の母集団から 53 件を抽出して生成します。  
-そのため、`m_agency_diff.csv` の `agent_code` は常に `m_agency_all.csv` の部分集合になります。
+そのため、`m_agency_diff.csv` の `id` と `agent_code` は常に `m_agency_all.csv` の部分集合になります。
 
 ## 生成ルール
 
@@ -68,10 +73,10 @@ uv run python generate_csv.py --seed 7
 
 ## 開発者向け
 
-テストは `unittest` で実装しています。
+テストは `pytest` で実装しています。
 
 ```bash
-uv run python -m unittest tests.test_generate_csv
+uv run pytest
 ```
 
 実装の責務は次のように分かれています。

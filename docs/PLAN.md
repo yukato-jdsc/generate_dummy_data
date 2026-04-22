@@ -1,7 +1,7 @@
 # CSVダミーデータ生成スクリプト設計
 
 ## Summary
-`docs/format.md` に定義された CSV を生成する単一CLIを追加する。対象は `m_campaign_all.csv`、`m_agency_all.csv`、`m_agency_diff.csv`、`m_product_all.csv`。通常実行は軽量件数、`--full` 指定で本番想定件数を出力する。生成結果はデフォルト固定シードで再現可能にしつつ、`--seed` で変更できるようにする。CSVは `id` 列を含めず、外部CSVから業務列を取り込んでDB側でIDを採番する前提にする。
+`docs/format.md` に定義された CSV を生成する単一CLIを追加する。対象は `m_campaign_all.csv`、`m_agency_all.csv`、`m_agency_diff.csv`、`m_product_all.csv`。通常実行は軽量件数、`--full` 指定で本番想定件数を出力する。生成結果はデフォルト固定シードで再現可能にしつつ、`--seed` で変更できるようにする。CSVは `id` 列も含め、`docs/format.md` の列定義をそのまま出力する。
 
 ## Key Changes
 - 新規CLIを 1 本追加する。想定インターフェース:
@@ -23,7 +23,7 @@
   - 書き出しは `csv.writer` による逐次出力で、全件をメモリ保持しない
 - 文字コードと出力形式
   - `UTF-8 with BOM`、改行は標準CSV出力
-  - ヘッダは `docs/format.md` のカラム名をそのまま使用し、`id` は除外
+  - ヘッダは `docs/format.md` のカラム名をそのまま使用し、`id` も含める
 - 値生成ルール
   - `campaign`: `campaign_id` は一意なコード、名称と説明は日本語ベース、`effective_*` は `YYYY/MM/DD`、`old_flag` は `null` または `"1"` を分布付きで生成
   - `agency_all`: コード類は桁数に収まる一意値、住所・電話・担当者・法人名は日本向けダミー、カテゴリ系は少数のマスタ値から分布生成、開始終了日は矛盾しない範囲で生成
@@ -68,7 +68,7 @@
   - `--full` で指定件数になる
   - 同じ `--seed` では同一内容、別シードでは内容が変わる
   - `--targets` で対象絞り込みできる
-  - `id` 列が出力されない
+  - `id` 列が出力される
 - 内容検証テスト
   - ヘッダ順が仕様通り
   - 各列が桁数制約を超えない
@@ -85,7 +85,7 @@
 ## Assumptions / Defaults
 - `docs/format.md` にある `campaign` `agency` `product` だけを対象とする
 - `agency` には `m_agency_all.csv` と `m_agency_diff.csv` が含まれる
-- CSVには `id` を含めない
+- CSVには `id` を含める
 - 軽量プロファイルは `campaign=50`, `agency_all=1,000`, `agency_diff=53`, `product=1,000`
 - 差分CSVは全量CSVの部分集合として生成し、更新対象53件を表す
 - 日付形式は仕様の VARCHAR 長に収まる `YYYY/MM/DD` または `YYYY/MM/DD HH:MM` 系を使い、時刻列は `HH:MM:SS` 相当で揃える

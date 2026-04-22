@@ -9,32 +9,37 @@ DEFAULT_COUNTS = {
     "campaign": 50,
     "agency_all": 1_000,
     "agency_diff": 53,
+    "compass": 100,
     "product": 1_000,
 }
 FULL_COUNTS = {
     "campaign": 1_612,
     "agency_all": 1_200_000,
     "agency_diff": 53,
+    "compass": 160_000,
     "product": 122_802,
 }
 DOCUMENT_TARGET_SIZES = {
     "campaign": 400 * 1024,
     "agency_all": 300 * 1024 * 1024,
     "agency_diff": 80 * 1024,
+    "compass": 200 * 1024 * 1024,
     "product": int(219.76 * 1024 * 1024),
 }
 SECTION_KEYS = {
     "(Mars)キャンペーン": "campaign",
     "(Mars)取次店": "agency",
+    "(COMPASS)営業決裁": "compass",
     "(Mars)商品": "product",
 }
 OUTPUT_FILES = {
     "campaign": "m_campaign_all.csv",
     "agency_all": "m_agency_all.csv",
     "agency_diff": "m_agency_diff.csv",
+    "compass": "compass_sales_approval.csv",
     "product": "m_product_all.csv",
 }
-VALID_TARGETS = {"campaign", "agency", "product"}
+VALID_TARGETS = {"campaign", "agency", "compass", "product"}
 BASE_DATE = date(2026, 4, 21)
 SIZE_GROW_COLUMNS = {
     "campaign": ("description", "campaign_name"),
@@ -50,6 +55,14 @@ SIZE_GROW_COLUMNS = {
         "organization_name",
         "corporate_name",
         "manager_name",
+    ),
+    "compass": (
+        "approval_subject",
+        "project_summary_1_summary",
+        "project_summary_2_summary",
+        "notes",
+        "additions_changes",
+        "approval_history",
     ),
     "product": (
         "packaging_specifications_etc",
@@ -67,9 +80,11 @@ SIZE_GROW_COLUMNS = {
 SIZE_FILLER_TEXT = {
     "campaign": "キャンペーン案内",
     "agency_diff": "取次店情報",
+    "compass": "営業決裁補足",
     "product": "商品仕様情報",
 }
 AGENCY_ALL_KEEP_COLUMNS = {
+    "id",
     "agent_code",
     "valid_start_date",
     "valid_end_date",
@@ -259,6 +274,22 @@ PRODUCT_TEMPLATES = [
     ("SIMカード", "SB SIM", "SIM", "回線", "SIM", "0GB", 3980),
     ("アクセサリ", "SB Accessory", "付属品", "物販", "アクセサリ", "N/A", 4800),
 ]
+COMPASS_STATUSES = ["承認", "申請中", "差戻し", "再申請", "却下"]
+COMPASS_APPROVAL_TYPES = [
+    "提案・契約決裁(代理店協業含む)",
+    "料金調整・現金返還・料金減免",
+    "代理店契約",
+    "再販契約",
+]
+COMPASS_SERVICE_TYPES = [
+    "【モバイル】 その他サービス（モバイル）",
+    "【モバイル】 データ通信",
+    "【共通】 値引き・減免",
+]
+COMPASS_SALES_CHANNELS = ["直販", "代理店", "パートナー"]
+COMPASS_CORP_KINDS = ["法人サービス", "個人", "官公庁"]
+COMPASS_BILLING_FORMS = ["直請求", "代理店請求", "請求代行"]
+COMPASS_APPROVER_LAYERS = ["部長承認", "統括承認", "本部長承認"]
 COLORS = [("ブラック", "BLK"), ("ホワイト", "WHT"), ("ネイビー", "NVY"), ("シルバー", "SLV")]
 COMPANY_CATEGORY_NAMES = ["直販", "一次代理店", "二次代理店"]
 OPERATION_PERMISSION_NAMES = ["閲覧", "編集", "管理"]

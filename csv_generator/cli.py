@@ -18,7 +18,7 @@ def parse_args() -> argparse.Namespace:
     """CSV生成CLIの引数を解釈する。"""
     parser = argparse.ArgumentParser(description="Generate dummy CSV files from docs/format.md")
     parser.add_argument("--output-dir", default="generated_data")
-    parser.add_argument("--targets", default="campaign,agency,product")
+    parser.add_argument("--targets", default="campaign,agency,compass,product")
     parser.add_argument("--full", action="store_true")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     return parser.parse_args()
@@ -81,3 +81,7 @@ def main() -> None:
             header_labels(specs, "product"),
             generator.product_rows(),
         )
+
+    if "compass" in targets:
+        announce_output(output_dir / OUTPUT_FILES["compass"])
+        generator.write_compass_file(output_dir)
