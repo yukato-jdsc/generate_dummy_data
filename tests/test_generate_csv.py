@@ -9,32 +9,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from csv_generator.format_spec import load_specs
 from csv_generator.cli import write_target_csv
+from csv_generator.format_spec import load_specs
 from csv_generator.io import build_output_path
 
 SCRIPT = ROOT / "generate_csv.py"
-TARGET_SIZES = {
-    "m_campaign_all.csv": 400 * 1024,
-    "m_agency_all.csv": 300 * 1024 * 1024,
-    "m_agency_diff.csv": 80 * 1024,
-    "m_product_all.csv": 219.76 * 1024 * 1024,
-    "compass_sales_approval.csv": 200 * 1024 * 1024,
-}
-DEFAULT_ROW_COUNTS = {
-    "m_campaign_all.csv": 50,
-    "m_agency_all.csv": 1000,
-    "m_agency_diff.csv": 53,
-    "m_product_all.csv": 1000,
-    "compass_sales_approval.csv": 100,
-}
-FULL_ROW_COUNTS = {
-    "m_campaign_all.csv": 1612,
-    "m_agency_all.csv": 1_200_000,
-    "m_agency_diff.csv": 53,
-    "m_product_all.csv": 122_802,
-    "compass_sales_approval.csv": 160_000,
-}
 
 
 def test_unit_tests_do_not_use_full_option() -> None:
@@ -76,13 +55,13 @@ def generated_files(directory: Path) -> list[str]:
     return sorted(path.name for path in directory.iterdir() if path.is_file())
 
 
-def assert_size_within_tolerance(path: Path, expected_size: float, tolerance: float = 0.10) -> None:
-    """生成CSVの実サイズが許容幅内に収まることを検証する。"""
-    actual_size = path.stat().st_size
-    lower = int(expected_size * (1 - tolerance))
-    upper = int(expected_size * (1 + tolerance))
-    assert actual_size >= lower, f"{path.name}: actual={actual_size}, lower={lower}"
-    assert actual_size <= upper, f"{path.name}: actual={actual_size}, upper={upper}"
+def assert_all_cells_filled(header: list[str], rows: list[list[str]], name: str) -> None:
+    """CSV内の全セルが空欄でないことを検証する。"""
+    assert header, f"{name}: header is empty"
+    for row_index, row in enumerate(rows, start=1):
+        assert len(row) == len(header), f"{name}: row={row_index}, columns={len(row)}, header={len(header)}"
+        for column_index, value in enumerate(row):
+            assert value != "", f"{name}: row={row_index}, column={header[column_index]}"
 
 
 def test_default_run_generates_all_expected_files(tmp_path: Path) -> None:
@@ -327,54 +306,27 @@ def test_agency_diff_is_subset_of_agency_all(tmp_path: Path) -> None:
     assert set(diff_codes).issubset(agency_codes)
 
 
-def test_default_output_sizes_follow_document_ratio_targets(tmp_path: Path) -> None:
-    run_script(str(tmp_path))
+def test_default_run_fills_every_cell_in_all_csvs(tmp_path: Path) -> None:
+    """デフォルト実行では全CSVの全セルが非空欄になる。"""
+    run_script(str(tmp_path), "--seed", "7")
 
-    for name, target_size in TARGET_SIZES.items():
-        scaled_target = target_size * (DEFAULT_ROW_COUNTS[name] / FULL_ROW_COUNTS[name])
-        assert_size_within_tolerance(tmp_path / name, scaled_target)
-
-
-def test_compass_rows_keep_major_business_columns_filled(tmp_path: Path) -> None:
-    """営業決裁の主要業務列が空欄化されないことを確認する。"""
-    run_script(str(tmp_path), "--targets", "compass", "--seed", "7")
-
-    header, rows = read_csv(tmp_path, "compass_sales_approval.csv")
-    target_columns = [
-        "ステータス",
-        "申請日時",
-        "決裁種別",
-        "起案者名",
-        "起案者電話番号",
-        "起案者の所属組織情報一覧",
-        "販路",
-        "案件名",
-        "企業名",
-        "売上（円）",
-        "営業利益（円）",
-        "閲覧範囲",
-        "追加・変更内容",
-        "承認日時",
-        "集約番号",
-        "請求形態",
-        "開通工事費無料",
-        "負担内容1",
-        "見込回線数（上限）",
-        "追加情報欄",
-        "要旨補足（申請者専用）",
-        "試算シート番号",
-        "起案者部署",
-        "申請者（ユーザー名）",
-    ]
-    indexes = [header.index(name) for name in target_columns]
-
-    for row in rows[:5]:
-        for index in indexes:
-            assert row[index] != ""
+    for name in generated_files(tmp_path):
+        header, rows = read_csv(tmp_path, name)
+        assert_all_cells_filled(header, rows, name)
 
 
-def test_compass_status_is_fixed_to_approved_and_history_is_empty(tmp_path: Path) -> None:
-    """営業決裁のステータス固定と承認履歴空欄を確認する。"""
+def test_campaign_old_flag_is_always_filled(tmp_path: Path) -> None:
+    """キャンペーンの旧フラグは全行で非空欄にする。"""
+    run_script(str(tmp_path), "--targets", "campaign", "--seed", "7")
+
+    header, rows = read_csv(tmp_path, "m_campaign_all.csv")
+    old_flag_index = header.index("旧フラグ")
+
+    assert {row[old_flag_index] for row in rows}.issubset({"0", "1"})
+
+
+def test_compass_status_is_fixed_to_approved_and_history_is_filled(tmp_path: Path) -> None:
+    """営業決裁のステータス固定と承認履歴非空欄を確認する。"""
     run_script(str(tmp_path), "--targets", "compass", "--seed", "7")
 
     header, rows = read_csv(tmp_path, "compass_sales_approval.csv")
@@ -382,4 +334,4 @@ def test_compass_status_is_fixed_to_approved_and_history_is_empty(tmp_path: Path
     history_index = header.index("承認履歴")
 
     assert {row[status_index] for row in rows} == {"承認"}
-    assert {row[history_index] for row in rows} == {""}
+    assert all(row[history_index] != "" for row in rows)

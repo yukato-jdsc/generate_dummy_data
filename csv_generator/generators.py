@@ -6,9 +6,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from .config import (
-    AGENCY_ALL_KEEP_COLUMNS,
     BASE_DATE,
-    BFS_KEEP_COLUMNS,
     CAMPAIGN_PREFIXES,
     CAMPAIGN_SUFFIXES,
     COLORS,
@@ -28,7 +26,6 @@ from .config import (
     ColumnSpec,
 )
 from .io import build_output_path, open_csv_writer, write_csv
-from .size_control import RowSizeAdjuster, build_row_size_profile, target_row_size_bytes
 from .values import ValueFactory, clip, hms, ymd, ymd_dash, ymdhm, ymdhms_millis
 
 
@@ -41,46 +38,18 @@ class CsvGenerator:
         self.counts = counts
         self.values = ValueFactory(seed)
         self.diff_sample_size = counts["agency_diff"]
-        self.row_adjusters = self._build_row_adjusters()
 
-    def _build_row_adjusters(self) -> dict[str, RowSizeAdjuster]:
-        """出力種別ごとのサイズ調整器を初期化する。"""
-        return {
-            "campaign": self._build_row_adjuster("campaign", "campaign"),
-            "agency_all": self._build_row_adjuster("agency_all", "agency", AGENCY_ALL_KEEP_COLUMNS),
-            "agency_diff": self._build_row_adjuster("agency_diff", "agency", {"agent_code"}),
-            "compass": self._build_row_adjuster("compass", "compass"),
-            "product": self._build_row_adjuster("product", "product"),
-            "bfs_all": self._build_row_adjuster("bfs_all", "bfs", BFS_KEEP_COLUMNS),
-            "bfs_diff": self._build_row_adjuster("bfs_diff", "bfs", BFS_KEEP_COLUMNS),
-        }
-
-    def _build_row_adjuster(
-        self,
-        output_key: str,
-        spec_key: str,
-        keep_columns: set[str] | None = None,
-    ) -> RowSizeAdjuster:
-        """単一CSV向けのサイズ調整器を構築する。"""
-        columns = self.specs[spec_key]
-        return RowSizeAdjuster(
-            columns,
-            target_row_size_bytes(columns, output_key, self.counts[output_key]),
-            build_row_size_profile(columns, output_key, keep_columns=keep_columns),
-        )
-
-    def _build_rows(self, output_key: str, count: int, row_factory: Callable[[int], list[str]]) -> list[list[str]]:
+    def _build_rows(self, count: int, row_factory: Callable[[int], list[str]]) -> list[list[str]]:
         """指定件数ぶんの行をまとめて生成する。"""
         rows: list[list[str]] = []
         for index in range(count):
-            rows.append(self._fit_row(output_key, row_factory(index)))
+            rows.append(row_factory(index))
         return rows
 
     def _write_rows(
         self,
         path: Path,
         headers: list[str],
-        output_key: str,
         count: int,
         row_factory: Callable[[int], list[str]],
     ) -> None:
@@ -89,13 +58,13 @@ class CsvGenerator:
         try:
             writer.writerow(headers)
             for index in range(count):
-                writer.writerow(self._fit_row(output_key, row_factory(index)))
+                writer.writerow(row_factory(index))
         finally:
             handle.close()
 
     def campaign_rows(self) -> list[list[str]]:
         """キャンペーンCSVの全行をメモリ上で生成する。"""
-        return self._build_rows("campaign", self.counts["campaign"], self._campaign_row)
+        return self._build_rows(self.counts["campaign"], self._campaign_row)
 
     def _campaign_row(self, index: int) -> list[str]:
         """キャンペーン1行ぶんの列値を組み立てる。"""
@@ -108,7 +77,7 @@ class CsvGenerator:
             "description": f"{name}のテスト投入用データ",
             "effective_start_date": ymd(start),
             "effective_end_date": ymd(end),
-            "old_flag": "" if index % 5 else "1",
+            "old_flag": "1" if index % 5 == 0 else "0",
         }
         return self._row_from_context(self.specs["campaign"], context)
 
@@ -126,15 +95,12 @@ class CsvGenerator:
             writer.writerow(headers)
             for index in range(self.counts["agency_all"]):
                 context = self.agency_context(index)
-                writer.writerow(self._fit_row("agency_all", self._agency_row(context, index)))
+                writer.writerow(self._agency_row(context, index))
                 self._update_reservoir(sampled, (index, context), index, sampler)
         finally:
             handle.close()
         sampled.sort(key=lambda item: item[1]["agent_code"])
-        diff_rows = [
-            self._fit_row("agency_diff", self._agency_row(context, index))
-            for index, context in sampled
-        ]
+        diff_rows = [self._agency_row(context, index) for index, context in sampled]
         write_csv(build_output_path(output_dir, OUTPUT_FILES["agency_diff"], compress), headers, diff_rows)
 
     def _header_labels(self, spec_key: str) -> list[str]:
@@ -147,7 +113,6 @@ class CsvGenerator:
         self._write_rows(
             build_output_path(output_dir, OUTPUT_FILES["compass"], compress),
             headers,
-            "compass",
             self.counts["compass"],
             lambda index: self._compass_row(self._compass_context(index), index),
         )
@@ -183,7 +148,7 @@ class CsvGenerator:
     def agency_row(self, index: int) -> list[str]:
         """取次店1行ぶんを全量CSV向けのサイズで生成する。"""
         context = self.agency_context(index)
-        return self._fit_row("agency_all", self._agency_row(context, index))
+        return self._agency_row(context, index)
 
     def _agency_base_context(self, index: int) -> dict[str, str]:
         """取次店の識別子・有効期間などの基本属性を生成する。"""
@@ -430,7 +395,6 @@ class CsvGenerator:
     def product_rows(self) -> list[list[str]]:
         """商品CSVの全行をメモリ上で生成する。"""
         return self._build_rows(
-            "product",
             self.counts["product"],
             lambda index: self._product_row(self._product_context(index), index),
         )
@@ -438,7 +402,6 @@ class CsvGenerator:
     def compass_rows(self) -> list[list[str]]:
         """営業決裁CSVの全行をメモリ上で生成する。"""
         return self._build_rows(
-            "compass",
             self.counts["compass"],
             lambda index: self._compass_row(self._compass_context(index), index),
         )
@@ -519,10 +482,10 @@ class CsvGenerator:
             "approval_document_period_months": str(12 + (index % 36)),
             "credit_alert": "有" if index % 4 == 0 else "無",
             "whether_credit_review": "有" if index % 5 == 0 else "無",
-            "credit_review_request_name_compass": f"CR{execution_date:%Y%m%d}{index % 1000:03d}" if index % 5 == 0 else "",
-            "credit_review_request_name_bfs": f"BFS{execution_date:%Y%m%d}{index % 1000:03d}" if index % 8 == 0 else "",
+            "credit_review_request_name_compass": f"CR{execution_date:%Y%m%d}{index % 1000:03d}" if index % 5 == 0 else "依頼なし",
+            "credit_review_request_name_bfs": f"BFS{execution_date:%Y%m%d}{index % 1000:03d}" if index % 8 == 0 else "依頼なし",
             "whether_legal_pre_review_conducted": "有" if index % 6 == 0 else "無",
-            "legal_pre_review_request_number": f"LG{index:06d}" if index % 6 == 0 else "",
+            "legal_pre_review_request_number": f"LG{index:06d}" if index % 6 == 0 else "審査なし",
             "re_approval_draft_flag": "有" if index % 9 == 0 else "無",
             "service_type": COMPASS_SERVICE_TYPES[index % len(COMPASS_SERVICE_TYPES)],
             "sales_channel": COMPASS_SALES_CHANNELS[index % len(COMPASS_SALES_CHANNELS)],
@@ -595,7 +558,7 @@ class CsvGenerator:
             "agency_code": agency_code,
             "commission_rate_percent_incent": str(3 + (index % 8)),
             "incentive_amount_yen": str(incentive),
-            "reason_for_collaboration": "対応エリアおよび保守体制の要件を満たすため" if index % 2 else "",
+            "reason_for_collaboration": "対応エリアおよび保守体制の要件を満たすため" if index % 2 else "自社主幹案件のため協業なし",
             "automatic_renewal": "有" if index % 2 == 0 else "無",
             "sbm_line_count_upper": str(line_count),
             "sbm_line_count_lower": str(max(1, line_count - 8)),
@@ -629,7 +592,7 @@ class CsvGenerator:
             "business_category": "モバイル",
             "expiration_date": ymd_dash(expiration_date),
             "additional_information_field": "営業判断メモおよび事前相談結果を記載",
-            "based_proposal_approval": f"PR{index:06d}" if index % 5 == 0 else "",
+            "based_proposal_approval": f"PR{index:06d}" if index % 5 == 0 else "起点提案なし",
             "approval_content": "【共通】値引きなど",
             "approval_route_criteria": "営業担当者情報から申請者・同意者・承認者をセット",
             "supplier_credit": "f",
@@ -678,7 +641,7 @@ class CsvGenerator:
             "approvers_user_id": self.values.employee_id(index + 30),
             "approvers_user_name": self.values.person_name(),
             "last_processing_date_and_time": ymdhms_millis(approval_at + timedelta(hours=3)),
-            "approval_history": "",
+            "approval_history": "一次承認済み;最終承認済み",
         }
 
     def _product_context(self, index: int) -> dict[str, str]:
@@ -838,10 +801,6 @@ class CsvGenerator:
         """列定義順に文脈値を並べ替え、最大長を適用した1行へ変換する。"""
         return [clip(context[column.name], column.max_length) for column in columns]
 
-    def _fit_row(self, output_key: str, row: list[str]) -> list[str]:
-        """出力種別ごとの目標サイズへ行を調整する。"""
-        return self.row_adjusters[output_key].fit(row)
-
     def write_bfs_files(self, output_dir: Path, compress: bool = False) -> None:
         """BFSエントリCSVの全量版と差分版を逐次書き出す。"""
         headers = self._header_labels("bfs")
@@ -863,7 +822,6 @@ class CsvGenerator:
         self._write_rows(
             path,
             headers,
-            output_key,
             self.counts[output_key],
             lambda index: self._bfs_row(self._bfs_context(index, variant), index),
         )
@@ -999,7 +957,7 @@ class CsvGenerator:
             "contact_person_name_katakana": contact_person_kana,
             "contact_person_department": DEPARTMENTS[(base_index + 2) % len(DEPARTMENTS)],
             "contract_change_confirmation_check": "済" if base_index % 2 == 0 else "未",
-            "contractor_name_change_comment": "" if base_index % 4 else "契約者名変更はなし。",
+            "contractor_name_change_comment": "契約者名変更あり" if base_index % 4 else "契約者名変更はなし。",
             "billing_number": self.values.number_string(10, 4_560_000_000 + base_index),
             "corporate_entity_position_1": "前",
             "corporate_entity_1": "株式会社",
@@ -1062,13 +1020,13 @@ class CsvGenerator:
             "sales_office": ["東京営業所", "大阪営業所", "名古屋営業所", "福岡営業所"][base_index % 4],
             "declaration_details": "導入用途、契約条件、運用体制を確認済み。",
             "usim_type": ["nanoSIM", "eSIM", "microSIM"][base_index % 3],
-            "other_usim_types": "" if base_index % 2 == 0 else "標準",
+            "other_usim_types": "追加種別なし" if base_index % 2 == 0 else "標準",
             "quantity": str(1 + (base_index % 10)),
             "wo_specific_usim": ["無", "有"][base_index % 2],
             "estimate_template_version": f"Ver{4 + (base_index % 3)}.{base_index % 10}",
             "approval_date": ymd(approval_date),
             "original_estimate_number": self.values.code("TS", base_index + 1, 10),
-            "copy_entry_number": entry_number if base_index % 5 == 0 else "",
+            "copy_entry_number": entry_number if base_index % 5 == 0 else "コピー元なし",
             "minimum_number_of_lines": str(1 + (base_index % 10)),
             "device_binding_amount": str(10_000 + (base_index % 20) * 500),
             "device_binding_period": str(12 + (base_index % 12)),
