@@ -7,6 +7,7 @@ from pathlib import Path
 from .config import (
     AGENCY_ALL_KEEP_COLUMNS,
     BASE_DATE,
+    BFS_KEEP_COLUMNS,
     CAMPAIGN_PREFIXES,
     CAMPAIGN_SUFFIXES,
     COLORS,
@@ -27,7 +28,7 @@ from .config import (
 )
 from .io import open_csv_writer, write_csv
 from .size_control import RowSizeAdjuster, build_row_size_profile, target_row_size_bytes
-from .values import ValueFactory, clip, hms, ymd, ymd_dash, ymdhms_millis
+from .values import ValueFactory, clip, hms, ymd, ymd_dash, ymdhm, ymdhms_millis
 
 
 class CsvGenerator:
@@ -49,6 +50,8 @@ class CsvGenerator:
             "agency_diff": self._build_row_adjuster("agency_diff", "agency", {"id", "agent_code"}),
             "compass": self._build_row_adjuster("compass", "compass", {"id"}),
             "product": self._build_row_adjuster("product", "product", {"id"}),
+            "bfs_all": self._build_row_adjuster("bfs_all", "bfs", BFS_KEEP_COLUMNS),
+            "bfs_diff": self._build_row_adjuster("bfs_diff", "bfs", BFS_KEEP_COLUMNS),
         }
 
     def _build_row_adjuster(
@@ -815,3 +818,328 @@ class CsvGenerator:
     def _fit_row(self, output_key: str, row: list[str]) -> list[str]:
         """出力種別ごとの目標サイズへ行を調整する。"""
         return self.row_adjusters[output_key].fit(row)
+
+    def write_bfs_files(self, output_dir: Path) -> None:
+        """BFSエントリCSVの全量版と差分版を逐次書き出す。"""
+        headers = self._header_labels("bfs")
+        self._write_bfs_file(output_dir / OUTPUT_FILES["bfs_all"], headers, "bfs_all", "all")
+        self._write_bfs_file(output_dir / OUTPUT_FILES["bfs_diff"], headers, "bfs_diff", "diff")
+
+    def _write_bfs_file(self, path: Path, headers: list[str], output_key: str, variant: str) -> None:
+        """BFSエントリCSVを1ファイルずつ逐次出力する。"""
+        handle, writer = open_csv_writer(path)
+        try:
+            writer.writerow(headers)
+            for index in range(self.counts[output_key]):
+                context = self._bfs_context(index, variant)
+                writer.writerow(self._fit_row(output_key, self._bfs_row(context, index)))
+        finally:
+            handle.close()
+
+    def _bfs_row(self, context: dict[str, str], index: int) -> list[str]:
+        """BFS文脈を列順の行へ変換する。"""
+        return [clip(self.resolve_bfs_value(column, context, index), column.max_length) for column in self.specs["bfs"]]
+
+    def _bfs_context(self, index: int, variant: str) -> dict[str, str]:
+        """BFS 1行ぶんの主要属性を組み立てる。"""
+        base_index = index if variant == "all" else 2_000_000 + index
+        created_at = datetime(2025, 12, 1, 9, 0) + timedelta(hours=base_index % 240, minutes=(base_index * 7) % 60)
+        updated_at = created_at + timedelta(minutes=30)
+        application_date = BASE_DATE - timedelta(days=base_index % 21)
+        activation_date = application_date + timedelta(days=(base_index % 5) + 1)
+        delivery_date = application_date + timedelta(days=(base_index % 10) + 2)
+        approval_date = application_date + timedelta(days=(base_index % 7) + 1)
+        rental_start_date = activation_date
+        rental_end_date = rental_start_date + timedelta(days=365)
+        company_name = self.values.company_name(base_index)
+        agency_name = self.values.company_name(base_index + 17)
+        contractor_name = company_name
+        billing_name = company_name
+        contact_person_name = self.values.person_name()
+        contact_person_kana = self.values.person_name_kana(base_index)
+        salesperson_name = self.values.person_name()
+        salesperson_code = self.values.employee_id(base_index)
+        agency_code = self.values.code("AGT", base_index + 1, 6)
+        entry_number = f"EN{BASE_DATE:%Y%m%d}{self.values.number_string(6, base_index + 1)}"
+        approval_numbers = [self.values.code("LS", base_index + i + 1, 7) for i in range(5)]
+        plan_names = [
+            "基本プラン",
+            "データプラン",
+            "音声プラン",
+            "業務標準プラン",
+            "セキュリティオプション",
+            "端末補償プラン",
+            "位置情報サービス",
+            "クラウド連携プラン",
+            "留守番電話サービス",
+            "国際ローミング",
+            "大容量データプラン",
+            "テザリングオプション",
+        ]
+        op_categories = ["音声", "通信", "セキュリティ", "その他"]
+        op_items = ["VoLTE", "データ通信", "端末補償", "国際ローミング"]
+        percentage_op_categories = ["通信", "音声", "クラウド", "位置情報"]
+        percentage_op_items = ["高速データ通信", "通話定額", "クラウドストレージ", "GPS位置情報"]
+        share_options = ["50:50", "60:40", "70:30", "80:20"]
+        other_options = [
+            "初期設定サポート",
+            "現場利用想定",
+            "導入後フォロー",
+            "請求運用確認",
+            "与信確認済み",
+            "保守条件調整済み",
+            "契約更新条件確認済み",
+            "関連部門合意済み",
+        ]
+        context: dict[str, str] = {
+            "base_index": str(base_index),
+            "variant": variant,
+            "id": self.values.sequential_id(index),
+            "entry_number": entry_number,
+            "subject": f"{company_name}向けBFSエントリ {base_index % 500 + 1}",
+            "creation_category": "新規" if base_index % 3 == 0 else "変更" if base_index % 3 == 1 else "追加",
+            "order_type": ["新規契約", "変更契約", "追加契約"][base_index % 3],
+            "application_form_linkage": "連携済" if base_index % 4 else "未連携",
+            "special_contract_separate_output": "無" if base_index % 2 == 0 else "有",
+            "notification_target": "対象" if base_index % 5 else "対象外",
+            "activation_status": "開通済" if base_index % 2 == 0 else "未開通",
+            "activation_date": ymd(activation_date),
+            "incomplete_request_type": ["新規", "変更", "追加"][base_index % 3],
+            "source_entry_type": "コピー元" if base_index % 4 == 0 else "試算",
+            "salesperson_code": salesperson_code,
+            "salesperson": salesperson_name,
+            "agency_code": agency_code,
+            "affiliated_agency": agency_name,
+            "carrier_type": ["SoftBank", "Y!mobile", "LINEMO"][base_index % 3],
+            "business_operator_category": "法人",
+            "application_form_number": self.values.code("AP", base_index + 1, 10),
+            "contract_type": ["レンタル", "売切", "リース"][base_index % 3],
+            "expected_delivery_date": ymd(delivery_date),
+            "application_date": ymd(application_date),
+            "ipad_customer_type": ["法人", "一般", "教育"][base_index % 3],
+            "billing_method": ["請求書", "口座振替", "クレジットカード"][base_index % 3],
+            "number_of_payments": ["一括", "12回", "24回"][base_index % 3],
+            "billing_category": ["毎月請求", "一括請求"][base_index % 2],
+            "call_charge_combined_type": ["なし", "あり"][base_index % 2],
+            "accessory_purchase": ["無", "有"][base_index % 2],
+            "accessory_fee_payment_method": ["請求書", "口座振替", "クレジットカード"][base_index % 3],
+            "accessory_fee_billing_category": ["毎月請求", "一括請求"][base_index % 2],
+            "accessory_fee_combined_type": ["なし", "あり"][base_index % 2],
+            "change_target": ["新規", "追加", "変更"][base_index % 3],
+            "reception_category": "通常受付",
+            "web_order_number": self.values.code("WO", base_index + 1, 10),
+            "billing_discount_change": ["無", "有"][base_index % 2],
+            "entry_creator_id": self.values.employee_id(base_index + 100),
+            "entry_creation_date_and_time": ymdhm(created_at),
+            "entry_updater_id": self.values.employee_id(base_index + 200),
+            "entry_update_date_and_time": ymdhm(updated_at),
+            "sfa_number": self.values.code("SFA", base_index + 1, 9),
+            "sfa_project_name": f"{company_name}向けSFA案件{base_index % 300 + 1}",
+            "unified_company_code": self.values.code("UC", base_index + 1, 8),
+            "company_name": company_name,
+            "sales_approval_subject": f"{company_name}向け営業決裁 {base_index % 80 + 1}",
+            "sales_approval_number": self.values.code("LS", base_index + 1, 9),
+            "distributor_code": self.values.code("DST", base_index + 1, 6),
+            "consolidated_book_number": self.values.code("BK", base_index + 1, 10),
+            "estimate_book_number": self.values.code("TS", base_index + 1, 10),
+            "easy_estimate_number": self.values.code("QT", base_index + 1, 10),
+            "relative_contract_management_number": self.values.code("CT", base_index + 1, 10),
+            "agency_code_1": agency_code,
+            "agency_name": agency_name,
+            "sales_representative_1": salesperson_name,
+            "telephone_number": self.values.phone("03", 10_000_000 + base_index),
+            "department_name": DEPARTMENTS[base_index % len(DEPARTMENTS)],
+            "identity_verification_implementer_code": self.values.code("IV", base_index + 1, 6),
+            "receptionist_code": self.values.code("RC", base_index + 1, 6),
+            "applicant_name": contact_person_name,
+            "department_name_1": DEPARTMENTS[(base_index + 1) % len(DEPARTMENTS)],
+            "common_employee_number": self.values.employee_id(base_index + 300),
+            "credit_application_number": self.values.code("CR", base_index + 1, 8),
+            "credit_response_number": self.values.code("CRR", base_index + 1, 8),
+            "contractor_number": self.values.number_string(10, 3_450_000_000 + base_index),
+            "contractor_type": "法人",
+            "corporate_status_position": "前",
+            "corporate_status": "株式会社",
+            "contractor_name": contractor_name,
+            "contractor_name_katakana": f"カブシキガイシャ{self.values.katakana_word(base_index)}{self.values.katakana_word(base_index + 1)}",
+            "corporate_type": "通常法人",
+            "deemed_corporate_approval_number": self.values.code("DC", base_index + 1, 10),
+            "contact_person_name": contact_person_name,
+            "contact_person_name_katakana": contact_person_kana,
+            "contact_person_department": DEPARTMENTS[(base_index + 2) % len(DEPARTMENTS)],
+            "contract_change_confirmation_check": "済" if base_index % 2 == 0 else "未",
+            "contractor_name_change_comment": "" if base_index % 4 else "契約者名変更はなし。",
+            "billing_number": self.values.number_string(10, 4_560_000_000 + base_index),
+            "corporate_entity_position_1": "前",
+            "corporate_entity_1": "株式会社",
+            "billing_name": billing_name,
+            "billing_name_katakana": f"カブシキガイシャ{self.values.katakana_word(base_index + 2)}{self.values.katakana_word(base_index + 3)}",
+            "billing_department_name": f"{company_name}営業部",
+            "contact_person": contact_person_name,
+            "payment_method": ["金融機関窓口払込", "クレジットカード", "預金口座振替"][base_index % 3],
+            "invoice_type": ["通常", "明細", "請求書"][base_index % 3],
+            "invoice_delivery": ["送付", "なし", "表示"][base_index % 3],
+            "last_4_digits": self.values.number_string(4, 1000 + (base_index % 9000)),
+            "billing_group_information": "標準請求グループ",
+            "installment_payment_allowance_number": self.values.code("IP", base_index + 1, 8),
+            "agency": "代行業者なし" if base_index % 2 == 0 else "三井住友ファクター",
+            "corporate_multiple_line_discount": ["無", "有"][base_index % 2],
+            "discount_rate": str(5 + (base_index % 10)),
+            "discount_amount": str(1_000 + (base_index % 20) * 500),
+            "number_of_discount_months": str(12 + (base_index % 12)),
+            "fee_type": str((base_index % 3) + 1),
+            "bulk_invoice_discount": ["無", "有"][base_index % 2],
+            "discount_rate_1": str(10 + (base_index % 10)),
+            "discount_amount_1": str(2_000 + (base_index % 20) * 500),
+            "number_of_discount_months_1": str(6 + (base_index % 12)),
+            "fee_type_1": str((base_index % 3) + 1),
+            "number_s_corporate_multiple_line_discount": ["無", "有"][base_index % 2],
+            "discount_rate_2": str(12 + (base_index % 8)),
+            "discount_amount_2": str(3_000 + (base_index % 20) * 600),
+            "number_of_discount_months_2": str(6 + (base_index % 10)),
+            "fee_type_2": str((base_index % 3) + 1),
+            "s_number_large_call_discount": ["無", "有"][base_index % 2],
+            "discount_rate_3": str(15 + (base_index % 5)),
+            "discount_amount_3": str(4_000 + (base_index % 20) * 700),
+            "number_of_discount_months_3": str(6 + (base_index % 8)),
+            "fee_type_3": str((base_index % 3) + 1),
+            "share": share_options[base_index % len(share_options)],
+            "discount_rate_4": str(20 + (base_index % 5)),
+            "discount_amount_4": str(5_000 + (base_index % 20) * 700),
+            "number_of_discount_months_4": str(6 + (base_index % 8)),
+            "fee_type_4": str((base_index % 3) + 1),
+            "billing_address_shipping_address_category": "請求先住所",
+            "shipping_address": f"{company_name} 御中",
+            "invoice_customization": "無" if base_index % 2 == 0 else "有",
+            "billing_address_category": "契約者住所",
+            "shipping_address_1": f"{company_name} 御中",
+            "invoice_customization_1": "無" if base_index % 2 == 0 else "有",
+            "special_agreement_start_date": ymd(approval_date),
+            "special_agreement_period": f"{12 + (base_index % 24)}ヶ月",
+            "contract_period_in_months": str(12 + (base_index % 36)),
+            "period_after_automatic_renewal": f"{12 + (base_index % 24)}ヶ月",
+            "initial_rental_period": f"{12 + (base_index % 12)}ヶ月",
+            "used_rental_start_date": ymd(rental_start_date),
+            "used_rental_end_date": ymd(rental_end_date),
+            "maximum_number_of_lines_applicable_to_the_special_agreement": str(99 + (base_index % 20)),
+            "number_of_lines": str(50 + (base_index % 100)),
+            "warehouse_type": "標準",
+            "request_for_incomplete_report_creation": ["無", "有"][base_index % 2],
+            "gisun_registration_not_possible": ["無", "有"][base_index % 7 == 0],
+            "replacement_type": ["新規", "追加", "変更"][base_index % 3],
+            "inventory_type": "標準",
+            "sales_office": ["東京営業所", "大阪営業所", "名古屋営業所", "福岡営業所"][base_index % 4],
+            "declaration_details": "導入用途、契約条件、運用体制を確認済み。",
+            "usim_type": ["nanoSIM", "eSIM", "microSIM"][base_index % 3],
+            "other_usim_types": "" if base_index % 2 == 0 else "標準",
+            "quantity": str(1 + (base_index % 10)),
+            "wo_specific_usim": ["無", "有"][base_index % 2],
+            "estimate_template_version": f"Ver{4 + (base_index % 3)}.{base_index % 10}",
+            "approval_date": ymd(approval_date),
+            "original_estimate_number": self.values.code("TS", base_index + 1, 10),
+            "copy_entry_number": entry_number if base_index % 5 == 0 else "",
+            "minimum_number_of_lines": str(1 + (base_index % 10)),
+            "device_binding_amount": str(10_000 + (base_index % 20) * 500),
+            "device_binding_period": str(12 + (base_index % 12)),
+            "international_rm_discount_specification": ["無", "有"][base_index % 2],
+            "international_rm_discount_specification_discount_rate": str(5 + (base_index % 10)),
+            "additional_information": f"{company_name}向けのBFSエントリ。契約条件と請求条件を確認済み。",
+            "channel": ["直販", "代理店"][base_index % 2],
+            "estimated_status": ["承認済", "作成中", "差戻し"][base_index % 3],
+            "rental_used_start_date": ymd(rental_start_date),
+            "rental_used_period_months": str(12 + (base_index % 12)),
+        }
+        for approval_index, approval_number in enumerate(approval_numbers, start=1):
+            context[f"approval_number_{approval_index}"] = approval_number
+        for stakeholder_index in range(1, 11):
+            context[f"stakeholder_{stakeholder_index}"] = (
+                f"{self.values.company_name(base_index + stakeholder_index)}／{self.values.person_name()}"
+            )
+        for plan_index, plan_name in enumerate(plan_names, start=1):
+            if plan_index <= 6:
+                context[f"plan_binding_{plan_index}"] = plan_name
+            else:
+                context[f"plan_restriction_{plan_index}"] = plan_name
+        percentage_plan_ratios = ("60", "40", "30", "20")
+        for ratio_index, ratio in enumerate(percentage_plan_ratios, start=1):
+            context[f"percentage_plan_{ratio_index}"] = plan_names[ratio_index - 1]
+            context[f"plan_ratio_{ratio_index}"] = ratio
+        for op_index, op_category in enumerate(op_categories, start=1):
+            context[f"required_op_category_{op_index}"] = op_category
+            context[f"required_op_{op_index}"] = op_items[op_index - 1]
+            context[f"percentage_op_category_{op_index}"] = percentage_op_categories[op_index - 1]
+            context[f"percentage_op_{op_index}"] = percentage_op_items[op_index - 1]
+            context[f"op_ratio_{op_index}"] = ("50", "30", "15", "5")[op_index - 1]
+        for other_index, other_option in enumerate(other_options, start=1):
+            context[f"other_options_{other_index}"] = other_option
+        return context
+
+    def resolve_bfs_value(self, column: ColumnSpec, context: dict[str, str], index: int) -> str:
+        """BFS列の明示値が無い場合に、列名規則から既定値を補完する。"""
+        if column.name in context:
+            return context[column.name]
+        name = column.name
+        base_index = int(context["base_index"])
+        if column.data_type.startswith("DECIMAL"):
+            return str(1 + (base_index % 99))
+        if "date_and_time" in name:
+            return ymdhm(datetime(2025, 12, 1, 9, 0) + timedelta(hours=base_index % 240))
+        if name.endswith("_date"):
+            return ymd(BASE_DATE - timedelta(days=base_index % 365))
+        if "kana" in name or "katakana" in name:
+            return f"カタカナ{base_index % 100:02d}"
+        if "phone" in name or "tel" in name or "fax" in name:
+            return self.values.phone("03", 20_000_000 + base_index)
+        if name in {"application_form_linkage", "special_contract_separate_output", "notification_target", "activation_status"}:
+            return ["連携済", "無", "対象", "開通済"][base_index % 4]
+        if name in {"creation_category", "order_type", "incomplete_request_type", "change_target", "replacement_type"}:
+            return ["新規", "変更", "追加"][base_index % 3]
+        if name in {"carrier_type"}:
+            return ["SoftBank", "Y!mobile", "LINEMO"][base_index % 3]
+        if name in {"business_operator_category", "contractor_type", "corporate_type"}:
+            return ["法人", "個人", "みなし法人"][base_index % 3]
+        if name in {"billing_method", "accessory_fee_payment_method", "payment_method"}:
+            return ["請求書", "口座振替", "クレジットカード"][base_index % 3]
+        if name in {"billing_category", "accessory_fee_billing_category"}:
+            return ["毎月請求", "一括請求"][base_index % 2]
+        if name in {"call_charge_combined_type", "accessory_fee_combined_type"}:
+            return ["なし", "あり"][base_index % 2]
+        if name in {"contract_type"}:
+            return ["レンタル", "売切", "リース"][base_index % 3]
+        if name in {"ipad_customer_type"}:
+            return ["法人", "一般", "教育"][base_index % 3]
+        if name in {"invoice_type", "invoice_delivery"}:
+            return ["通常", "明細", "送付", "表示"][base_index % 4]
+        if name in {"channel"}:
+            return ["直販", "代理店"][base_index % 2]
+        if name in {"estimated_status"}:
+            return ["承認済", "作成中", "差戻し"][base_index % 3]
+        if name in {"warehouse_type", "inventory_type"}:
+            return "標準"
+        if name in {"request_for_incomplete_report_creation", "gisun_registration_not_possible", "wo_specific_usim"}:
+            return ["無", "有"][base_index % 2]
+        if name in {"usim_type"}:
+            return ["nanoSIM", "eSIM", "microSIM"][base_index % 3]
+        if name in {"sales_office"}:
+            return ["東京営業所", "大阪営業所", "名古屋営業所", "福岡営業所"][base_index % 4]
+        if name in {"billing_address_shipping_address_category", "billing_address_category"}:
+            return ["請求先住所", "契約者住所"][base_index % 2]
+        if name in {"corporate_status_position"}:
+            return ["前", "後"][base_index % 2]
+        if name in {"corporate_status"}:
+            return ["株式会社", "有限会社"][base_index % 2]
+        if name in {"contract_change_confirmation_check"}:
+            return ["済", "未"][base_index % 2]
+        if name in {"corporate_multiple_line_discount", "bulk_invoice_discount", "number_s_corporate_multiple_line_discount", "s_number_large_call_discount"}:
+            return ["無", "有"][base_index % 2]
+        if name.startswith("fee_type"):
+            return str((base_index % 3) + 1)
+        if name.endswith("_ratio") or name.endswith("_rate") or "ratio" in name or "rate" in name:
+            return str(5 + (base_index % 80))
+        if "comment" in name or "details" in name or "description" in name or "summary" in name or "information" in name or "conditions" in name or "options" in name or "binding" in name or "history" in name:
+            return f"{name}に関する補足{base_index % 100:02d}"
+        if "number" in name or name.endswith("_id") or "code" in name or "book" in name or "sheet" in name:
+            return self.values.code("BFS", base_index + 1, 10)
+        if "name" in name:
+            return f"BFSサンプル{base_index % 100:02d}"
+        return f"VAL{base_index % 1000}"

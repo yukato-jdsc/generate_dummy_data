@@ -35,6 +35,11 @@ def ymdhms_millis(value: datetime) -> str:
     return value.strftime("%Y-%m-%dT%H:%M:%S.") + f"{value.microsecond // 1000:03d}"
 
 
+def ymdhm(value: datetime) -> str:
+    """日時を分単位の `YYYY/MM/DD HH:MM` 形式へ変換する。"""
+    return value.strftime("%Y/%m/%d %H:%M")
+
+
 class ValueFactory:
     """ダミーデータ生成で再利用する文字列・コード・名称の共通生成器。"""
 

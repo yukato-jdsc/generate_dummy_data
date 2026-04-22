@@ -11,6 +11,8 @@ DEFAULT_COUNTS = {
     "agency_diff": 53,
     "compass": 100,
     "product": 1_000,
+    "bfs_all": 1_000,
+    "bfs_diff": 100,
 }
 FULL_COUNTS = {
     "campaign": 1_612,
@@ -18,6 +20,8 @@ FULL_COUNTS = {
     "agency_diff": 53,
     "compass": 160_000,
     "product": 122_802,
+    "bfs_all": 2_000_000,
+    "bfs_diff": 5_921,
 }
 DOCUMENT_TARGET_SIZES = {
     "campaign": 400 * 1024,
@@ -25,12 +29,15 @@ DOCUMENT_TARGET_SIZES = {
     "agency_diff": 80 * 1024,
     "compass": 200 * 1024 * 1024,
     "product": int(219.76 * 1024 * 1024),
+    "bfs_all": 500 * 1024 * 1024,
+    "bfs_diff": int(7.66 * 1024 * 1024),
 }
 SECTION_KEYS = {
     "(Mars)キャンペーン": "campaign",
     "(Mars)取次店": "agency",
     "(COMPASS)営業決裁": "compass",
     "(Mars)商品": "product",
+    "(BFSエントリ)モバイル_エントリ情報": "bfs",
 }
 OUTPUT_FILES = {
     "campaign": "m_campaign_all.csv",
@@ -38,8 +45,10 @@ OUTPUT_FILES = {
     "agency_diff": "m_agency_diff.csv",
     "compass": "compass_sales_approval.csv",
     "product": "m_product_all.csv",
+    "bfs_all": "bfs_entry_informations_all.csv",
+    "bfs_diff": "bfs_entry_informations_diff.csv",
 }
-VALID_TARGETS = {"campaign", "agency", "compass", "product"}
+VALID_TARGETS = {"campaign", "agency", "compass", "product", "bfs"}
 BASE_DATE = date(2026, 4, 21)
 SIZE_GROW_COLUMNS = {
     "campaign": ("description", "campaign_name"),
@@ -76,12 +85,59 @@ SIZE_GROW_COLUMNS = {
         "manufacturer_official_name",
         "bundle_plan_nm",
     ),
+    "bfs_all": (
+        "subject",
+        "sfa_project_name",
+        "sales_approval_subject",
+        "contractor_name",
+        "billing_name",
+        "shipping_address",
+        "shipping_address_1",
+        "additional_information",
+        "approval_history",
+    ),
+    "bfs_diff": (
+        "subject",
+        "sfa_project_name",
+        "sales_approval_subject",
+        "contractor_name",
+        "billing_name",
+        "shipping_address",
+        "shipping_address_1",
+        "additional_information",
+        "approval_history",
+    ),
 }
 SIZE_FILLER_TEXT = {
     "campaign": "キャンペーン案内",
     "agency_diff": "取次店情報",
     "compass": "営業決裁補足",
     "product": "商品仕様情報",
+    "bfs_all": "BFSエントリ情報",
+    "bfs_diff": "BFSエントリ情報",
+}
+BFS_KEEP_COLUMNS = {
+    "id",
+    "entry_number",
+    "subject",
+    "salesperson_code",
+    "salesperson",
+    "agency_code",
+    "affiliated_agency",
+    "sfa_number",
+    "sfa_project_name",
+    "company_name",
+    "sales_approval_subject",
+    "sales_approval_number",
+    "distributor_code",
+    "telephone_number",
+    "applicant_name",
+    "contract_type",
+    "billing_method",
+    "channel",
+    "estimated_status",
+    "rental_used_start_date",
+    "rental_used_period_months",
 }
 COMPASS_KEEP_COLUMNS = {
     "id",
@@ -365,10 +421,31 @@ COMPANY_WORDS = [
     "テクノロジー",
     "カンパニー",
 ]
-DEPARTMENTS = ["営業本部", "販売推進部", "法人営業部", "運営管理部", "店舗支援部", "業務企画部"]
+DEPARTMENTS = [
+    "営業本部",
+    "販売推進部",
+    "法人営業部",
+    "運営管理部",
+    "店舗支援部",
+    "業務企画部",
+]
 POSITIONS = ["部長", "課長", "主任", "担当", "マネージャー"]
-CAMPAIGN_PREFIXES = ["春の", "法人向け", "新規契約", "端末更新", "回線増設", "年度末", "地域限定"]
-CAMPAIGN_SUFFIXES = ["応援キャンペーン", "優待施策", "割引プログラム", "導入支援", "更新特典"]
+CAMPAIGN_PREFIXES = [
+    "春の",
+    "法人向け",
+    "新規契約",
+    "端末更新",
+    "回線増設",
+    "年度末",
+    "地域限定",
+]
+CAMPAIGN_SUFFIXES = [
+    "応援キャンペーン",
+    "優待施策",
+    "割引プログラム",
+    "導入支援",
+    "更新特典",
+]
 PRODUCT_TEMPLATES = [
     ("スマートフォン", "SB Phone", "端末", "モバイル", "スマートフォン", "64GB", 72800),
     ("タブレット", "SB Tab", "端末", "モバイル", "タブレット", "128GB", 65800),
@@ -392,6 +469,11 @@ COMPASS_SALES_CHANNELS = ["直販", "代理店", "パートナー"]
 COMPASS_CORP_KINDS = ["法人サービス", "個人", "官公庁"]
 COMPASS_BILLING_FORMS = ["直請求", "代理店請求", "請求代行"]
 COMPASS_APPROVER_LAYERS = ["部長承認", "統括承認", "本部長承認"]
-COLORS = [("ブラック", "BLK"), ("ホワイト", "WHT"), ("ネイビー", "NVY"), ("シルバー", "SLV")]
+COLORS = [
+    ("ブラック", "BLK"),
+    ("ホワイト", "WHT"),
+    ("ネイビー", "NVY"),
+    ("シルバー", "SLV"),
+]
 COMPANY_CATEGORY_NAMES = ["直販", "一次代理店", "二次代理店"]
 OPERATION_PERMISSION_NAMES = ["閲覧", "編集", "管理"]

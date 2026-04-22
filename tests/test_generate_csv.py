@@ -82,6 +82,8 @@ def test_default_run_generates_all_expected_files(tmp_path: Path) -> None:
 
     files = generated_files(tmp_path)
     assert files == [
+        "bfs_entry_informations_all.csv",
+        "bfs_entry_informations_diff.csv",
         "compass_sales_approval.csv",
         "m_agency_all.csv",
         "m_agency_diff.csv",
@@ -94,12 +96,16 @@ def test_default_run_generates_all_expected_files(tmp_path: Path) -> None:
     _, agency_diff_rows = read_csv(tmp_path, "m_agency_diff.csv")
     _, compass_rows = read_csv(tmp_path, "compass_sales_approval.csv")
     _, product_rows = read_csv(tmp_path, "m_product_all.csv")
+    _, bfs_all_rows = read_csv(tmp_path, "bfs_entry_informations_all.csv")
+    _, bfs_diff_rows = read_csv(tmp_path, "bfs_entry_informations_diff.csv")
 
     assert len(campaign_rows) == 50
     assert len(agency_rows) == 1000
     assert len(agency_diff_rows) == 53
     assert len(compass_rows) == 100
     assert len(product_rows) == 1000
+    assert len(bfs_all_rows) == 1000
+    assert len(bfs_diff_rows) == 1000
 
 
 def test_targets_campaign_only_generates_single_file(tmp_path: Path) -> None:
@@ -110,6 +116,14 @@ def test_targets_campaign_only_generates_single_file(tmp_path: Path) -> None:
 def test_targets_compass_only_generates_single_file(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "compass")
     assert generated_files(tmp_path) == ["compass_sales_approval.csv"]
+
+
+def test_targets_bfs_only_generates_two_files(tmp_path: Path) -> None:
+    run_script(str(tmp_path), "--targets", "bfs")
+    assert generated_files(tmp_path) == [
+        "bfs_entry_informations_all.csv",
+        "bfs_entry_informations_diff.csv",
+    ]
 
 
 def test_console_outputs_generated_file_names(tmp_path: Path) -> None:
@@ -132,6 +146,8 @@ def test_same_seed_is_deterministic(tmp_path: Path) -> None:
     run_script(str(second_tmp), "--seed", "7")
 
     for name in [
+        "bfs_entry_informations_all.csv",
+        "bfs_entry_informations_diff.csv",
         "m_campaign_all.csv",
         "m_agency_all.csv",
         "m_agency_diff.csv",
@@ -151,12 +167,16 @@ def test_csv_headers_include_id_column(tmp_path: Path) -> None:
     diff_header, _ = read_csv(tmp_path, "m_agency_diff.csv")
     compass_header, _ = read_csv(tmp_path, "compass_sales_approval.csv")
     product_header, _ = read_csv(tmp_path, "m_product_all.csv")
+    bfs_all_header, _ = read_csv(tmp_path, "bfs_entry_informations_all.csv")
+    bfs_diff_header, _ = read_csv(tmp_path, "bfs_entry_informations_diff.csv")
 
     assert campaign_header[0] == "id"
     assert agency_header[0] == "id"
     assert diff_header[0] == "id"
     assert compass_header[0] == "ID"
     assert product_header[0] == "id"
+    assert bfs_all_header[0] == "id"
+    assert bfs_diff_header[0] == "id"
 
 
 def test_csv_headers_use_japanese_labels_from_format_spec(tmp_path: Path) -> None:
@@ -167,12 +187,16 @@ def test_csv_headers_use_japanese_labels_from_format_spec(tmp_path: Path) -> Non
     diff_header, _ = read_csv(tmp_path, "m_agency_diff.csv")
     compass_header, _ = read_csv(tmp_path, "compass_sales_approval.csv")
     product_header, _ = read_csv(tmp_path, "m_product_all.csv")
+    bfs_all_header, _ = read_csv(tmp_path, "bfs_entry_informations_all.csv")
+    bfs_diff_header, _ = read_csv(tmp_path, "bfs_entry_informations_diff.csv")
 
     assert campaign_header[:4] == ["id", "キャンペーンid", "キャンペーン名称", "説明"]
     assert agency_header[:4] == ["id", "取次店コード", "有効開始日", "有効終了日"]
     assert compass_header[:4] == ["ID", "決裁番号", "決裁件名", "ステータス"]
     assert product_header[:4] == ["id", "商品コード", "有効開始日", "有効開始時間"]
     assert agency_header == diff_header
+    assert bfs_all_header[:4] == ["id", "エントリ番号", "件名", "作成区分"]
+    assert bfs_all_header == bfs_diff_header
 
 
 def test_load_specs_can_read_a_directory_of_markdown_files(tmp_path: Path) -> None:
@@ -201,6 +225,16 @@ def test_load_specs_can_read_a_directory_of_markdown_files(tmp_path: Path) -> No
     assert [column.header_label for column in specs["campaign"]] == ["id"]
 
 
+def test_load_specs_includes_bfs_entry_information() -> None:
+    """実フォーマットのBFS定義が読み込める。"""
+    specs = load_specs(ROOT / "docs/format")
+
+    assert "bfs" in specs
+    assert len(specs["bfs"]) == 217
+    assert [column.name for column in specs["bfs"][:4]] == ["id", "entry_number", "subject", "creation_category"]
+    assert [column.header_label for column in specs["bfs"][:4]] == ["id", "エントリ番号", "件名", "作成区分"]
+
+
 def test_csv_rows_include_stable_generated_id_values(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--seed", "7")
 
@@ -208,6 +242,8 @@ def test_csv_rows_include_stable_generated_id_values(tmp_path: Path) -> None:
     _, agency_rows = read_csv(tmp_path, "m_agency_all.csv")
     _, compass_rows = read_csv(tmp_path, "compass_sales_approval.csv")
     _, product_rows = read_csv(tmp_path, "m_product_all.csv")
+    _, bfs_all_rows = read_csv(tmp_path, "bfs_entry_informations_all.csv")
+    _, bfs_diff_rows = read_csv(tmp_path, "bfs_entry_informations_diff.csv")
 
     assert campaign_rows[0][0] == "1"
     assert campaign_rows[1][0] == "2"
@@ -217,6 +253,10 @@ def test_csv_rows_include_stable_generated_id_values(tmp_path: Path) -> None:
     assert product_rows[1][0] == "2"
     assert compass_rows[0][0] == "CM0000000001"
     assert compass_rows[1][0] == "CM0000000002"
+    assert bfs_all_rows[0][0] == "1"
+    assert bfs_all_rows[1][0] == "2"
+    assert bfs_diff_rows[0][0] == "1"
+    assert bfs_diff_rows[1][0] == "2"
 
 
 def test_agency_diff_is_subset_of_agency_all(tmp_path: Path) -> None:
