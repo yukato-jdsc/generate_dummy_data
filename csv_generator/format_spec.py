@@ -53,11 +53,13 @@ def _parse_column_row(line: str) -> tuple[str, str, str, str] | None:
     if not line.startswith("|") or "`" not in line:
         return None
     parts = [part.strip() for part in line.strip().strip("|").split("|")]
-    if len(parts) < 7:
+    if len(parts) < 6:
         return None
-    if len(parts) == 7:
-        return parts[1], parts[2].strip("`"), parts[3], parts[4]
-    return parts[2], parts[3].strip("`"), parts[4], parts[5]
+    if len(parts) == 6:
+        return parts[0], parts[1].strip("`"), parts[2], parts[3]
+    if len(parts) == 8:
+        return parts[2], parts[3].strip("`"), parts[4], parts[5]
+    return parts[1], parts[2].strip("`"), parts[3], parts[4]
 
 
 def parse_max_length(length_text: str) -> int | None:

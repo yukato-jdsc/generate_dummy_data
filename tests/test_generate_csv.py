@@ -254,9 +254,9 @@ def test_load_specs_can_read_a_directory_of_markdown_files(tmp_path: Path) -> No
                 "",
                 "## カラム定義",
                 "",
-                "| SEQ | 項目名 | カラム名 | 型 | 桁 | 仮名化 | 説明 |",
-                "| --- | --- | --- | --- | --- | --- | --- |",
-                "|  | 1 | キャンペーンid | `campaign_id` | VARCHAR | 40 | － | - |",
+                "| 項目名 | カラム名 | 型 | 桁 | 仮名化 | 説明 |",
+                "| --- | --- | --- | --- | --- | --- |",
+                "| キャンペーンid | `campaign_id` | VARCHAR | 40 | － | - |",
             ]
         ),
         encoding="utf-8",

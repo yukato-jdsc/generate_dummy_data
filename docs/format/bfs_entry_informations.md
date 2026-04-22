@@ -11,221 +11,221 @@
 
 ## カラム定義
 
-| SEQ | 項目名 | カラム名 | 型 | 桁 | 仮名化 | 説明 |
-| --- | --- | --- | --- | --- | --- | --- |
-|  | 1 | エントリ番号 | `entry_number` | VARCHAR | 54 | － | - |
-|  | 2 | 件名 | `subject` | VARCHAR | 2304 | － | - |
-|  | 3 | 作成区分 | `creation_category` | VARCHAR | 900 | － | - |
-|  | 4 | オーダ種別 | `order_type` | VARCHAR | 900 | － | - |
-|  | 5 | 申込書連携 | `application_form_linkage` | VARCHAR | 900 | － | - |
-|  | 6 | 特約分離出力有無 | `special_contract_separate_output` | VARCHAR | 900 | － | - |
-|  | 7 | 通知書対象 | `notification_target` | VARCHAR | 900 | － | - |
-|  | 8 | 開通済有無 | `activation_status` | VARCHAR | 900 | － | - |
-|  | 9 | 開通日 | `activation_date` | VARCHAR | 60 | － | - |
-|  | 10 | 非完結依頼種別 | `incomplete_request_type` | VARCHAR | 900 | － | - |
-|  | 11 | コピー元エントリ種別 | `source_entry_type` | VARCHAR | 900 | － | - |
-|  | 12 | 営業担当者コード | `salesperson_code` | VARCHAR | 21 | － | - |
-|  | 13 | 営業担当者 | `salesperson` | VARCHAR | 2295 | － | - |
-|  | 14 | 取次店コード | `agency_code` | VARCHAR | 27 | － | - |
-|  | 15 | 所属代理店 | `affiliated_agency` | VARCHAR | 900 | － | - |
-|  | 16 | キャリア種別 | `carrier_type` | VARCHAR | 2295 | － | - |
-|  | 17 | 事業者区分 | `business_operator_category` | VARCHAR | 2295 | － | - |
-|  | 18 | 申込書番号 | `application_form_number` | VARCHAR | 54 | － | - |
-|  | 19 | 契約種別 | `contract_type` | VARCHAR | 900 | － | - |
-|  | 20 | 納品予定日 | `expected_delivery_date` | VARCHAR | 60 | － | - |
-|  | 21 | 申込日 | `application_date` | VARCHAR | 60 | － | - |
-|  | 22 | ipad顧客種別 | `ipad_customer_type` | VARCHAR | 900 | － | - |
-|  | 23 | 請求方法 | `billing_method` | VARCHAR | 900 | － | - |
-|  | 24 | 支払回数 | `number_of_payments` | VARCHAR | 90 | － | - |
-|  | 25 | 請求区分 | `billing_category` | VARCHAR | 900 | － | - |
-|  | 26 | 通話料合算種別 | `call_charge_combined_type` | VARCHAR | 900 | － | - |
-|  | 27 | 付属品購入 | `accessory_purchase` | VARCHAR | 2295 | － | - |
-|  | 28 | 付属品代金支払い方法 | `accessory_fee_payment_method` | VARCHAR | 900 | － | - |
-|  | 29 | 付属品代金請求区分 | `accessory_fee_billing_category` | VARCHAR | 900 | － | - |
-|  | 30 | 付属品通話料合算種別 | `accessory_fee_combined_type` | VARCHAR | 900 | － | - |
-|  | 31 | 変更対象 | `change_target` | VARCHAR | 900 | － | - |
-|  | 32 | 受付区分 | `reception_category` | VARCHAR | 900 | － | - |
-|  | 33 | webオーダ番号 | `web_order_number` | VARCHAR | 33 | － | - |
-|  | 34 | 請求先割引変更 | `billing_discount_change` | VARCHAR | 2295 | － | - |
-|  | 35 | エントリ作成者id | `entry_creator_id` | VARCHAR | 60 | － | - |
-|  | 36 | エントリ作成日時 | `entry_creation_date_and_time` | VARCHAR | 78 | － | - |
-|  | 37 | エントリ更新担当者id | `entry_updater_id` | VARCHAR | 60 | － | - |
-|  | 38 | エントリ更新日時 | `entry_update_date_and_time` | VARCHAR | 78 | － | - |
-|  | 39 | 関係者1 | `stakeholder_1` | VARCHAR | 2295 | － | - |
-|  | 40 | 関係者2 | `stakeholder_2` | VARCHAR | 2295 | － | - |
-|  | 41 | 関係者3 | `stakeholder_3` | VARCHAR | 2295 | － | - |
-|  | 42 | 関係者4 | `stakeholder_4` | VARCHAR | 2295 | － | - |
-|  | 43 | 関係者5 | `stakeholder_5` | VARCHAR | 2295 | － | - |
-|  | 44 | 関係者6 | `stakeholder_6` | VARCHAR | 2295 | － | - |
-|  | 45 | 関係者7 | `stakeholder_7` | VARCHAR | 2295 | － | - |
-|  | 46 | 関係者8 | `stakeholder_8` | VARCHAR | 2295 | － | - |
-|  | 47 | 関係者9 | `stakeholder_9` | VARCHAR | 2295 | － | - |
-|  | 48 | 関係者10 | `stakeholder_10` | VARCHAR | 2295 | － | - |
-|  | 49 | sfa番号 | `sfa_number` | VARCHAR | 108 | － | - |
-|  | 50 | sfa案件名 | `sfa_project_name` | VARCHAR | 765 | － | - |
-|  | 51 | 統一企業コード | `unified_company_code` | VARCHAR | 18 | － | - |
-|  | 52 | 企業名 | `company_name` | VARCHAR | 900 | － | - |
-|  | 53 | 営業決裁件名 | `sales_approval_subject` | VARCHAR | 2304 | － | - |
-|  | 54 | 営業決裁番号 | `sales_approval_number` | VARCHAR | 108 | － | - |
-|  | 55 | 代理店コード | `distributor_code` | VARCHAR | 27 | － | - |
-|  | 56 | 集約ブック番号 | `consolidated_book_number` | VARCHAR | 42 | － | - |
-|  | 57 | 試算ブック番号 | `estimate_book_number` | VARCHAR | 54 | － | - |
-|  | 58 | かんたん見積番号 | `easy_estimate_number` | VARCHAR | 60 | － | - |
-|  | 59 | 相対契約管理番号 | `relative_contract_management_number` | VARCHAR | 108 | － | - |
-|  | 60 | 決裁番号1 | `approval_number_1` | VARCHAR | 90 | － | - |
-|  | 61 | 決裁番号2 | `approval_number_2` | VARCHAR | 90 | － | - |
-|  | 62 | 決裁番号3 | `approval_number_3` | VARCHAR | 90 | － | - |
-|  | 63 | 決裁番号4 | `approval_number_4` | VARCHAR | 90 | － | - |
-|  | 64 | 決裁番号5 | `approval_number_5` | VARCHAR | 90 | － | - |
-|  | 65 | 取次店コード1 | `agency_code_1` | VARCHAR | 54 | － | - |
-|  | 66 | 取次店名 | `agency_name` | VARCHAR | 2295 | － | - |
-|  | 67 | 営業担当者1 | `sales_representative_1` | VARCHAR | 2295 | － | - |
-|  | 68 | 電話番号 | `telephone_number` | VARCHAR | 39 | － | - |
-|  | 69 | 部署名 | `department_name` | VARCHAR | 2133 | － | - |
-|  | 70 | 本人確認実施者コード | `identity_verification_implementer_code` | VARCHAR | 30 | － | - |
-|  | 71 | 受付担当者コード | `receptionist_code` | VARCHAR | 30 | － | - |
-|  | 72 | 申請者名 | `applicant_name` | VARCHAR | 900 | － | - |
-|  | 73 | 部署名1 | `department_name_1` | VARCHAR | 2295 | － | - |
-|  | 74 | 共通社員番号 | `common_employee_number` | VARCHAR | 21 | － | - |
-|  | 75 | 与信申請番号 | `credit_application_number` | VARCHAR | 48 | － | - |
-|  | 76 | 与信回答番号 | `credit_response_number` | VARCHAR | 51 | － | - |
-|  | 77 | 契約者番号 | `contractor_number` | VARCHAR | 36 | － | - |
-|  | 78 | 契約者タイプ | `contractor_type` | VARCHAR | 2295 | － | - |
-|  | 79 | 法人格位置 | `corporate_status_position` | VARCHAR | 2295 | － | - |
-|  | 80 | 法人格 | `corporate_status` | VARCHAR | 2295 | － | - |
-|  | 81 | 契約者名 | `contractor_name` | VARCHAR | 2295 | － | - |
-|  | 82 | 契約者名カナ | `contractor_name_katakana` | VARCHAR | 2295 | － | - |
-|  | 83 | 法人タイプ | `corporate_type` | VARCHAR | 2295 | － | - |
-|  | 84 | みなし法人用決裁番号 | `deemed_corporate_approval_number` | VARCHAR | 765 | － | - |
-|  | 85 | 担当者名 | `contact_person_name` | VARCHAR | 270 | － | - |
-|  | 86 | 担当者名カナ | `contact_person_name_katakana` | VARCHAR | 540 | － | - |
-|  | 87 | 担当者部署 | `contact_person_department` | VARCHAR | 2295 | － | - |
-|  | 88 | 契変更確認チェック | `contract_change_confirmation_check` | VARCHAR | 900 | － | - |
-|  | 89 | 契約者名変更コメント | `contractor_name_change_comment` | VARCHAR | 2295 | － | - |
-|  | 90 | 請求先番号 | `billing_number` | VARCHAR | 36 | － | - |
-|  | 91 | 法人格位置1 | `corporate_entity_position_1` | VARCHAR | 2295 | － | - |
-|  | 92 | 法人格1 | `corporate_entity_1` | VARCHAR | 2295 | － | - |
-|  | 93 | 請求先名 | `billing_name` | VARCHAR | 2295 | － | - |
-|  | 94 | 請求先名カナ | `billing_name_katakana` | VARCHAR | 2295 | － | - |
-|  | 95 | 部門名 | `billing_department_name` | VARCHAR | 2304 | － | - |
-|  | 96 | 担当者 | `contact_person` | VARCHAR | 270 | － | - |
-|  | 97 | 支払方法 | `payment_method` | VARCHAR | 1536 | － | - |
-|  | 98 | 請求書タイプ | `invoice_type` | VARCHAR | 1536 | － | - |
-|  | 99 | 請求書送付 | `invoice_delivery` | VARCHAR | 1536 | － | - |
-|  | 100 | 下4桁表示 | `last_4_digits` | VARCHAR | 1536 | － | - |
-|  | 101 | 請求群情報 | `billing_group_information` | VARCHAR | 1536 | － | - |
-|  | 102 | 割賦許容番号 | `installment_payment_allowance_number` | VARCHAR | 60 | － | - |
-|  | 103 | 代行業者 | `agency` | VARCHAR | 1536 | － | - |
-|  | 104 | 法人複数回線割引 | `corporate_multiple_line_discount` | VARCHAR | 300 | － | - |
-|  | 105 | 割引率 | `discount_rate` | VARCHAR | 18 | － | - |
-|  | 106 | 割引額 | `discount_amount` | VARCHAR | 24 | － | - |
-|  | 107 | 割引月数 | `number_of_discount_months` | VARCHAR | 300 | － | - |
-|  | 108 | 手数料種別 | `fee_type` | VARCHAR | 3 | － | - |
-|  | 109 | 請求書一括割引 | `bulk_invoice_discount` | VARCHAR | 300 | － | - |
-|  | 110 | 割引率1 | `discount_rate_1` | VARCHAR | 18 | － | - |
-|  | 111 | 割引額1 | `discount_amount_1` | VARCHAR | 24 | － | - |
-|  | 112 | 割引月数1 | `number_of_discount_months_1` | VARCHAR | 300 | － | - |
-|  | 113 | 手数料種別1 | `fee_type_1` | VARCHAR | 3 | － | - |
-|  | 114 | s番法人複数回線割引 | `number_s_corporate_multiple_line_discount` | VARCHAR | 300 | － | - |
-|  | 115 | 割引率2 | `discount_rate_2` | VARCHAR | 18 | － | - |
-|  | 116 | 割引額2 | `discount_amount_2` | VARCHAR | 24 | － | - |
-|  | 117 | 割引月数2 | `number_of_discount_months_2` | VARCHAR | 300 | － | - |
-|  | 118 | 手数料種別2 | `fee_type_2` | VARCHAR | 3 | － | - |
-|  | 119 | s番大口通話料割引 | `s_number_large_call_discount` | VARCHAR | 300 | － | - |
-|  | 120 | 割引率3 | `discount_rate_3` | VARCHAR | 18 | － | - |
-|  | 121 | 割引額3 | `discount_amount_3` | VARCHAR | 24 | － | - |
-|  | 122 | 割引月数3 | `number_of_discount_months_3` | VARCHAR | 300 | － | - |
-|  | 123 | 手数料種別3 | `fee_type_3` | VARCHAR | 3 | － | - |
-|  | 124 | シェア | `share` | VARCHAR | 300 | － | - |
-|  | 125 | 割引率4 | `discount_rate_4` | VARCHAR | 18 | － | - |
-|  | 126 | 割引額4 | `discount_amount_4` | VARCHAR | 24 | － | - |
-|  | 127 | 割引月数4 | `number_of_discount_months_4` | VARCHAR | 300 | － | - |
-|  | 128 | 手数料種別4 | `fee_type_4` | VARCHAR | 3 | － | - |
-|  | 129 | 請求先送付先区分 | `billing_address_shipping_address_category` | VARCHAR | 1536 | － | - |
-|  | 130 | 送付先宛名 | `shipping_address` | VARCHAR | 2295 | － | - |
-|  | 131 | 請求書カスタマイズ | `invoice_customization` | VARCHAR | 2304 | － | - |
-|  | 132 | 請求書送付区分 | `billing_address_category` | VARCHAR | 1536 | － | - |
-|  | 133 | 送付先宛名1 | `shipping_address_1` | VARCHAR | 2295 | － | - |
-|  | 134 | 請求書カスタマイズ1 | `invoice_customization_1` | VARCHAR | 2304 | － | - |
-|  | 135 | 特約開始年月日 | `special_agreement_start_date` | VARCHAR | 60 | － | - |
-|  | 136 | 特約期間 | `special_agreement_period` | VARCHAR | 900 | － | - |
-|  | 137 | 契約期間月数 | `contract_period_in_months` | VARCHAR | 6 | － | - |
-|  | 138 | 自動更新後の期間 | `period_after_automatic_renewal` | VARCHAR | 900 | － | - |
-|  | 139 | 初期レンタル期間 | `initial_rental_period` | VARCHAR | 900 | － | - |
-|  | 140 | 中古レンタル開始日 | `used_rental_start_date` | VARCHAR | 60 | － | - |
-|  | 141 | 中古レンタル終了日 | `used_rental_end_date` | VARCHAR | 60 | － | - |
-|  | 142 | 特約適用上限回線数 | `maximum_number_of_lines_applicable_to_the_special_agreement` | DECIMAL | 10 | － | - |
-|  | 143 | 回線数 | `number_of_lines` | DECIMAL | 10 | － | - |
-|  | 144 | 倉庫種別 | `warehouse_type` | VARCHAR | 900 | － | - |
-|  | 145 | 非完結帳票作成依頼 | `request_for_incomplete_report_creation` | VARCHAR | 900 | － | - |
-|  | 146 | gisun登録不可 | `gisun_registration_not_possible` | VARCHAR | 3 | － | - |
-|  | 147 | 交換種別 | `replacement_type` | VARCHAR | 900 | － | - |
-|  | 148 | 在庫種別 | `inventory_type` | VARCHAR | 900 | － | - |
-|  | 149 | 営業所 | `sales_office` | VARCHAR | 900 | － | - |
-|  | 150 | 申告内容 | `declaration_details` | VARCHAR | 900 | － | - |
-|  | 151 | usim種別 | `usim_type` | VARCHAR | 450 | － | - |
-|  | 152 | usim種別その他 | `other_usim_types` | VARCHAR | 900 | － | - |
-|  | 153 | 台数 | `quantity` | DECIMAL | 10 | － | - |
-|  | 154 | wo専用usim | `wo_specific_usim` | VARCHAR | 900 | － | - |
-|  | 155 | 試算テンプレートver | `estimate_template_version` | VARCHAR | 90 | － | - |
-|  | 156 | 決裁承認日 | `approval_date` | VARCHAR | 60 | － | - |
-|  | 157 | 起票元試算番号 | `original_estimate_number` | VARCHAR | 54 | － | - |
-|  | 158 | コピー元エントリ番号 | `copy_entry_number` | VARCHAR | 54 | － | - |
-|  | 159 | 最低利用回線数 | `minimum_number_of_lines` | DECIMAL | 11 | － | - |
-|  | 160 | 端末縛り金額 | `device_binding_amount` | DECIMAL | 11 | － | - |
-|  | 161 | 端末縛り期間 | `device_binding_period` | DECIMAL | 3 | － | - |
-|  | 162 | 国際rm値引指定有無 | `international_rm_discount_specification` | VARCHAR | 900 | － | - |
-|  | 163 | 国際rm値引指定割引率 | `international_rm_discount_specification_discount_rate` | VARCHAR | 24 | － | - |
-|  | 164 | プラン縛り1 | `plan_binding_1` | VARCHAR | 1800 | － | - |
-|  | 165 | プラン縛り2 | `plan_binding_2` | VARCHAR | 1800 | － | - |
-|  | 166 | プラン縛り3 | `plan_binding_3` | VARCHAR | 1800 | － | - |
-|  | 167 | プラン縛り4 | `plan_binding_4` | VARCHAR | 1800 | － | - |
-|  | 168 | プラン縛り5 | `plan_binding_5` | VARCHAR | 1800 | － | - |
-|  | 169 | プラン縛り6 | `plan_binding_6` | VARCHAR | 1800 | － | - |
-|  | 170 | プラン縛り7 | `plan_restriction_7` | VARCHAR | 1800 | － | - |
-|  | 171 | プラン縛り8 | `plan_restriction_8` | VARCHAR | 1800 | － | - |
-|  | 172 | プラン縛り9 | `plan_restriction_9` | VARCHAR | 1800 | － | - |
-|  | 173 | プラン縛り10 | `plan_restriction_10` | VARCHAR | 1800 | － | - |
-|  | 174 | プラン縛り11 | `plan_restriction_11` | VARCHAR | 1800 | － | - |
-|  | 175 | プラン縛り12 | `plan_restriction_12` | VARCHAR | 1800 | － | - |
-|  | 176 | 比率指定プラン1 | `percentage_plan_1` | VARCHAR | 1800 | － | - |
-|  | 177 | プラン比率1 | `plan_ratio_1` | VARCHAR | 24 | － | - |
-|  | 178 | 比率指定プラン2 | `percentage_plan_2` | VARCHAR | 1800 | － | - |
-|  | 179 | プラン比率2 | `plan_ratio_2` | VARCHAR | 24 | － | - |
-|  | 180 | 比率指定プラン3 | `percentage_plan_3` | VARCHAR | 1800 | － | - |
-|  | 181 | プラン比率3 | `plan_ratio_3` | VARCHAR | 24 | － | - |
-|  | 182 | 比率指定プラン4 | `percentage_plan_4` | VARCHAR | 1800 | － | - |
-|  | 183 | プラン比率4 | `plan_ratio_4` | VARCHAR | 24 | － | - |
-|  | 184 | 必須opカテゴリ1 | `required_op_category_1` | VARCHAR | 1800 | － | - |
-|  | 185 | 必須op1 | `required_op_1` | VARCHAR | 1800 | － | - |
-|  | 186 | 必須opカテゴリ2 | `required_op_category_2` | VARCHAR | 1800 | － | - |
-|  | 187 | 必須op2 | `required_op_2` | VARCHAR | 1800 | － | - |
-|  | 188 | 必須opカテゴリ3 | `required_op_category_3` | VARCHAR | 1800 | － | - |
-|  | 189 | 必須op3 | `required_op_3` | VARCHAR | 1800 | － | - |
-|  | 190 | 必須opカテゴリ4 | `required_op_category_4` | VARCHAR | 1800 | － | - |
-|  | 191 | 必須op4 | `required_op_4` | VARCHAR | 1800 | － | - |
-|  | 192 | 比率指定opカテゴリ1 | `percentage_op_category_1` | VARCHAR | 1800 | － | - |
-|  | 193 | 比率指定op1 | `percentage_op_1` | VARCHAR | 1800 | － | - |
-|  | 194 | op比率1 | `op_ratio_1` | VARCHAR | 24 | － | - |
-|  | 195 | 比率指定opカテゴリ2 | `percentage_op_category_2` | VARCHAR | 1800 | － | - |
-|  | 196 | 比率指定op2 | `percentage_op_2` | VARCHAR | 1800 | － | - |
-|  | 197 | op比率2 | `op_ratio_2` | VARCHAR | 24 | － | - |
-|  | 198 | 比率指定opカテゴリ3 | `percentage_op_category_3` | VARCHAR | 1800 | － | - |
-|  | 199 | 比率指定op3 | `percentage_op_3` | VARCHAR | 1800 | － | - |
-|  | 200 | op比率3 | `op_ratio_3` | VARCHAR | 24 | － | - |
-|  | 201 | 比率指定opカテゴリ4 | `percentage_op_category_4` | VARCHAR | 1800 | － | - |
-|  | 202 | 比率指定op4 | `percentage_op_4` | VARCHAR | 1800 | － | - |
-|  | 203 | op比率4 | `op_ratio_4` | VARCHAR | 24 | － | - |
-|  | 204 | その他指定1 | `other_options_1` | VARCHAR | 1800 | － | - |
-|  | 205 | その他指定2 | `other_options_2` | VARCHAR | 1800 | － | - |
-|  | 206 | その他指定3 | `other_options_3` | VARCHAR | 1800 | － | - |
-|  | 207 | その他指定4 | `other_options_4` | VARCHAR | 1800 | － | - |
-|  | 208 | その他指定5 | `other_options_5` | VARCHAR | 1800 | － | - |
-|  | 209 | その他指定6 | `other_options_6` | VARCHAR | 1800 | － | - |
-|  | 210 | その他指定7 | `other_options_7` | VARCHAR | 1800 | － | - |
-|  | 211 | その他指定8 | `other_options_8` | VARCHAR | 1800 | － | - |
-|  | 212 | 補足 | `additional_information` | VARCHAR | 12000 | － | - |
-|  | 213 | チャネル | `channel` | VARCHAR | 900 | － | - |
-|  | 214 | 試算ステータス | `estimated_status` | VARCHAR | 900 | － | - |
-|  | 215 | rental_中古_開始年月日 | `rental_used_start_date` | VARCHAR | 60 | － | - |
-|  | 216 | rental_中古_期間_ヶ月 | `rental_used_period_months` | VARCHAR | 6 | － | - |
+| 項目名 | カラム名 | 型 | 桁 | 仮名化 | 説明 |
+| --- | --- | --- | --- | --- | --- |
+| エントリ番号 | `entry_number` | VARCHAR | 54 | － | - |
+| 件名 | `subject` | VARCHAR | 2304 | － | - |
+| 作成区分 | `creation_category` | VARCHAR | 900 | － | - |
+| オーダ種別 | `order_type` | VARCHAR | 900 | － | - |
+| 申込書連携 | `application_form_linkage` | VARCHAR | 900 | － | - |
+| 特約分離出力有無 | `special_contract_separate_output` | VARCHAR | 900 | － | - |
+| 通知書対象 | `notification_target` | VARCHAR | 900 | － | - |
+| 開通済有無 | `activation_status` | VARCHAR | 900 | － | - |
+| 開通日 | `activation_date` | VARCHAR | 60 | － | - |
+| 非完結依頼種別 | `incomplete_request_type` | VARCHAR | 900 | － | - |
+| コピー元エントリ種別 | `source_entry_type` | VARCHAR | 900 | － | - |
+| 営業担当者コード | `salesperson_code` | VARCHAR | 21 | － | - |
+| 営業担当者 | `salesperson` | VARCHAR | 2295 | － | - |
+| 取次店コード | `agency_code` | VARCHAR | 27 | － | - |
+| 所属代理店 | `affiliated_agency` | VARCHAR | 900 | － | - |
+| キャリア種別 | `carrier_type` | VARCHAR | 2295 | － | - |
+| 事業者区分 | `business_operator_category` | VARCHAR | 2295 | － | - |
+| 申込書番号 | `application_form_number` | VARCHAR | 54 | － | - |
+| 契約種別 | `contract_type` | VARCHAR | 900 | － | - |
+| 納品予定日 | `expected_delivery_date` | VARCHAR | 60 | － | - |
+| 申込日 | `application_date` | VARCHAR | 60 | － | - |
+| ipad顧客種別 | `ipad_customer_type` | VARCHAR | 900 | － | - |
+| 請求方法 | `billing_method` | VARCHAR | 900 | － | - |
+| 支払回数 | `number_of_payments` | VARCHAR | 90 | － | - |
+| 請求区分 | `billing_category` | VARCHAR | 900 | － | - |
+| 通話料合算種別 | `call_charge_combined_type` | VARCHAR | 900 | － | - |
+| 付属品購入 | `accessory_purchase` | VARCHAR | 2295 | － | - |
+| 付属品代金支払い方法 | `accessory_fee_payment_method` | VARCHAR | 900 | － | - |
+| 付属品代金請求区分 | `accessory_fee_billing_category` | VARCHAR | 900 | － | - |
+| 付属品通話料合算種別 | `accessory_fee_combined_type` | VARCHAR | 900 | － | - |
+| 変更対象 | `change_target` | VARCHAR | 900 | － | - |
+| 受付区分 | `reception_category` | VARCHAR | 900 | － | - |
+| webオーダ番号 | `web_order_number` | VARCHAR | 33 | － | - |
+| 請求先割引変更 | `billing_discount_change` | VARCHAR | 2295 | － | - |
+| エントリ作成者id | `entry_creator_id` | VARCHAR | 60 | － | - |
+| エントリ作成日時 | `entry_creation_date_and_time` | VARCHAR | 78 | － | - |
+| エントリ更新担当者id | `entry_updater_id` | VARCHAR | 60 | － | - |
+| エントリ更新日時 | `entry_update_date_and_time` | VARCHAR | 78 | － | - |
+| 関係者1 | `stakeholder_1` | VARCHAR | 2295 | － | - |
+| 関係者2 | `stakeholder_2` | VARCHAR | 2295 | － | - |
+| 関係者3 | `stakeholder_3` | VARCHAR | 2295 | － | - |
+| 関係者4 | `stakeholder_4` | VARCHAR | 2295 | － | - |
+| 関係者5 | `stakeholder_5` | VARCHAR | 2295 | － | - |
+| 関係者6 | `stakeholder_6` | VARCHAR | 2295 | － | - |
+| 関係者7 | `stakeholder_7` | VARCHAR | 2295 | － | - |
+| 関係者8 | `stakeholder_8` | VARCHAR | 2295 | － | - |
+| 関係者9 | `stakeholder_9` | VARCHAR | 2295 | － | - |
+| 関係者10 | `stakeholder_10` | VARCHAR | 2295 | － | - |
+| sfa番号 | `sfa_number` | VARCHAR | 108 | － | - |
+| sfa案件名 | `sfa_project_name` | VARCHAR | 765 | － | - |
+| 統一企業コード | `unified_company_code` | VARCHAR | 18 | － | - |
+| 企業名 | `company_name` | VARCHAR | 900 | － | - |
+| 営業決裁件名 | `sales_approval_subject` | VARCHAR | 2304 | － | - |
+| 営業決裁番号 | `sales_approval_number` | VARCHAR | 108 | － | - |
+| 代理店コード | `distributor_code` | VARCHAR | 27 | － | - |
+| 集約ブック番号 | `consolidated_book_number` | VARCHAR | 42 | － | - |
+| 試算ブック番号 | `estimate_book_number` | VARCHAR | 54 | － | - |
+| かんたん見積番号 | `easy_estimate_number` | VARCHAR | 60 | － | - |
+| 相対契約管理番号 | `relative_contract_management_number` | VARCHAR | 108 | － | - |
+| 決裁番号1 | `approval_number_1` | VARCHAR | 90 | － | - |
+| 決裁番号2 | `approval_number_2` | VARCHAR | 90 | － | - |
+| 決裁番号3 | `approval_number_3` | VARCHAR | 90 | － | - |
+| 決裁番号4 | `approval_number_4` | VARCHAR | 90 | － | - |
+| 決裁番号5 | `approval_number_5` | VARCHAR | 90 | － | - |
+| 取次店コード1 | `agency_code_1` | VARCHAR | 54 | － | - |
+| 取次店名 | `agency_name` | VARCHAR | 2295 | － | - |
+| 営業担当者1 | `sales_representative_1` | VARCHAR | 2295 | － | - |
+| 電話番号 | `telephone_number` | VARCHAR | 39 | － | - |
+| 部署名 | `department_name` | VARCHAR | 2133 | － | - |
+| 本人確認実施者コード | `identity_verification_implementer_code` | VARCHAR | 30 | － | - |
+| 受付担当者コード | `receptionist_code` | VARCHAR | 30 | － | - |
+| 申請者名 | `applicant_name` | VARCHAR | 900 | － | - |
+| 部署名1 | `department_name_1` | VARCHAR | 2295 | － | - |
+| 共通社員番号 | `common_employee_number` | VARCHAR | 21 | － | - |
+| 与信申請番号 | `credit_application_number` | VARCHAR | 48 | － | - |
+| 与信回答番号 | `credit_response_number` | VARCHAR | 51 | － | - |
+| 契約者番号 | `contractor_number` | VARCHAR | 36 | － | - |
+| 契約者タイプ | `contractor_type` | VARCHAR | 2295 | － | - |
+| 法人格位置 | `corporate_status_position` | VARCHAR | 2295 | － | - |
+| 法人格 | `corporate_status` | VARCHAR | 2295 | － | - |
+| 契約者名 | `contractor_name` | VARCHAR | 2295 | － | - |
+| 契約者名カナ | `contractor_name_katakana` | VARCHAR | 2295 | － | - |
+| 法人タイプ | `corporate_type` | VARCHAR | 2295 | － | - |
+| みなし法人用決裁番号 | `deemed_corporate_approval_number` | VARCHAR | 765 | － | - |
+| 担当者名 | `contact_person_name` | VARCHAR | 270 | － | - |
+| 担当者名カナ | `contact_person_name_katakana` | VARCHAR | 540 | － | - |
+| 担当者部署 | `contact_person_department` | VARCHAR | 2295 | － | - |
+| 契変更確認チェック | `contract_change_confirmation_check` | VARCHAR | 900 | － | - |
+| 契約者名変更コメント | `contractor_name_change_comment` | VARCHAR | 2295 | － | - |
+| 請求先番号 | `billing_number` | VARCHAR | 36 | － | - |
+| 法人格位置1 | `corporate_entity_position_1` | VARCHAR | 2295 | － | - |
+| 法人格1 | `corporate_entity_1` | VARCHAR | 2295 | － | - |
+| 請求先名 | `billing_name` | VARCHAR | 2295 | － | - |
+| 請求先名カナ | `billing_name_katakana` | VARCHAR | 2295 | － | - |
+| 部門名 | `billing_department_name` | VARCHAR | 2304 | － | - |
+| 担当者 | `contact_person` | VARCHAR | 270 | － | - |
+| 支払方法 | `payment_method` | VARCHAR | 1536 | － | - |
+| 請求書タイプ | `invoice_type` | VARCHAR | 1536 | － | - |
+| 請求書送付 | `invoice_delivery` | VARCHAR | 1536 | － | - |
+| 下4桁表示 | `last_4_digits` | VARCHAR | 1536 | － | - |
+| 請求群情報 | `billing_group_information` | VARCHAR | 1536 | － | - |
+| 割賦許容番号 | `installment_payment_allowance_number` | VARCHAR | 60 | － | - |
+| 代行業者 | `agency` | VARCHAR | 1536 | － | - |
+| 法人複数回線割引 | `corporate_multiple_line_discount` | VARCHAR | 300 | － | - |
+| 割引率 | `discount_rate` | VARCHAR | 18 | － | - |
+| 割引額 | `discount_amount` | VARCHAR | 24 | － | - |
+| 割引月数 | `number_of_discount_months` | VARCHAR | 300 | － | - |
+| 手数料種別 | `fee_type` | VARCHAR | 3 | － | - |
+| 請求書一括割引 | `bulk_invoice_discount` | VARCHAR | 300 | － | - |
+| 割引率1 | `discount_rate_1` | VARCHAR | 18 | － | - |
+| 割引額1 | `discount_amount_1` | VARCHAR | 24 | － | - |
+| 割引月数1 | `number_of_discount_months_1` | VARCHAR | 300 | － | - |
+| 手数料種別1 | `fee_type_1` | VARCHAR | 3 | － | - |
+| s番法人複数回線割引 | `number_s_corporate_multiple_line_discount` | VARCHAR | 300 | － | - |
+| 割引率2 | `discount_rate_2` | VARCHAR | 18 | － | - |
+| 割引額2 | `discount_amount_2` | VARCHAR | 24 | － | - |
+| 割引月数2 | `number_of_discount_months_2` | VARCHAR | 300 | － | - |
+| 手数料種別2 | `fee_type_2` | VARCHAR | 3 | － | - |
+| s番大口通話料割引 | `s_number_large_call_discount` | VARCHAR | 300 | － | - |
+| 割引率3 | `discount_rate_3` | VARCHAR | 18 | － | - |
+| 割引額3 | `discount_amount_3` | VARCHAR | 24 | － | - |
+| 割引月数3 | `number_of_discount_months_3` | VARCHAR | 300 | － | - |
+| 手数料種別3 | `fee_type_3` | VARCHAR | 3 | － | - |
+| シェア | `share` | VARCHAR | 300 | － | - |
+| 割引率4 | `discount_rate_4` | VARCHAR | 18 | － | - |
+| 割引額4 | `discount_amount_4` | VARCHAR | 24 | － | - |
+| 割引月数4 | `number_of_discount_months_4` | VARCHAR | 300 | － | - |
+| 手数料種別4 | `fee_type_4` | VARCHAR | 3 | － | - |
+| 請求先送付先区分 | `billing_address_shipping_address_category` | VARCHAR | 1536 | － | - |
+| 送付先宛名 | `shipping_address` | VARCHAR | 2295 | － | - |
+| 請求書カスタマイズ | `invoice_customization` | VARCHAR | 2304 | － | - |
+| 請求書送付区分 | `billing_address_category` | VARCHAR | 1536 | － | - |
+| 送付先宛名1 | `shipping_address_1` | VARCHAR | 2295 | － | - |
+| 請求書カスタマイズ1 | `invoice_customization_1` | VARCHAR | 2304 | － | - |
+| 特約開始年月日 | `special_agreement_start_date` | VARCHAR | 60 | － | - |
+| 特約期間 | `special_agreement_period` | VARCHAR | 900 | － | - |
+| 契約期間月数 | `contract_period_in_months` | VARCHAR | 6 | － | - |
+| 自動更新後の期間 | `period_after_automatic_renewal` | VARCHAR | 900 | － | - |
+| 初期レンタル期間 | `initial_rental_period` | VARCHAR | 900 | － | - |
+| 中古レンタル開始日 | `used_rental_start_date` | VARCHAR | 60 | － | - |
+| 中古レンタル終了日 | `used_rental_end_date` | VARCHAR | 60 | － | - |
+| 特約適用上限回線数 | `maximum_number_of_lines_applicable_to_the_special_agreement` | DECIMAL | 10 | － | - |
+| 回線数 | `number_of_lines` | DECIMAL | 10 | － | - |
+| 倉庫種別 | `warehouse_type` | VARCHAR | 900 | － | - |
+| 非完結帳票作成依頼 | `request_for_incomplete_report_creation` | VARCHAR | 900 | － | - |
+| gisun登録不可 | `gisun_registration_not_possible` | VARCHAR | 3 | － | - |
+| 交換種別 | `replacement_type` | VARCHAR | 900 | － | - |
+| 在庫種別 | `inventory_type` | VARCHAR | 900 | － | - |
+| 営業所 | `sales_office` | VARCHAR | 900 | － | - |
+| 申告内容 | `declaration_details` | VARCHAR | 900 | － | - |
+| usim種別 | `usim_type` | VARCHAR | 450 | － | - |
+| usim種別その他 | `other_usim_types` | VARCHAR | 900 | － | - |
+| 台数 | `quantity` | DECIMAL | 10 | － | - |
+| wo専用usim | `wo_specific_usim` | VARCHAR | 900 | － | - |
+| 試算テンプレートver | `estimate_template_version` | VARCHAR | 90 | － | - |
+| 決裁承認日 | `approval_date` | VARCHAR | 60 | － | - |
+| 起票元試算番号 | `original_estimate_number` | VARCHAR | 54 | － | - |
+| コピー元エントリ番号 | `copy_entry_number` | VARCHAR | 54 | － | - |
+| 最低利用回線数 | `minimum_number_of_lines` | DECIMAL | 11 | － | - |
+| 端末縛り金額 | `device_binding_amount` | DECIMAL | 11 | － | - |
+| 端末縛り期間 | `device_binding_period` | DECIMAL | 3 | － | - |
+| 国際rm値引指定有無 | `international_rm_discount_specification` | VARCHAR | 900 | － | - |
+| 国際rm値引指定割引率 | `international_rm_discount_specification_discount_rate` | VARCHAR | 24 | － | - |
+| プラン縛り1 | `plan_binding_1` | VARCHAR | 1800 | － | - |
+| プラン縛り2 | `plan_binding_2` | VARCHAR | 1800 | － | - |
+| プラン縛り3 | `plan_binding_3` | VARCHAR | 1800 | － | - |
+| プラン縛り4 | `plan_binding_4` | VARCHAR | 1800 | － | - |
+| プラン縛り5 | `plan_binding_5` | VARCHAR | 1800 | － | - |
+| プラン縛り6 | `plan_binding_6` | VARCHAR | 1800 | － | - |
+| プラン縛り7 | `plan_restriction_7` | VARCHAR | 1800 | － | - |
+| プラン縛り8 | `plan_restriction_8` | VARCHAR | 1800 | － | - |
+| プラン縛り9 | `plan_restriction_9` | VARCHAR | 1800 | － | - |
+| プラン縛り10 | `plan_restriction_10` | VARCHAR | 1800 | － | - |
+| プラン縛り11 | `plan_restriction_11` | VARCHAR | 1800 | － | - |
+| プラン縛り12 | `plan_restriction_12` | VARCHAR | 1800 | － | - |
+| 比率指定プラン1 | `percentage_plan_1` | VARCHAR | 1800 | － | - |
+| プラン比率1 | `plan_ratio_1` | VARCHAR | 24 | － | - |
+| 比率指定プラン2 | `percentage_plan_2` | VARCHAR | 1800 | － | - |
+| プラン比率2 | `plan_ratio_2` | VARCHAR | 24 | － | - |
+| 比率指定プラン3 | `percentage_plan_3` | VARCHAR | 1800 | － | - |
+| プラン比率3 | `plan_ratio_3` | VARCHAR | 24 | － | - |
+| 比率指定プラン4 | `percentage_plan_4` | VARCHAR | 1800 | － | - |
+| プラン比率4 | `plan_ratio_4` | VARCHAR | 24 | － | - |
+| 必須opカテゴリ1 | `required_op_category_1` | VARCHAR | 1800 | － | - |
+| 必須op1 | `required_op_1` | VARCHAR | 1800 | － | - |
+| 必須opカテゴリ2 | `required_op_category_2` | VARCHAR | 1800 | － | - |
+| 必須op2 | `required_op_2` | VARCHAR | 1800 | － | - |
+| 必須opカテゴリ3 | `required_op_category_3` | VARCHAR | 1800 | － | - |
+| 必須op3 | `required_op_3` | VARCHAR | 1800 | － | - |
+| 必須opカテゴリ4 | `required_op_category_4` | VARCHAR | 1800 | － | - |
+| 必須op4 | `required_op_4` | VARCHAR | 1800 | － | - |
+| 比率指定opカテゴリ1 | `percentage_op_category_1` | VARCHAR | 1800 | － | - |
+| 比率指定op1 | `percentage_op_1` | VARCHAR | 1800 | － | - |
+| op比率1 | `op_ratio_1` | VARCHAR | 24 | － | - |
+| 比率指定opカテゴリ2 | `percentage_op_category_2` | VARCHAR | 1800 | － | - |
+| 比率指定op2 | `percentage_op_2` | VARCHAR | 1800 | － | - |
+| op比率2 | `op_ratio_2` | VARCHAR | 24 | － | - |
+| 比率指定opカテゴリ3 | `percentage_op_category_3` | VARCHAR | 1800 | － | - |
+| 比率指定op3 | `percentage_op_3` | VARCHAR | 1800 | － | - |
+| op比率3 | `op_ratio_3` | VARCHAR | 24 | － | - |
+| 比率指定opカテゴリ4 | `percentage_op_category_4` | VARCHAR | 1800 | － | - |
+| 比率指定op4 | `percentage_op_4` | VARCHAR | 1800 | － | - |
+| op比率4 | `op_ratio_4` | VARCHAR | 24 | － | - |
+| その他指定1 | `other_options_1` | VARCHAR | 1800 | － | - |
+| その他指定2 | `other_options_2` | VARCHAR | 1800 | － | - |
+| その他指定3 | `other_options_3` | VARCHAR | 1800 | － | - |
+| その他指定4 | `other_options_4` | VARCHAR | 1800 | － | - |
+| その他指定5 | `other_options_5` | VARCHAR | 1800 | － | - |
+| その他指定6 | `other_options_6` | VARCHAR | 1800 | － | - |
+| その他指定7 | `other_options_7` | VARCHAR | 1800 | － | - |
+| その他指定8 | `other_options_8` | VARCHAR | 1800 | － | - |
+| 補足 | `additional_information` | VARCHAR | 12000 | － | - |
+| チャネル | `channel` | VARCHAR | 900 | － | - |
+| 試算ステータス | `estimated_status` | VARCHAR | 900 | － | - |
+| rental_中古_開始年月日 | `rental_used_start_date` | VARCHAR | 60 | － | - |
+| rental_中古_期間_ヶ月 | `rental_used_period_months` | VARCHAR | 6 | － | - |

@@ -12,507 +12,507 @@
 
 ## カラム定義
 
-| SEQ | 項目名 | カラム名 | 型 | 桁 | 仮名化 | 説明 |
-| --- | --- | --- | --- | --- | --- | --- |
-|  | 1 | エントリ番号 | `entry_number` | VARCHAR | 54 | － | - |
-|  | 2 | サマリ番号 | `summary_number` | VARCHAR | 36 | － | - |
-|  | 3 | 回線数 | `number_of_lines` | DECIMAL | 10 | － | - |
-|  | 4 | レンタルセット端末 | `rental_set_device` | VARCHAR | 2295 | － | - |
-|  | 5 | mnp | `mnp` | VARCHAR | 2295 | － | - |
-|  | 6 | 商品コード | `product_code` | VARCHAR | 45 | － | - |
-|  | 7 | メーカ | `manufacturer` | VARCHAR | 1800 | － | - |
-|  | 8 | 移動機分類 | `mobile_device_classification` | VARCHAR | 900 | － | - |
-|  | 9 | 機種名 | `model_name` | VARCHAR | 900 | － | - |
-|  | 10 | カラー1 | `color_1` | VARCHAR | 900 | － | - |
-|  | 11 | 台数1 | `quantity_1` | DECIMAL | 10 | － | - |
-|  | 12 | カラー2 | `color_2` | VARCHAR | 900 | － | - |
-|  | 13 | 台数2 | `quantity_2` | DECIMAL | 10 | － | - |
-|  | 14 | カラー3 | `color_3` | VARCHAR | 900 | － | - |
-|  | 15 | 台数3 | `quantity_3` | DECIMAL | 10 | － | - |
-|  | 16 | カラー4 | `color_4` | VARCHAR | 900 | － | - |
-|  | 17 | 台数4 | `quantity_4` | DECIMAL | 10 | － | - |
-|  | 18 | カラー5 | `color_5` | VARCHAR | 900 | － | - |
-|  | 19 | 台数5 | `quantity_5` | DECIMAL | 10 | － | - |
-|  | 20 | 端末標準価格 | `standard_device_price` | DECIMAL | 10 | － | - |
-|  | 21 | 提供代金 | `provision_fee` | DECIMAL | 10 | － | - |
-|  | 22 | 使用ポイント | `points_used` | DECIMAL | 6 | － | - |
-|  | 23 | レンタル料 | `rental_fee` | DECIMAL | 10 | － | - |
-|  | 24 | レンタル実質提供料金 | `actual_rental_provision_fee` | DECIMAL | 10 | － | - |
-|  | 25 | キャンペーン1 | `campaign_1` | VARCHAR | 1800 | － | - |
-|  | 26 | キャンペーン2 | `campaign_2` | VARCHAR | 1800 | － | - |
-|  | 27 | キャンペーン3 | `campaign_3` | VARCHAR | 1800 | － | - |
-|  | 28 | キャンペーン4 | `campaign_4` | VARCHAR | 1800 | － | - |
-|  | 29 | キャンペーン5 | `campaign_5` | VARCHAR | 1800 | － | - |
-|  | 30 | 特典コード1 | `benefit_code_1` | VARCHAR | 30 | － | - |
-|  | 31 | 特典コード2 | `benefit_code_2` | VARCHAR | 30 | － | - |
-|  | 32 | 特典コード3 | `benefit_code_3` | VARCHAR | 30 | － | - |
-|  | 33 | 特典コード4 | `benefit_code_4` | VARCHAR | 30 | － | - |
-|  | 34 | 緊急キャンペーン1 | `urgent_campaign_1` | VARCHAR | 900 | － | - |
-|  | 35 | 緊急キャンペーン2 | `urgent_campaign_2` | VARCHAR | 900 | － | - |
-|  | 36 | 緊急キャンペーン3 | `urgent_campaign_3` | VARCHAR | 900 | － | - |
-|  | 37 | プラン | `plan` | VARCHAR | 1800 | － | - |
-|  | 38 | ホワイト法人 | `white_corporate` | VARCHAR | 1800 | － | - |
-|  | 39 | 通話料割引wホワイト | `call_discount_w_white` | VARCHAR | 1800 | － | - |
-|  | 40 | 通話料割引ホワイトl | `call_discount_l_white` | VARCHAR | 1800 | － | - |
-|  | 41 | 24時間通話定額 | `flat_rate_calling_24_hour` | VARCHAR | 1800 | － | - |
-|  | 42 | ホワイトオフィス | `white_office` | VARCHAR | 1800 | － | - |
-|  | 43 | 継続割引 | `continuing_discount` | VARCHAR | 1800 | － | - |
-|  | 44 | 違約金年契 | `breaking_contract_gold_annual_contract` | VARCHAR | 1800 | － | - |
-|  | 45 | sベーシックパック | `s_basic_pack` | VARCHAR | 1800 | － | - |
-|  | 46 | 4gデータ通信基本料 | `data_communication_basic_fee_4g` | VARCHAR | 1800 | － | - |
-|  | 47 | 5g基本料 | `basic_fee_5g` | VARCHAR | 1800 | － | - |
-|  | 48 | パケット割引 | `packet_discount` | VARCHAR | 1800 | － | - |
-|  | 49 | 通信速度制限解除 | `data_speed_​​limit_removal` | VARCHAR | 1800 | － | - |
-|  | 50 | 通話定額_だれとでも | `flat_rate_calls___anyone` | VARCHAR | 1800 | － | - |
-|  | 51 | wifi | `wifi` | VARCHAR | 1800 | － | - |
-|  | 52 | テザリング | `tethering` | VARCHAR | 1800 | － | - |
-|  | 53 | フラットsp9 | `flat_sp9` | VARCHAR | 1800 | － | - |
-|  | 54 | オプションパック | `option_pack` | VARCHAR | 1800 | － | - |
-|  | 55 | あんしん保証パック | `anshin_guarantee_pack` | VARCHAR | 1800 | － | - |
-|  | 56 | app | `app` | VARCHAR | 1800 | － | - |
-|  | 57 | 世界対応ケータイ | `global_mobile_phone` | VARCHAR | 1800 | － | - |
-|  | 58 | 海外パケット割引 | `overseas_packet_discount` | VARCHAR | 1800 | － | - |
-|  | 59 | 通話料明細 | `call_billing_details` | VARCHAR | 1800 | － | - |
-|  | 60 | it接続基本料 | `it_connection_basic_fee` | VARCHAR | 1800 | － | - |
-|  | 61 | オプションカテゴリ1 | `option_category_1` | VARCHAR | 1800 | － | - |
-|  | 62 | オプションサービス1 | `option_service_1` | VARCHAR | 1800 | － | - |
-|  | 63 | オプションカテゴリ2 | `option_category_2` | VARCHAR | 1800 | － | - |
-|  | 64 | オプションサービス2 | `option_service_2` | VARCHAR | 1800 | － | - |
-|  | 65 | オプションカテゴリ3 | `option_category_3` | VARCHAR | 1800 | － | - |
-|  | 66 | オプションサービス3 | `option_service_3` | VARCHAR | 1800 | － | - |
-|  | 67 | オプションカテゴリ4 | `option_category_4` | VARCHAR | 1800 | － | - |
-|  | 68 | オプションサービス4 | `option_service_4` | VARCHAR | 1800 | － | - |
-|  | 69 | オプションカテゴリ5 | `option_category_5` | VARCHAR | 1800 | － | - |
-|  | 70 | オプションサービス5 | `option_service_5` | VARCHAR | 1800 | － | - |
-|  | 71 | オプションカテゴリ6 | `option_category_6` | VARCHAR | 1800 | － | - |
-|  | 72 | オプションサービス6 | `option_service_6` | VARCHAR | 1800 | － | - |
-|  | 73 | オプションカテゴリ7 | `option_category_7` | VARCHAR | 1800 | － | - |
-|  | 74 | オプションサービス7 | `option_service_7` | VARCHAR | 1800 | － | - |
-|  | 75 | オプションカテゴリ8 | `option_category_8` | VARCHAR | 1800 | － | - |
-|  | 76 | オプションサービス8 | `optional_service_8` | VARCHAR | 1800 | － | - |
-|  | 77 | オプションカテゴリ9 | `optional_category_9` | VARCHAR | 1800 | － | - |
-|  | 78 | オプションサービス9 | `optional_service_9` | VARCHAR | 1800 | － | - |
-|  | 79 | オプションカテゴリ10 | `optional_category_10` | VARCHAR | 1800 | － | - |
-|  | 80 | オプションサービス10 | `optional_service_10` | VARCHAR | 1800 | － | - |
-|  | 81 | シェア設定 | `share_settings` | VARCHAR | 1800 | － | - |
-|  | 82 | シェアオプション | `share_option` | VARCHAR | 1800 | － | - |
-|  | 83 | grp代表シェアopt | `grp_representative_share_option` | VARCHAR | 1800 | － | - |
-|  | 84 | grp代表通信速度制限 | `grp_representative_data_speed_​​limit` | VARCHAR | 1800 | － | - |
-|  | 85 | rntoptカテゴリ1 | `rntopt_category_1` | VARCHAR | 900 | － | - |
-|  | 86 | rntoptプラン1 | `rntopt_plan_1` | VARCHAR | 900 | － | - |
-|  | 87 | rntoptカテゴリ2 | `rntopt_category_2` | VARCHAR | 900 | － | - |
-|  | 88 | rntoptプラン2 | `rntopt_plan_2` | VARCHAR | 900 | － | - |
-|  | 89 | rntoptカテゴリ3 | `rntopt_category_3` | VARCHAR | 900 | － | - |
-|  | 90 | rntoptプラン3 | `rntopt_plan_3` | VARCHAR | 900 | － | - |
-|  | 91 | rntoptカテゴリ4 | `rntopt_category_4` | VARCHAR | 900 | － | - |
-|  | 92 | rntoptプラン4 | `rntopt_plan_4` | VARCHAR | 900 | － | - |
-|  | 93 | rntoptカテゴリ5 | `rntopt_category_5` | VARCHAR | 900 | － | - |
-|  | 94 | rntoptプラン5 | `rntopt_plan_5` | VARCHAR | 900 | － | - |
-|  | 95 | rntoptカテゴリ6 | `rntopt_category_6` | VARCHAR | 900 | － | - |
-|  | 96 | rntoptプラン6 | `rntopt_plan_6` | VARCHAR | 900 | － | - |
-|  | 97 | rntoptカテゴリ7 | `rntopt_category_7` | VARCHAR | 900 | － | - |
-|  | 98 | rntoptプラン7 | `rntopt_plan_7` | VARCHAR | 900 | － | - |
-|  | 99 | rntoptカテゴリ8 | `rntopt_category_8` | VARCHAR | 900 | － | - |
-|  | 100 | rntoptプラン8 | `rntopt_plan_8` | VARCHAR | 900 | － | - |
-|  | 101 | rntoptカテゴリ9 | `rntopt_category_9` | VARCHAR | 900 | － | - |
-|  | 102 | rntoptプラン9 | `rntopt_plan_9` | VARCHAR | 900 | － | - |
-|  | 103 | rntoptカテゴリ10 | `rntopt_category_10` | VARCHAR | 900 | － | - |
-|  | 104 | rntoptプラン10 | `rntopt_plan_10` | VARCHAR | 900 | － | - |
-|  | 105 | rntoptattカテゴリ1 | `rntoptatt_category_1` | VARCHAR | 900 | － | - |
-|  | 106 | rntoptattプラン1 | `rntoptatt_plan_1` | VARCHAR | 900 | － | - |
-|  | 107 | rntoptattカテゴリ2 | `rntoptatt_category_2` | VARCHAR | 900 | － | - |
-|  | 108 | rntoptattプラン2 | `rntoptatt_plan_2` | VARCHAR | 900 | － | - |
-|  | 109 | rntoptattカテゴリ3 | `rntoptatt_category_3` | VARCHAR | 900 | － | - |
-|  | 110 | rntoptattプラン3 | `rntoptatt_plan_3` | VARCHAR | 900 | － | - |
-|  | 111 | rntoptattカテゴリ4 | `rntoptatt_category_4` | VARCHAR | 900 | － | - |
-|  | 112 | rntoptattプラン4 | `rntoptatt_plan_4` | VARCHAR | 900 | － | - |
-|  | 113 | rntoptattカテゴリ5 | `rntoptatt_category_5` | VARCHAR | 900 | － | - |
-|  | 114 | rntoptattプラン5 | `rntoptatt_plan_5` | VARCHAR | 900 | － | - |
-|  | 115 | rntoptattカテゴリ6 | `rntoptatt_category_6` | VARCHAR | 900 | － | - |
-|  | 116 | rntoptattプラン6 | `rntoptatt_plan_6` | VARCHAR | 900 | － | - |
-|  | 117 | rntoptattカテゴリ7 | `rntoptatt_category_7` | VARCHAR | 900 | － | - |
-|  | 118 | rntoptattプラン7 | `rntoptatt_plan_7` | VARCHAR | 900 | － | - |
-|  | 119 | rntoptattカテゴリ8 | `rntoptatt_category_8` | VARCHAR | 900 | － | - |
-|  | 120 | rntoptattプラン8 | `rntoptatt_plan_8` | VARCHAR | 900 | － | - |
-|  | 121 | rntoptattカテゴリ9 | `rntopta_tt_category_9` | VARCHAR | 900 | － | - |
-|  | 122 | rntoptattプラン9 | `rntoptatt_plan_9` | VARCHAR | 900 | － | - |
-|  | 123 | rntoptattカテゴリ10 | `rntoptatt_category_10` | VARCHAR | 900 | － | - |
-|  | 124 | rntoptattプラン10 | `rntoptatt_plan_10` | VARCHAR | 900 | － | - |
-|  | 125 | rntキャンペーン1 | `rnt_campaign_1` | VARCHAR | 900 | － | - |
-|  | 126 | rntキャンペーン2 | `rnt_campaign_2` | VARCHAR | 900 | － | - |
-|  | 127 | rntキャンペーン3 | `rnt_campaign_3` | VARCHAR | 900 | － | - |
-|  | 128 | キャンペーンコード1 | `campaign_code_1` | VARCHAR | 60 | － | - |
-|  | 129 | キャンペーンコード2 | `campaign_code_2` | VARCHAR | 60 | － | - |
-|  | 130 | rnt緊急キャンペーン1 | `rnt_urgent_campaign_1` | VARCHAR | 900 | － | - |
-|  | 131 | rnt緊急キャンペーン2 | `rnt_urgent_campaign_2` | VARCHAR | 900 | － | - |
-|  | 132 | rnt緊急キャンペーン3 | `rnt_urgent_campaign_3` | VARCHAR | 900 | － | - |
-|  | 133 | 新規事務手数料免除 | `new_service_fee_exemption` | VARCHAR | 900 | － | - |
-|  | 134 | 機種変更手数料免除 | `model_upgrade_fee_exemption` | VARCHAR | 900 | － | - |
-|  | 135 | 契変事務手数料免除 | `contract_change_service_fee_exemption` | VARCHAR | 900 | － | - |
-|  | 136 | 年契違約金免除 | `annual_contract_penalty_exemption` | VARCHAR | 900 | － | - |
-|  | 137 | 適用中相対割引終了日 | `applicable_relative_discount_end_date` | VARCHAR | 60 | － | - |
-|  | 138 | 相対pdカテゴリ1 | `relative_pd_category_1` | VARCHAR | 1800 | － | - |
-|  | 139 | 相対pd名称1 | `relative_pd_name_1` | VARCHAR | 1800 | － | - |
-|  | 140 | 相対割引方法1 | `relative_discount_method_1` | VARCHAR | 900 | － | - |
-|  | 141 | 相対有効開始日1 | `relative_effective_start_date_1` | VARCHAR | 60 | － | - |
-|  | 142 | 相対有効終了日1 | `relative_effective_end_date_1` | VARCHAR | 60 | － | - |
-|  | 143 | 相対請求金額1 | `relative_billing_amount_1` | VARCHAR | 24 | － | - |
-|  | 144 | 相対割引金額1 | `relative_discount_amount_1` | VARCHAR | 24 | － | - |
-|  | 145 | 相対割引率1 | `relative_discount_rate_1` | VARCHAR | 18 | － | - |
-|  | 146 | 相対割引開始月1 | `relative_discount_start_month_1` | VARCHAR | 6 | － | - |
-|  | 147 | 相対期間1 | `relative_period_1` | DECIMAL | 3 | － | - |
-|  | 148 | 相対pdカテゴリ2 | `relative_pd_category_2` | VARCHAR | 1800 | － | - |
-|  | 149 | 相対pd名称2 | `relative_pd_name_2` | VARCHAR | 1800 | － | - |
-|  | 150 | 相対割引方法2 | `relative_discount_method_2` | VARCHAR | 900 | － | - |
-|  | 151 | 相対有効開始日2 | `relative_effective_start_date_2` | VARCHAR | 60 | － | - |
-|  | 152 | 相対有効終了日2 | `relative_effective_end_date_2` | VARCHAR | 60 | － | - |
-|  | 153 | 相対請求金額2 | `relative_invoice_amount_2` | VARCHAR | 24 | － | - |
-|  | 154 | 相対割引金額2 | `relative_discount_amount_2` | VARCHAR | 24 | － | - |
-|  | 155 | 相対割引率2 | `relative_discount_rate_2` | VARCHAR | 18 | － | - |
-|  | 156 | 相対割引開始月2 | `relative_discount_start_month_2` | VARCHAR | 6 | － | - |
-|  | 157 | 相対期間2 | `relative_period_2` | DECIMAL | 3 | － | - |
-|  | 158 | 相対pdカテゴリ3 | `relative_pd_category_3` | VARCHAR | 1800 | － | - |
-|  | 159 | 相対pd名称3 | `relative_pd_name_3` | VARCHAR | 1800 | － | - |
-|  | 160 | 相対割引方法3 | `relative_discount_method_3` | VARCHAR | 900 | － | - |
-|  | 161 | 相対有効開始日3 | `relative_effective_start_date_3` | VARCHAR | 60 | － | - |
-|  | 162 | 相対有効終了日3 | `relative_effective_end_date_3` | VARCHAR | 60 | － | - |
-|  | 163 | 相対請求金額3 | `relative_invoice_amount_3` | VARCHAR | 24 | － | - |
-|  | 164 | 相対割引金額3 | `relative_discount_amount_3` | VARCHAR | 24 | － | - |
-|  | 165 | 相対割引率3 | `relative_discount_rate_3` | VARCHAR | 18 | － | - |
-|  | 166 | 相対割引開始月3 | `relative_discount_start_month_3` | VARCHAR | 6 | － | - |
-|  | 167 | 相対期間3 | `relative_period_3` | DECIMAL | 3 | － | - |
-|  | 168 | 相対pdカテゴリ4 | `relative_pd_category_4` | VARCHAR | 1800 | － | - |
-|  | 169 | 相対pd名称4 | `relative_pd_name_4` | VARCHAR | 1800 | － | - |
-|  | 170 | 相対割引方法4 | `relative_discount_method_4` | VARCHAR | 900 | － | - |
-|  | 171 | 相対有効開始日4 | `relative_effective_start_date_4` | VARCHAR | 60 | － | - |
-|  | 172 | 相対有効終了日4 | `relative_effective_end_date_4` | VARCHAR | 60 | － | - |
-|  | 173 | 相対請求金額4 | `relative_invoice_amount_4` | VARCHAR | 24 | － | - |
-|  | 174 | 相対割引金額4 | `relative_discount_amount_4` | VARCHAR | 24 | － | - |
-|  | 175 | 相対割引率4 | `relative_discount_rate_4` | VARCHAR | 18 | － | - |
-|  | 176 | 相対割引開始月4 | `relative_discount_start_month_4` | VARCHAR | 6 | － | - |
-|  | 177 | 相対期間4 | `relative_period_4` | DECIMAL | 3 | － | - |
-|  | 178 | 相対pdカテゴリ5 | `relative_pd_category_5` | VARCHAR | 1800 | － | - |
-|  | 179 | 相対pd名称5 | `relative_pd_name_5` | VARCHAR | 1800 | － | - |
-|  | 180 | 相対割引方法5 | `relative_discount_method_5` | VARCHAR | 900 | － | - |
-|  | 181 | 相対有効開始日5 | `relative_effective_start_date_5` | VARCHAR | 60 | － | - |
-|  | 182 | 相対有効終了日5 | `relative_effective_end_date_5` | VARCHAR | 60 | － | - |
-|  | 183 | 相対請求金額5 | `relative_invoice_amount_5` | VARCHAR | 24 | － | - |
-|  | 184 | 相対割引金額5 | `relative_discount_amount_5` | VARCHAR | 24 | － | - |
-|  | 185 | 相対割引率5 | `relative_discount_rate_5` | VARCHAR | 18 | － | - |
-|  | 186 | 相対割引開始月5 | `relative_discount_start_month_5` | VARCHAR | 6 | － | - |
-|  | 187 | 相対期間5 | `relative_period_5` | DECIMAL | 3 | － | - |
-|  | 188 | 相対pdカテゴリ6 | `relative_pd_category_6` | VARCHAR | 1800 | － | - |
-|  | 189 | 相対pd名称6 | `relative_pd_name_6` | VARCHAR | 1800 | － | - |
-|  | 190 | 相対割引方法6 | `relative_discount_method_6` | VARCHAR | 900 | － | - |
-|  | 191 | 相対有効開始日6 | `relative_effective_start_date_6` | VARCHAR | 60 | － | - |
-|  | 192 | 相対有効終了日6 | `relative_effective_end_date_6` | VARCHAR | 60 | － | - |
-|  | 193 | 相対請求金額6 | `relative_invoice_amount_6` | VARCHAR | 24 | － | - |
-|  | 194 | 相対割引金額6 | `relative_discount_amount_6` | VARCHAR | 24 | － | - |
-|  | 195 | 相対割引率6 | `relative_discount_rate_6` | VARCHAR | 18 | － | - |
-|  | 196 | 相対割引開始月6 | `relative_discount_start_month_6` | VARCHAR | 6 | － | - |
-|  | 197 | 相対期間6 | `relative_period_6` | DECIMAL | 3 | － | - |
-|  | 198 | 相対pdカテゴリ7 | `relative_pd_category_7` | VARCHAR | 1800 | － | - |
-|  | 199 | 相対pd名称7 | `relative_pd_name_7` | VARCHAR | 1800 | － | - |
-|  | 200 | 相対割引方法7 | `relative_discount_method_7` | VARCHAR | 900 | － | - |
-|  | 201 | 相対有効開始日7 | `relative_effective_start_date_7` | VARCHAR | 60 | － | - |
-|  | 202 | 相対有効終了日7 | `relative_effective_end_date_7` | VARCHAR | 60 | － | - |
-|  | 203 | 相対請求金額7 | `relative_invoice_amount_7` | VARCHAR | 24 | － | - |
-|  | 204 | 相対割引金額7 | `relative_discount_amount_7` | VARCHAR | 24 | － | - |
-|  | 205 | 相対割引率7 | `relative_discount_rate_7` | VARCHAR | 18 | － | - |
-|  | 206 | 相対割引開始月7 | `relative_discount_start_month_7` | VARCHAR | 6 | － | - |
-|  | 207 | 相対期間7 | `relative_period_7` | DECIMAL | 3 | － | - |
-|  | 208 | 相対pdカテゴリ8 | `relative_pd_category_8` | VARCHAR | 1800 | － | - |
-|  | 209 | 相対pd名称8 | `relative_pd_name_8` | VARCHAR | 1800 | － | - |
-|  | 210 | 相対割引方法8 | `relative_discount_method_8` | VARCHAR | 900 | － | - |
-|  | 211 | 相対有効開始日8 | `relative_effective_start_date_8` | VARCHAR | 60 | － | - |
-|  | 212 | 相対有効終了日8 | `relative_effective_end_date_8` | VARCHAR | 60 | － | - |
-|  | 213 | 相対請求金額8 | `relative_invoice_amount_8` | VARCHAR | 24 | － | - |
-|  | 214 | 相対割引金額8 | `relative_discount_amount_8` | VARCHAR | 24 | － | - |
-|  | 215 | 相対割引率8 | `relative_discount_rate_8` | VARCHAR | 18 | － | - |
-|  | 216 | 相対割引開始月8 | `relative_discount_start_month_8` | VARCHAR | 6 | － | - |
-|  | 217 | 相対期間8 | `relative_period_8` | DECIMAL | 3 | － | - |
-|  | 218 | 相対pdカテゴリ9 | `relative_pd_category_9` | VARCHAR | 1800 | － | - |
-|  | 219 | 相対pd名称9 | `relative_pd_name_9` | VARCHAR | 1800 | － | - |
-|  | 220 | 相対割引方法9 | `relative_discount_method_9` | VARCHAR | 900 | － | - |
-|  | 221 | 相対有効開始日9 | `relative_effective_start_date_9` | VARCHAR | 60 | － | - |
-|  | 222 | 相対有効終了日9 | `relative_effective_end_date_9` | VARCHAR | 60 | － | - |
-|  | 223 | 相対請求金額9 | `relative_invoice_amount_9` | VARCHAR | 24 | － | - |
-|  | 224 | 相対割引金額9 | `relative_discount_amount_9` | VARCHAR | 24 | － | - |
-|  | 225 | 相対割引率9 | `relative_discount_rate_9` | VARCHAR | 18 | － | - |
-|  | 226 | 相対割引開始月9 | `relative_discount_start_month_9` | VARCHAR | 6 | － | - |
-|  | 227 | 相対期間9 | `relative_period_9` | DECIMAL | 3 | － | - |
-|  | 228 | 相対pdカテゴリ10 | `relative_pd_category_10` | VARCHAR | 1800 | － | - |
-|  | 229 | 相対pd名称10 | `relative_pd_name_10` | VARCHAR | 1800 | － | - |
-|  | 230 | 相対割引方法10 | `relative_discount_method_10` | VARCHAR | 900 | － | - |
-|  | 231 | 相対有効開始日10 | `relative_effective_start_date_10` | VARCHAR | 60 | － | - |
-|  | 232 | 相対有効終了日10 | `relative_effective_end_date_10` | VARCHAR | 60 | － | - |
-|  | 233 | 相対請求金額10 | `relative_invoice_amount_10` | VARCHAR | 24 | － | - |
-|  | 234 | 相対割引金額10 | `relative_discount_amount_10` | VARCHAR | 24 | － | - |
-|  | 235 | 相対割引率10 | `relative_discount_rate_10` | VARCHAR | 18 | － | - |
-|  | 236 | 相対割引開始月10 | `relative_discount_start_month_10` | VARCHAR | 6 | － | - |
-|  | 237 | 相対期間10 | `relative_period_10` | DECIMAL | 3 | － | - |
-|  | 238 | 相対他pdカテゴリ1 | `relative_other_pd_category_1` | VARCHAR | 1800 | － | - |
-|  | 239 | 相対他pd名称1 | `relative_other_pd_name_1` | VARCHAR | 1800 | － | - |
-|  | 240 | 相対他割引方法1 | `relative_other_discount_method_1` | VARCHAR | 900 | － | - |
-|  | 241 | 相対他有効開始日1 | `relative_other_effective_start_date_1` | VARCHAR | 60 | － | - |
-|  | 242 | 相対他有効終了日1 | `relative_other_effective_end_date_1` | VARCHAR | 60 | － | - |
-|  | 243 | 相対他請求金額1 | `relative_other_invoice_amount_1` | VARCHAR | 24 | － | - |
-|  | 244 | 相対他割引金額1 | `relative_other_discount_amount_1` | VARCHAR | 24 | － | - |
-|  | 245 | 相対他割引率1 | `relative_other_discount_rate_1` | VARCHAR | 18 | － | - |
-|  | 246 | 相対他割引開始月1 | `relative_other_discount_start_month_1` | VARCHAR | 6 | － | - |
-|  | 247 | 相対他期間1 | `relative_other_period_1` | DECIMAL | 3 | － | - |
-|  | 248 | 相対他pdカテゴリ2 | `relative_other_pd_category_2` | VARCHAR | 1800 | － | - |
-|  | 249 | 相対他pd名称2 | `relative_other_pd_name_2` | VARCHAR | 1800 | － | - |
-|  | 250 | 相対他割引方法2 | `relative_other_discount_method_2` | VARCHAR | 900 | － | - |
-|  | 251 | 相対他有効開始日2 | `relative_other_effective_open_start_date_2` | VARCHAR | 60 | － | - |
-|  | 252 | 相対他有効終了日2 | `relative_other_effective_end_date_2` | VARCHAR | 60 | － | - |
-|  | 253 | 相対他請求金額2 | `relative_other_invoice_amount_2` | VARCHAR | 24 | － | - |
-|  | 254 | 相対他割引金額2 | `relative_other_discount_amount_2` | VARCHAR | 24 | － | - |
-|  | 255 | 相対他割引率2 | `relative_other_discount_rate_2` | VARCHAR | 18 | － | - |
-|  | 256 | 相対他割引開始月2 | `relative_other_discount_start_month_2` | VARCHAR | 6 | － | - |
-|  | 257 | 相対他期間2 | `relative_other_period_2` | DECIMAL | 3 | － | - |
-|  | 258 | 相対他pdカテゴリ3 | `relative_other_pd_category_3` | VARCHAR | 1800 | － | - |
-|  | 259 | 相対他pd名称3 | `relative_other_pd_name_3` | VARCHAR | 1800 | － | - |
-|  | 260 | 相対他割引方法3 | `relative_other_discount_method_3` | VARCHAR | 900 | － | - |
-|  | 261 | 相対他有効開始日3 | `relative_other_effective_start_date_3` | VARCHAR | 60 | － | - |
-|  | 262 | 相対他有効終了日3 | `relative_other_effective_end_date_3` | VARCHAR | 60 | － | - |
-|  | 263 | 相対他請求金額3 | `relative_other_invoice_amount_3` | VARCHAR | 24 | － | - |
-|  | 264 | 相対他割引金額3 | `relative_other_discount_amount_3` | VARCHAR | 24 | － | - |
-|  | 265 | 相対他割引率3 | `relative_other_discount_rate_3` | VARCHAR | 18 | － | - |
-|  | 266 | 相対他割引開始月3 | `relative_other_discount_start_month_3` | VARCHAR | 6 | － | - |
-|  | 267 | 相対他期間3 | `relative_other_period_3` | DECIMAL | 3 | － | - |
-|  | 268 | 相対他pdカテゴリ4 | `relative_other_pd_category_4` | VARCHAR | 1800 | － | - |
-|  | 269 | 相対他pd名称4 | `relative_other_pd_name_4` | VARCHAR | 1800 | － | - |
-|  | 270 | 相対他割引方法4 | `relative_other_discount_method_4` | VARCHAR | 900 | － | - |
-|  | 271 | 相対他有効開始日4 | `relative_other_effective_start_date_4` | VARCHAR | 60 | － | - |
-|  | 272 | 相対他有効終了日4 | `relative_other_effective_end_date_4` | VARCHAR | 60 | － | - |
-|  | 273 | 相対他請求金額4 | `relative_other_invoice_amount_4` | VARCHAR | 24 | － | - |
-|  | 274 | 相対他割引金額4 | `relative_other_discount_amount_4` | VARCHAR | 24 | － | - |
-|  | 275 | 相対他割引率4 | `relative_other_discount_rate_4` | VARCHAR | 18 | － | - |
-|  | 276 | 相対他割引開始月4 | `relative_other_discount_start_month_4` | VARCHAR | 6 | － | - |
-|  | 277 | 相対他期間4 | `relative_other_period_4` | DECIMAL | 3 | － | - |
-|  | 278 | 相対他pdカテゴリ5 | `relative_other_pd_category_5` | VARCHAR | 1800 | － | - |
-|  | 279 | 相対他pd名称5 | `relative_other_pd_name_5` | VARCHAR | 1800 | － | - |
-|  | 280 | 相対他割引方法5 | `relative_other_discount_method_5` | VARCHAR | 900 | － | - |
-|  | 281 | 相対他有効開始日5 | `relative_other_effective_start_date_5` | VARCHAR | 60 | － | - |
-|  | 282 | 相対他有効終了日5 | `relative_other_effective_end_date_5` | VARCHAR | 60 | － | - |
-|  | 283 | 相対他請求金額5 | `relative_other_billing_amount_5` | VARCHAR | 24 | － | - |
-|  | 284 | 相対他割引金額5 | `relative_other_discount_amount_5` | VARCHAR | 24 | － | - |
-|  | 285 | 相対他割引率5 | `relative_other_discount_rate_5` | VARCHAR | 18 | － | - |
-|  | 286 | 相対他割引開始月5 | `relative_other_discount_start_month_5` | VARCHAR | 6 | － | - |
-|  | 287 | 相対他期間5 | `relative_other_period_5` | DECIMAL | 3 | － | - |
-|  | 288 | rnt登録事務手数料免除 | `rnt_registration_administrative_fee_waiver` | VARCHAR | 900 | － | - |
-|  | 289 | rnt登録事務手数料金額 | `rnt_registration_administrative_fee_amount` | VARCHAR | 900 | － | - |
-|  | 290 | rnt解約違約金割引方法 | `rnt_cancellation_penalty_discount_method` | VARCHAR | 900 | － | - |
-|  | 291 | rnt解約違約金金額 | `rnt_cancellation_penalty_amount` | VARCHAR | 900 | － | - |
-|  | 292 | r相対op1 | `rrelative_op_1` | VARCHAR | 900 | － | - |
-|  | 293 | r相対プラン1 | `rrelative_plan_1` | VARCHAR | 600 | － | - |
-|  | 294 | r相対割引方法1 | `rrelative_discount_method_1` | VARCHAR | 900 | － | - |
-|  | 295 | r相対有効開始日1 | `rrelative_effective_start_date_1` | VARCHAR | 60 | － | - |
-|  | 296 | r相対有効終了日1 | `rrelative_effective_end_date_1` | VARCHAR | 60 | － | - |
-|  | 297 | r相対金額1 | `rrelative_amount_1` | DECIMAL | 10 | － | - |
-|  | 298 | r相対期間1 | `rrelative_period_1` | DECIMAL | 3 | － | - |
-|  | 299 | r相対op2 | `rrelative_op_2` | VARCHAR | 900 | － | - |
-|  | 300 | r相対プラン2 | `rrelative_plan_2` | VARCHAR | 600 | － | - |
-|  | 301 | r相対割引方法2 | `rrelative_discount_method_2` | VARCHAR | 900 | － | - |
-|  | 302 | r相対有効開始日2 | `rrelative_effective_start_date_2` | VARCHAR | 60 | － | - |
-|  | 303 | r相対有効終了日2 | `rrelative_effective_end_date_2` | VARCHAR | 60 | － | - |
-|  | 304 | r相対金額2 | `rrelative_amount_2` | DECIMAL | 10 | － | - |
-|  | 305 | r相対期間2 | `rrelative_period_2` | DECIMAL | 3 | － | - |
-|  | 306 | r相対op3 | `rrelative_op_3` | VARCHAR | 900 | － | - |
-|  | 307 | r相対プラン3 | `rrelative_plan_3` | VARCHAR | 600 | － | - |
-|  | 308 | r相対割引方法3 | `rrelative_discount_method_3` | VARCHAR | 900 | － | - |
-|  | 309 | r相対有効開始日3 | `rrelative_effective_start_date_3` | VARCHAR | 60 | － | - |
-|  | 310 | r相対有効終了日3 | `rrelative_effective_end_date_3` | VARCHAR | 60 | － | - |
-|  | 311 | r相対金額3 | `rrelative_amount_3` | DECIMAL | 10 | － | - |
-|  | 312 | r相対期間3 | `rrelative_period_3` | DECIMAL | 3 | － | - |
-|  | 313 | r相対op4 | `rrelative_op_4` | VARCHAR | 900 | － | - |
-|  | 314 | r相対プラン4 | `rrelative_plan_4` | VARCHAR | 600 | － | - |
-|  | 315 | r相対割引方法4 | `rrelative_discount_discount_method_4` | VARCHAR | 900 | － | - |
-|  | 316 | r相対有効開始日4 | `rrelative_effective_start_date_4` | VARCHAR | 60 | － | - |
-|  | 317 | r相対有効終了日4 | `rrelative_effective_end_date_4` | VARCHAR | 60 | － | - |
-|  | 318 | r相対金額4 | `rrelative_amount_4` | DECIMAL | 10 | － | - |
-|  | 319 | r相対期間4 | `rrelative_period_4` | DECIMAL | 3 | － | - |
-|  | 320 | r相対op5 | `rrelative_op_5` | VARCHAR | 900 | － | - |
-|  | 321 | r相対プラン5 | `rrelative_plan_5` | VARCHAR | 600 | － | - |
-|  | 322 | r相対割引方法5 | `rrelative_discount_method_5` | VARCHAR | 900 | － | - |
-|  | 323 | r相対有効開始日5 | `rrelative_effective_start_date_5` | VARCHAR | 60 | － | - |
-|  | 324 | r相対有効終了日5 | `rrelative_effective_end_date_5` | VARCHAR | 60 | － | - |
-|  | 325 | r相対金額5 | `rrelative_amount_5` | DECIMAL | 10 | － | - |
-|  | 326 | r相対期間5 | `rrelative_period_5` | DECIMAL | 3 | － | - |
-|  | 327 | r相対他pd名称1 | `rrelative_other_pd_name_1` | VARCHAR | 600 | － | - |
-|  | 328 | r相対他割引方法1 | `rrelative_other_discount_method_1` | VARCHAR | 900 | － | - |
-|  | 329 | r相対他有効開始日1 | `rrelative_other_effective_start_date_1` | VARCHAR | 60 | － | - |
-|  | 330 | r相対他有効終了日1 | `rrelative_other_effective_end_date_1` | VARCHAR | 60 | － | - |
-|  | 331 | r相対他金額1 | `rrelative_other_amount_1` | DECIMAL | 10 | － | - |
-|  | 332 | r相対他期間1 | `rrelative_other_period_1` | DECIMAL | 3 | － | - |
-|  | 333 | r相対他pd名称2 | `rrelative_other_pd_name_2` | VARCHAR | 600 | － | - |
-|  | 334 | r相対他割引方法2 | `rrelative_other_discount_method_2` | VARCHAR | 900 | － | - |
-|  | 335 | r相対他有効開始日2 | `rrelative_other_effective_start_date_2` | VARCHAR | 60 | － | - |
-|  | 336 | r相対他有効終了日2 | `rrelative_other_effective_end_date_2` | VARCHAR | 60 | － | - |
-|  | 337 | r相対他金額2 | `rrelative_other_amount_2` | DECIMAL | 10 | － | - |
-|  | 338 | r相対他期間2 | `rrelative_other_period_2` | DECIMAL | 3 | － | - |
-|  | 339 | r相対他pd名称3 | `rrelative_other_pd_name_3` | VARCHAR | 600 | － | - |
-|  | 340 | r相対他割引方法3 | `rrelative_other_discount_method_3` | VARCHAR | 900 | － | - |
-|  | 341 | r相対他有効開始日3 | `rrelative_other_effective_start_date_3` | VARCHAR | 60 | － | - |
-|  | 342 | r相対他有効終了日3 | `rrelative_other_effective_end_date_3` | VARCHAR | 60 | － | - |
-|  | 343 | r相対他金額3 | `rrelative_other_amount_3` | DECIMAL | 10 | － | - |
-|  | 344 | r相対他期間3 | `rrelative_other_period_3` | DECIMAL | 3 | － | - |
-|  | 345 | r相対他pd名称4 | `rrelative_other_pd_name_4` | VARCHAR | 600 | － | - |
-|  | 346 | r相対他割引方法4 | `rrelative_other_discount_method_method_4` | VARCHAR | 900 | － | - |
-|  | 347 | r相対他有効開始日4 | `r_relative_other_valid_start_date_4` | VARCHAR | 60 | － | - |
-|  | 348 | r相対他有効終了日4 | `r_relative_other_valid_end_date_4` | VARCHAR | 60 | － | - |
-|  | 349 | r相対他金額4 | `r_relative_other_amount_4` | DECIMAL | 10 | － | - |
-|  | 350 | r相対他期間4 | `r_relative_other_period_4` | DECIMAL | 3 | － | - |
-|  | 351 | r相対他pd名称5 | `r_relative_other_pd_name_5` | VARCHAR | 600 | － | - |
-|  | 352 | r相対他割引方法5 | `r_relative_other_discount_method_5` | VARCHAR | 900 | － | - |
-|  | 353 | r相対他有効開始日5 | `r_relative_other_valid_start_date_5` | VARCHAR | 60 | － | - |
-|  | 354 | r相対他有効終了日5 | `r_relative_other_valid_end_date_5` | VARCHAR | 60 | － | - |
-|  | 355 | r相対他金額5 | `r_relative_other_amount_5` | DECIMAL | 10 | － | - |
-|  | 356 | r相対他期間5 | `r_relative_other_period_5` | DECIMAL | 3 | － | - |
-|  | 357 | プラン変更許可範囲1 | `plan_change_permission_range_1` | VARCHAR | 1800 | － | - |
-|  | 358 | プラン変更許可範囲2 | `plan_change_permission_range_2` | VARCHAR | 1800 | － | - |
-|  | 359 | プラン変更許可範囲3 | `plan_change_permission_range_3` | VARCHAR | 1800 | － | - |
-|  | 360 | プラン変更許可範囲4 | `plan_change_permission_range_4` | VARCHAR | 1800 | － | - |
-|  | 361 | プラン変更許可範囲5 | `plan_change_permission_range_5` | VARCHAR | 1800 | － | - |
-|  | 362 | プラン変更許可範囲6 | `plan_change_permission_range_6` | VARCHAR | 1800 | － | - |
-|  | 363 | プラン変更許可範囲7 | `plan_change_permission_range_7` | VARCHAR | 1800 | － | - |
-|  | 364 | プラン変更許可範囲8 | `plan_change_permission_range_8` | VARCHAR | 1800 | － | - |
-|  | 365 | プラン変更許可範囲9 | `plan_change_permission_range_9` | VARCHAR | 1800 | － | - |
-|  | 366 | 解除料免除率 | `cancellation_fee_exemption_rate` | VARCHAR | 12 | － | - |
-|  | 367 | 起算日変更 | `start_date_change` | VARCHAR | 600 | － | - |
-|  | 368 | サマリ作成担当者id | `summary_creator_id` | VARCHAR | 60 | － | - |
-|  | 369 | サマリ作成日時 | `summary_creation_date_and_time` | VARCHAR | 78 | － | - |
-|  | 370 | サマリ更新担当者id | `summary_updater_id` | VARCHAR | 60 | － | - |
-|  | 371 | サマリ更新日時 | `summary_update_date_and_time` | VARCHAR | 78 | － | - |
-|  | 372 | 回線数下限 | `minimum_number_of_lines` | DECIMAL | 11 | － | - |
-|  | 373 | 提供世代種別 | `generation_type` | VARCHAR | 6 | － | - |
-|  | 374 | レンタル機変詳細名称 | `rental_device_change_details_name` | VARCHAR | 900 | － | - |
-|  | 375 | 現端末利用期間名称 | `current_device_usage_period_name` | VARCHAR | 900 | － | - |
-|  | 376 | 現端末回収状況名称 | `current_device_collection_status_name` | VARCHAR | 900 | － | - |
-|  | 377 | 現端末未回収残高 | `current_device_uncollected_balance` | DECIMAL | 11 | － | - |
-|  | 378 | 現端末ブランド名 | `current_device_brand_name` | VARCHAR | 1800 | － | - |
-|  | 379 | 現端末商品コード | `current_device_product_code` | VARCHAR | 45 | － | - |
-|  | 380 | 現端末商品名称 | `current_device_product_name` | VARCHAR | 900 | － | - |
-|  | 381 | 現端末購入月 | `current_device_purchase_month` | VARCHAR | 18 | － | - |
-|  | 382 | 複数回線割引名称 | `multiple_line_discount_name` | VARCHAR | 900 | － | - |
-|  | 383 | 実通話国内音声 | `actual_domestic_voice_calls` | DECIMAL | 11 | － | - |
-|  | 384 | 実通話国内データ | `actual_domestic_data_calls` | DECIMAL | 11 | － | - |
-|  | 385 | 大口割引名称 | `large_volume_discount_name` | VARCHAR | 900 | － | - |
-|  | 386 | 実通話国際電話 | `actual_international_calls` | DECIMAL | 11 | － | - |
-|  | 387 | 国際rmデータ | `international_rm_data` | DECIMAL | 11 | － | - |
-|  | 388 | 国際rm音声 | `international_rm_voice` | DECIMAL | 11 | － | - |
-|  | 389 | シェア相対パケ名称 | `share_relative_package_name` | VARCHAR | 900 | － | - |
-|  | 390 | 違約金減額増額 | `penalty_reduction_increase` | DECIMAL | 11 | － | - |
-|  | 391 | 代理店協業有無名称 | `agency_collaboration_status_name` | VARCHAR | 900 | － | - |
-|  | 392 | 二次代理店コード | `secondary_agency_code` | VARCHAR | 180 | － | - |
-|  | 393 | 二次代理店名 | `secondary_agency_name` | VARCHAR | 900 | － | - |
-|  | 394 | 請求代行業者名称 | `billing_agent_name` | VARCHAR | 900 | － | - |
-|  | 395 | ショット手数料 | `short_term_fee` | DECIMAL | 11 | － | - |
-|  | 396 | 継続手数料率 | `continuing_fee_rate` | VARCHAR | 24 | － | - |
-|  | 397 | カスタマイズ等請求額 | `customization_and_other_billing_amounts` | DECIMAL | 11 | － | - |
-|  | 398 | カスタマイズ等コスト | `customization_and_other_costs` | DECIMAL | 11 | － | - |
-|  | 399 | capex | `capex` | DECIMAL | 11 | － | - |
-|  | 400 | その他調整額 | `other_adjustments` | DECIMAL | 11 | － | - |
-|  | 401 | bizコンシェル定価 | `biz_concierge_list_price` | DECIMAL | 11 | － | - |
-|  | 402 | bizコンシェル値引額 | `biz_concierge_discount_amount` | DECIMAL | 11 | － | - |
-|  | 403 | bizコンシェルコスト | `biz_concierge_cost` | DECIMAL | 11 | － | - |
-|  | 404 | 保守端末ブランド名 | `maintenance_device_brand_name` | VARCHAR | 1800 | － | - |
-|  | 405 | 保守端末商品コード | `maintenance_device_product_code` | VARCHAR | 45 | － | - |
-|  | 406 | 保守端末商品名称 | `maintenance_device_product_name` | VARCHAR | 900 | － | - |
-|  | 407 | 保守端末標準価格 | `maintenance_device_standard_price` | DECIMAL | 11 | － | - |
-|  | 408 | 保守端末値引 | `maintenance_device_discount` | DECIMAL | 11 | － | - |
-|  | 409 | 保守端末数量 | `maintenance_quantity_of_terminals` | DECIMAL | 11 | － | - |
-|  | 410 | wo適用名称 | `wo_applicable_name` | VARCHAR | 900 | － | - |
-|  | 411 | 足回り名称 | `suspension_name` | VARCHAR | 900 | － | - |
-|  | 412 | ntt東西ma内外名称1 | `ntt_east_west_ma_domestic_foreign_name_1` | VARCHAR | 900 | － | - |
-|  | 413 | アクセス回線距離1 | `access_line_distance_1` | VARCHAR | 39 | － | - |
-|  | 414 | 回線数1 | `number_of_lines_1` | DECIMAL | 11 | － | - |
-|  | 415 | 定価1 | `list_price_1` | DECIMAL | 11 | － | - |
-|  | 416 | ntt東西ma内外名称2 | `ntt_east_west_ma_domestic_foreign_name_2` | VARCHAR | 900 | － | - |
-|  | 417 | アクセス回線距離2 | `access_line_distance_2` | VARCHAR | 39 | － | - |
-|  | 418 | 回線数2 | `number_of_lines_2` | DECIMAL | 11 | － | - |
-|  | 419 | 定価2 | `list_price_2` | DECIMAL | 11 | － | - |
-|  | 420 | da1500提供額値引 | `da1500_offer_price_discount` | DECIMAL | 11 | － | - |
-|  | 421 | 内線番号値引 | `extension_number_discount` | DECIMAL | 11 | － | - |
-|  | 422 | 内線番号回線数 | `number_of_extension_number_lines` | DECIMAL | 11 | － | - |
-|  | 423 | 拠点番号値引 | `location_number_discount` | DECIMAL | 11 | － | - |
-|  | 424 | 拠点番号回線数 | `number_of_location_number_lines` | DECIMAL | 11 | － | - |
-|  | 425 | ipbgw登録工事費値引 | `ipbgw_registration_installation_fee_discount` | DECIMAL | 11 | － | - |
-|  | 426 | ipbgw登録工事gw台数 | `number_of_ipbgw_registration_installation_gws` | DECIMAL | 11 | － | - |
-|  | 427 | ip接続ch接続料値引 | `ip_connection_channel_connection_fee_discount` | DECIMAL | 11 | － | - |
-|  | 428 | ip接続ch接続料ch数 | `number_of_ip_connection_channel_connection_fee_channels` | DECIMAL | 11 | － | - |
-|  | 429 | 月額固定コスト | `monthly_fixed_cost` | VARCHAR | 27 | － | - |
-|  | 430 | 月額変動コスト | `monthly_variable_cost` | VARCHAR | 27 | － | - |
-|  | 431 | 請求書一括割引 | `bulk_invoice_discount` | VARCHAR | 900 | － | - |
-|  | 432 | 通話従量率 | `call_pay_as_you_go_rate` | VARCHAR | 24 | － | - |
-|  | 433 | 国際通話従量率 | `international_call_pay_as_you_go_rate` | VARCHAR | 45 | － | - |
-|  | 434 | 国際アクセスチャージ | `international_access_charge` | VARCHAR | 45 | － | - |
-|  | 435 | 旧連結営業貢献利益 | `previous_consolidated_operating_contribution_margin` | VARCHAR | 45 | － | - |
-|  | 436 | 新sbmnpv | `new_sbm_npv` | VARCHAR | 45 | － | - |
-|  | 437 | 相対相談1 | `private_consultation_1` | VARCHAR | 45 | － | - |
-|  | 438 | 相対相談2 | `private_consultation_2` | VARCHAR | 45 | － | - |
-|  | 439 | 相対相談3 | `private_consultation_3` | VARCHAR | 45 | － | - |
-|  | 440 | 相対相談4 | `private_consultation_4` | VARCHAR | 45 | － | - |
-|  | 441 | 相対相談5 | `private_consultation_5` | VARCHAR | 45 | － | - |
-|  | 442 | 相対相談6 | `private_consultation_6` | VARCHAR | 45 | － | - |
-|  | 443 | 相対相談7 | `private_consultation_7` | VARCHAR | 45 | － | - |
-|  | 444 | 相対相談8 | `private_consultation_consultation_8` | VARCHAR | 45 | － | - |
-|  | 445 | 相対相談9 | `consultation_9` | VARCHAR | 45 | － | - |
-|  | 446 | 相対相談10 | `consultation_10` | VARCHAR | 45 | － | - |
-|  | 447 | 適用op料金品目1 | `applicable_op_fee_item_1` | VARCHAR | 1800 | － | - |
-|  | 448 | 適用op基本使用料1 | `applicable_op_basic_fee_1` | DECIMAL | 11 | － | - |
-|  | 449 | 適用op提供金額1 | `applicable_op_provision_amount_1` | DECIMAL | 11 | － | - |
-|  | 450 | 適用op変動費1 | `applicable_op_variable_fee_1` | DECIMAL | 11 | － | - |
-|  | 451 | 適用op固定費1 | `applicable_op_fixed_fee_1` | DECIMAL | 11 | － | - |
-|  | 452 | 適用op開始月1 | `applicable_op_start_month_1` | VARCHAR | 6 | － | - |
-|  | 453 | 適用op期間1 | `applicable_op_period_1` | DECIMAL | 3 | － | - |
-|  | 454 | 適用op永年1 | `applicable_op_perpetual_1` | VARCHAR | 900 | － | - |
-|  | 455 | 適用op料金品目2 | `applicable_op_fee_item_2` | VARCHAR | 1800 | － | - |
-|  | 456 | 適用op基本使用料2 | `applicable_op_basic_fee_2` | DECIMAL | 11 | － | - |
-|  | 457 | 適用op提供金額2 | `applicable_op_provision_amount_2` | DECIMAL | 11 | － | - |
-|  | 458 | 適用op変動費2 | `applicable_op_variable_fee_2` | DECIMAL | 11 | － | - |
-|  | 459 | 適用op固定費2 | `applicable_op_fixed_fee_2` | DECIMAL | 11 | － | - |
-|  | 460 | 適用op開始月2 | `applicable_op_start_month_2` | VARCHAR | 6 | － | - |
-|  | 461 | 適用op期間2 | `applicable_op_period_2` | DECIMAL | 3 | － | - |
-|  | 462 | 適用op永年2 | `applicable_op_perpetual_2` | VARCHAR | 900 | － | - |
-|  | 463 | 適用op料金品目3 | `applicable_op_fee_item_3` | VARCHAR | 1800 | － | - |
-|  | 464 | 適用op基本使用料3 | `applicable_op_basic_fee_3` | DECIMAL | 11 | － | - |
-|  | 465 | 適用op提供金額3 | `applicable_op_provision_amount_3` | DECIMAL | 11 | － | - |
-|  | 466 | 適用op変動費3 | `applicable_op_variable_fee_3` | DECIMAL | 11 | － | - |
-|  | 467 | 適用op固定費3 | `applicable_op_fixed_fee_3` | DECIMAL | 11 | － | - |
-|  | 468 | 適用op開始月3 | `applicable_op_start_month_3` | VARCHAR | 6 | － | - |
-|  | 469 | 適用op期間3 | `applicable_op_period_3` | DECIMAL | 3 | － | - |
-|  | 470 | 適用op永年3 | `applicable_op_perpetual_3` | VARCHAR | 900 | － | - |
-|  | 471 | 適用op料金品目4 | `applicable_op_fee_item_4` | VARCHAR | 1800 | － | - |
-|  | 472 | 適用op基本使用料4 | `applicable_op_basic_fee_4` | DECIMAL | 11 | － | - |
-|  | 473 | 適用op提供金額4 | `applicable_op_provision_amount_4` | DECIMAL | 11 | － | - |
-|  | 474 | 適用op変動費4 | `applicable_op_variable_fee_4` | DECIMAL | 11 | － | - |
-|  | 475 | 適用op固定費4 | `applicable_op_fixed_fee_4` | DECIMAL | 11 | － | - |
-|  | 476 | 適用op開始月4 | `applicable_op_start_month_4` | VARCHAR | 6 | － | - |
-|  | 477 | 適用op期間4 | `applicable_op_period_4` | DECIMAL | 3 | － | - |
-|  | 478 | 適用op永年4 | `applicable_op_permanent_4` | VARCHAR | 900 | － | - |
-|  | 479 | 適用op料金品目5 | `applicable_op_fee_item_5` | VARCHAR | 1800 | － | - |
-|  | 480 | 適用op基本使用料5 | `applicable_op_basic_monthly_fee_5` | DECIMAL | 11 | － | - |
-|  | 481 | 適用op提供金額5 | `applicable_op_provision_amount_5` | DECIMAL | 11 | － | - |
-|  | 482 | 適用op変動費5 | `applicable_op_variable_cost_5` | DECIMAL | 11 | － | - |
-|  | 483 | 適用op固定費5 | `applicable_op_fixed_cost_5` | DECIMAL | 11 | － | - |
-|  | 484 | 適用op開始月5 | `applicable_op_start_month_5` | VARCHAR | 6 | － | - |
-|  | 485 | 適用op期間5 | `applicable_op_period_5` | DECIMAL | 3 | － | - |
-|  | 486 | 適用op永年5 | `applicable_op_permanent_5` | VARCHAR | 900 | － | - |
-|  | 487 | woおとくdi登録請求額 | `wo_otoku_di_registration_bill` | DECIMAL | 11 | － | - |
-|  | 488 | woおとくdi使用請求額 | `wo_otoku_di_usage_bill` | DECIMAL | 11 | － | - |
-|  | 489 | isdn1500回線数 | `number_of_isdn_1500_lines` | DECIMAL | 11 | － | - |
-|  | 490 | isdn1500登録請求額 | `isdn_1500_registration_charges` | DECIMAL | 11 | － | - |
-|  | 491 | isdn1500接続請求額 | `isdn_1500_connection_charges` | DECIMAL | 11 | － | - |
-|  | 492 | isdn1500定額請求額 | `isdn_1500_flat_rate_charges` | DECIMAL | 11 | － | - |
-|  | 493 | isdn64回線数 | `number_of_isdn64_lines` | DECIMAL | 11 | － | - |
-|  | 494 | isdn64登録請求額 | `isdn64_registration_charges` | DECIMAL | 11 | － | - |
-|  | 495 | isdn64接続請求額 | `isdn64_connection_charges` | DECIMAL | 11 | － | - |
-|  | 496 | isdn64定額請求額 | `isdn64_flat_rate_charges` | DECIMAL | 11 | － | - |
-|  | 497 | 解約新規有無 | `new_customer_cancellation_new_customer_cancellation` | VARCHAR | 90 | － | - |
-|  | 498 | 未対応商品コード | `unsupported_product_code` | VARCHAR | 45 | － | - |
-|  | 499 | 未対応商品名称 | `unsupported_product_name` | VARCHAR | 900 | － | - |
-|  | 500 | 疑似シェア試算容量 | `estimated_pseudo_share_capacity` | VARCHAR | 15 | － | - |
-|  | 501 | 疑似シェア超過料 | `estimated_pseudo_share_excess_charge` | VARCHAR | 15 | － | - |
-|  | 502 | esim登録 | `esim_registration` | VARCHAR | 2295 | － | - |
+| 項目名 | カラム名 | 型 | 桁 | 仮名化 | 説明 |
+| --- | --- | --- | --- | --- | --- |
+| エントリ番号 | `entry_number` | VARCHAR | 54 | － | - |
+| サマリ番号 | `summary_number` | VARCHAR | 36 | － | - |
+| 回線数 | `number_of_lines` | DECIMAL | 10 | － | - |
+| レンタルセット端末 | `rental_set_device` | VARCHAR | 2295 | － | - |
+| mnp | `mnp` | VARCHAR | 2295 | － | - |
+| 商品コード | `product_code` | VARCHAR | 45 | － | - |
+| メーカ | `manufacturer` | VARCHAR | 1800 | － | - |
+| 移動機分類 | `mobile_device_classification` | VARCHAR | 900 | － | - |
+| 機種名 | `model_name` | VARCHAR | 900 | － | - |
+| カラー1 | `color_1` | VARCHAR | 900 | － | - |
+| 台数1 | `quantity_1` | DECIMAL | 10 | － | - |
+| カラー2 | `color_2` | VARCHAR | 900 | － | - |
+| 台数2 | `quantity_2` | DECIMAL | 10 | － | - |
+| カラー3 | `color_3` | VARCHAR | 900 | － | - |
+| 台数3 | `quantity_3` | DECIMAL | 10 | － | - |
+| カラー4 | `color_4` | VARCHAR | 900 | － | - |
+| 台数4 | `quantity_4` | DECIMAL | 10 | － | - |
+| カラー5 | `color_5` | VARCHAR | 900 | － | - |
+| 台数5 | `quantity_5` | DECIMAL | 10 | － | - |
+| 端末標準価格 | `standard_device_price` | DECIMAL | 10 | － | - |
+| 提供代金 | `provision_fee` | DECIMAL | 10 | － | - |
+| 使用ポイント | `points_used` | DECIMAL | 6 | － | - |
+| レンタル料 | `rental_fee` | DECIMAL | 10 | － | - |
+| レンタル実質提供料金 | `actual_rental_provision_fee` | DECIMAL | 10 | － | - |
+| キャンペーン1 | `campaign_1` | VARCHAR | 1800 | － | - |
+| キャンペーン2 | `campaign_2` | VARCHAR | 1800 | － | - |
+| キャンペーン3 | `campaign_3` | VARCHAR | 1800 | － | - |
+| キャンペーン4 | `campaign_4` | VARCHAR | 1800 | － | - |
+| キャンペーン5 | `campaign_5` | VARCHAR | 1800 | － | - |
+| 特典コード1 | `benefit_code_1` | VARCHAR | 30 | － | - |
+| 特典コード2 | `benefit_code_2` | VARCHAR | 30 | － | - |
+| 特典コード3 | `benefit_code_3` | VARCHAR | 30 | － | - |
+| 特典コード4 | `benefit_code_4` | VARCHAR | 30 | － | - |
+| 緊急キャンペーン1 | `urgent_campaign_1` | VARCHAR | 900 | － | - |
+| 緊急キャンペーン2 | `urgent_campaign_2` | VARCHAR | 900 | － | - |
+| 緊急キャンペーン3 | `urgent_campaign_3` | VARCHAR | 900 | － | - |
+| プラン | `plan` | VARCHAR | 1800 | － | - |
+| ホワイト法人 | `white_corporate` | VARCHAR | 1800 | － | - |
+| 通話料割引wホワイト | `call_discount_w_white` | VARCHAR | 1800 | － | - |
+| 通話料割引ホワイトl | `call_discount_l_white` | VARCHAR | 1800 | － | - |
+| 24時間通話定額 | `flat_rate_calling_24_hour` | VARCHAR | 1800 | － | - |
+| ホワイトオフィス | `white_office` | VARCHAR | 1800 | － | - |
+| 継続割引 | `continuing_discount` | VARCHAR | 1800 | － | - |
+| 違約金年契 | `breaking_contract_gold_annual_contract` | VARCHAR | 1800 | － | - |
+| sベーシックパック | `s_basic_pack` | VARCHAR | 1800 | － | - |
+| 4gデータ通信基本料 | `data_communication_basic_fee_4g` | VARCHAR | 1800 | － | - |
+| 5g基本料 | `basic_fee_5g` | VARCHAR | 1800 | － | - |
+| パケット割引 | `packet_discount` | VARCHAR | 1800 | － | - |
+| 通信速度制限解除 | `data_speed_​​limit_removal` | VARCHAR | 1800 | － | - |
+| 通話定額_だれとでも | `flat_rate_calls___anyone` | VARCHAR | 1800 | － | - |
+| wifi | `wifi` | VARCHAR | 1800 | － | - |
+| テザリング | `tethering` | VARCHAR | 1800 | － | - |
+| フラットsp9 | `flat_sp9` | VARCHAR | 1800 | － | - |
+| オプションパック | `option_pack` | VARCHAR | 1800 | － | - |
+| あんしん保証パック | `anshin_guarantee_pack` | VARCHAR | 1800 | － | - |
+| app | `app` | VARCHAR | 1800 | － | - |
+| 世界対応ケータイ | `global_mobile_phone` | VARCHAR | 1800 | － | - |
+| 海外パケット割引 | `overseas_packet_discount` | VARCHAR | 1800 | － | - |
+| 通話料明細 | `call_billing_details` | VARCHAR | 1800 | － | - |
+| it接続基本料 | `it_connection_basic_fee` | VARCHAR | 1800 | － | - |
+| オプションカテゴリ1 | `option_category_1` | VARCHAR | 1800 | － | - |
+| オプションサービス1 | `option_service_1` | VARCHAR | 1800 | － | - |
+| オプションカテゴリ2 | `option_category_2` | VARCHAR | 1800 | － | - |
+| オプションサービス2 | `option_service_2` | VARCHAR | 1800 | － | - |
+| オプションカテゴリ3 | `option_category_3` | VARCHAR | 1800 | － | - |
+| オプションサービス3 | `option_service_3` | VARCHAR | 1800 | － | - |
+| オプションカテゴリ4 | `option_category_4` | VARCHAR | 1800 | － | - |
+| オプションサービス4 | `option_service_4` | VARCHAR | 1800 | － | - |
+| オプションカテゴリ5 | `option_category_5` | VARCHAR | 1800 | － | - |
+| オプションサービス5 | `option_service_5` | VARCHAR | 1800 | － | - |
+| オプションカテゴリ6 | `option_category_6` | VARCHAR | 1800 | － | - |
+| オプションサービス6 | `option_service_6` | VARCHAR | 1800 | － | - |
+| オプションカテゴリ7 | `option_category_7` | VARCHAR | 1800 | － | - |
+| オプションサービス7 | `option_service_7` | VARCHAR | 1800 | － | - |
+| オプションカテゴリ8 | `option_category_8` | VARCHAR | 1800 | － | - |
+| オプションサービス8 | `optional_service_8` | VARCHAR | 1800 | － | - |
+| オプションカテゴリ9 | `optional_category_9` | VARCHAR | 1800 | － | - |
+| オプションサービス9 | `optional_service_9` | VARCHAR | 1800 | － | - |
+| オプションカテゴリ10 | `optional_category_10` | VARCHAR | 1800 | － | - |
+| オプションサービス10 | `optional_service_10` | VARCHAR | 1800 | － | - |
+| シェア設定 | `share_settings` | VARCHAR | 1800 | － | - |
+| シェアオプション | `share_option` | VARCHAR | 1800 | － | - |
+| grp代表シェアopt | `grp_representative_share_option` | VARCHAR | 1800 | － | - |
+| grp代表通信速度制限 | `grp_representative_data_speed_​​limit` | VARCHAR | 1800 | － | - |
+| rntoptカテゴリ1 | `rntopt_category_1` | VARCHAR | 900 | － | - |
+| rntoptプラン1 | `rntopt_plan_1` | VARCHAR | 900 | － | - |
+| rntoptカテゴリ2 | `rntopt_category_2` | VARCHAR | 900 | － | - |
+| rntoptプラン2 | `rntopt_plan_2` | VARCHAR | 900 | － | - |
+| rntoptカテゴリ3 | `rntopt_category_3` | VARCHAR | 900 | － | - |
+| rntoptプラン3 | `rntopt_plan_3` | VARCHAR | 900 | － | - |
+| rntoptカテゴリ4 | `rntopt_category_4` | VARCHAR | 900 | － | - |
+| rntoptプラン4 | `rntopt_plan_4` | VARCHAR | 900 | － | - |
+| rntoptカテゴリ5 | `rntopt_category_5` | VARCHAR | 900 | － | - |
+| rntoptプラン5 | `rntopt_plan_5` | VARCHAR | 900 | － | - |
+| rntoptカテゴリ6 | `rntopt_category_6` | VARCHAR | 900 | － | - |
+| rntoptプラン6 | `rntopt_plan_6` | VARCHAR | 900 | － | - |
+| rntoptカテゴリ7 | `rntopt_category_7` | VARCHAR | 900 | － | - |
+| rntoptプラン7 | `rntopt_plan_7` | VARCHAR | 900 | － | - |
+| rntoptカテゴリ8 | `rntopt_category_8` | VARCHAR | 900 | － | - |
+| rntoptプラン8 | `rntopt_plan_8` | VARCHAR | 900 | － | - |
+| rntoptカテゴリ9 | `rntopt_category_9` | VARCHAR | 900 | － | - |
+| rntoptプラン9 | `rntopt_plan_9` | VARCHAR | 900 | － | - |
+| rntoptカテゴリ10 | `rntopt_category_10` | VARCHAR | 900 | － | - |
+| rntoptプラン10 | `rntopt_plan_10` | VARCHAR | 900 | － | - |
+| rntoptattカテゴリ1 | `rntoptatt_category_1` | VARCHAR | 900 | － | - |
+| rntoptattプラン1 | `rntoptatt_plan_1` | VARCHAR | 900 | － | - |
+| rntoptattカテゴリ2 | `rntoptatt_category_2` | VARCHAR | 900 | － | - |
+| rntoptattプラン2 | `rntoptatt_plan_2` | VARCHAR | 900 | － | - |
+| rntoptattカテゴリ3 | `rntoptatt_category_3` | VARCHAR | 900 | － | - |
+| rntoptattプラン3 | `rntoptatt_plan_3` | VARCHAR | 900 | － | - |
+| rntoptattカテゴリ4 | `rntoptatt_category_4` | VARCHAR | 900 | － | - |
+| rntoptattプラン4 | `rntoptatt_plan_4` | VARCHAR | 900 | － | - |
+| rntoptattカテゴリ5 | `rntoptatt_category_5` | VARCHAR | 900 | － | - |
+| rntoptattプラン5 | `rntoptatt_plan_5` | VARCHAR | 900 | － | - |
+| rntoptattカテゴリ6 | `rntoptatt_category_6` | VARCHAR | 900 | － | - |
+| rntoptattプラン6 | `rntoptatt_plan_6` | VARCHAR | 900 | － | - |
+| rntoptattカテゴリ7 | `rntoptatt_category_7` | VARCHAR | 900 | － | - |
+| rntoptattプラン7 | `rntoptatt_plan_7` | VARCHAR | 900 | － | - |
+| rntoptattカテゴリ8 | `rntoptatt_category_8` | VARCHAR | 900 | － | - |
+| rntoptattプラン8 | `rntoptatt_plan_8` | VARCHAR | 900 | － | - |
+| rntoptattカテゴリ9 | `rntopta_tt_category_9` | VARCHAR | 900 | － | - |
+| rntoptattプラン9 | `rntoptatt_plan_9` | VARCHAR | 900 | － | - |
+| rntoptattカテゴリ10 | `rntoptatt_category_10` | VARCHAR | 900 | － | - |
+| rntoptattプラン10 | `rntoptatt_plan_10` | VARCHAR | 900 | － | - |
+| rntキャンペーン1 | `rnt_campaign_1` | VARCHAR | 900 | － | - |
+| rntキャンペーン2 | `rnt_campaign_2` | VARCHAR | 900 | － | - |
+| rntキャンペーン3 | `rnt_campaign_3` | VARCHAR | 900 | － | - |
+| キャンペーンコード1 | `campaign_code_1` | VARCHAR | 60 | － | - |
+| キャンペーンコード2 | `campaign_code_2` | VARCHAR | 60 | － | - |
+| rnt緊急キャンペーン1 | `rnt_urgent_campaign_1` | VARCHAR | 900 | － | - |
+| rnt緊急キャンペーン2 | `rnt_urgent_campaign_2` | VARCHAR | 900 | － | - |
+| rnt緊急キャンペーン3 | `rnt_urgent_campaign_3` | VARCHAR | 900 | － | - |
+| 新規事務手数料免除 | `new_service_fee_exemption` | VARCHAR | 900 | － | - |
+| 機種変更手数料免除 | `model_upgrade_fee_exemption` | VARCHAR | 900 | － | - |
+| 契変事務手数料免除 | `contract_change_service_fee_exemption` | VARCHAR | 900 | － | - |
+| 年契違約金免除 | `annual_contract_penalty_exemption` | VARCHAR | 900 | － | - |
+| 適用中相対割引終了日 | `applicable_relative_discount_end_date` | VARCHAR | 60 | － | - |
+| 相対pdカテゴリ1 | `relative_pd_category_1` | VARCHAR | 1800 | － | - |
+| 相対pd名称1 | `relative_pd_name_1` | VARCHAR | 1800 | － | - |
+| 相対割引方法1 | `relative_discount_method_1` | VARCHAR | 900 | － | - |
+| 相対有効開始日1 | `relative_effective_start_date_1` | VARCHAR | 60 | － | - |
+| 相対有効終了日1 | `relative_effective_end_date_1` | VARCHAR | 60 | － | - |
+| 相対請求金額1 | `relative_billing_amount_1` | VARCHAR | 24 | － | - |
+| 相対割引金額1 | `relative_discount_amount_1` | VARCHAR | 24 | － | - |
+| 相対割引率1 | `relative_discount_rate_1` | VARCHAR | 18 | － | - |
+| 相対割引開始月1 | `relative_discount_start_month_1` | VARCHAR | 6 | － | - |
+| 相対期間1 | `relative_period_1` | DECIMAL | 3 | － | - |
+| 相対pdカテゴリ2 | `relative_pd_category_2` | VARCHAR | 1800 | － | - |
+| 相対pd名称2 | `relative_pd_name_2` | VARCHAR | 1800 | － | - |
+| 相対割引方法2 | `relative_discount_method_2` | VARCHAR | 900 | － | - |
+| 相対有効開始日2 | `relative_effective_start_date_2` | VARCHAR | 60 | － | - |
+| 相対有効終了日2 | `relative_effective_end_date_2` | VARCHAR | 60 | － | - |
+| 相対請求金額2 | `relative_invoice_amount_2` | VARCHAR | 24 | － | - |
+| 相対割引金額2 | `relative_discount_amount_2` | VARCHAR | 24 | － | - |
+| 相対割引率2 | `relative_discount_rate_2` | VARCHAR | 18 | － | - |
+| 相対割引開始月2 | `relative_discount_start_month_2` | VARCHAR | 6 | － | - |
+| 相対期間2 | `relative_period_2` | DECIMAL | 3 | － | - |
+| 相対pdカテゴリ3 | `relative_pd_category_3` | VARCHAR | 1800 | － | - |
+| 相対pd名称3 | `relative_pd_name_3` | VARCHAR | 1800 | － | - |
+| 相対割引方法3 | `relative_discount_method_3` | VARCHAR | 900 | － | - |
+| 相対有効開始日3 | `relative_effective_start_date_3` | VARCHAR | 60 | － | - |
+| 相対有効終了日3 | `relative_effective_end_date_3` | VARCHAR | 60 | － | - |
+| 相対請求金額3 | `relative_invoice_amount_3` | VARCHAR | 24 | － | - |
+| 相対割引金額3 | `relative_discount_amount_3` | VARCHAR | 24 | － | - |
+| 相対割引率3 | `relative_discount_rate_3` | VARCHAR | 18 | － | - |
+| 相対割引開始月3 | `relative_discount_start_month_3` | VARCHAR | 6 | － | - |
+| 相対期間3 | `relative_period_3` | DECIMAL | 3 | － | - |
+| 相対pdカテゴリ4 | `relative_pd_category_4` | VARCHAR | 1800 | － | - |
+| 相対pd名称4 | `relative_pd_name_4` | VARCHAR | 1800 | － | - |
+| 相対割引方法4 | `relative_discount_method_4` | VARCHAR | 900 | － | - |
+| 相対有効開始日4 | `relative_effective_start_date_4` | VARCHAR | 60 | － | - |
+| 相対有効終了日4 | `relative_effective_end_date_4` | VARCHAR | 60 | － | - |
+| 相対請求金額4 | `relative_invoice_amount_4` | VARCHAR | 24 | － | - |
+| 相対割引金額4 | `relative_discount_amount_4` | VARCHAR | 24 | － | - |
+| 相対割引率4 | `relative_discount_rate_4` | VARCHAR | 18 | － | - |
+| 相対割引開始月4 | `relative_discount_start_month_4` | VARCHAR | 6 | － | - |
+| 相対期間4 | `relative_period_4` | DECIMAL | 3 | － | - |
+| 相対pdカテゴリ5 | `relative_pd_category_5` | VARCHAR | 1800 | － | - |
+| 相対pd名称5 | `relative_pd_name_5` | VARCHAR | 1800 | － | - |
+| 相対割引方法5 | `relative_discount_method_5` | VARCHAR | 900 | － | - |
+| 相対有効開始日5 | `relative_effective_start_date_5` | VARCHAR | 60 | － | - |
+| 相対有効終了日5 | `relative_effective_end_date_5` | VARCHAR | 60 | － | - |
+| 相対請求金額5 | `relative_invoice_amount_5` | VARCHAR | 24 | － | - |
+| 相対割引金額5 | `relative_discount_amount_5` | VARCHAR | 24 | － | - |
+| 相対割引率5 | `relative_discount_rate_5` | VARCHAR | 18 | － | - |
+| 相対割引開始月5 | `relative_discount_start_month_5` | VARCHAR | 6 | － | - |
+| 相対期間5 | `relative_period_5` | DECIMAL | 3 | － | - |
+| 相対pdカテゴリ6 | `relative_pd_category_6` | VARCHAR | 1800 | － | - |
+| 相対pd名称6 | `relative_pd_name_6` | VARCHAR | 1800 | － | - |
+| 相対割引方法6 | `relative_discount_method_6` | VARCHAR | 900 | － | - |
+| 相対有効開始日6 | `relative_effective_start_date_6` | VARCHAR | 60 | － | - |
+| 相対有効終了日6 | `relative_effective_end_date_6` | VARCHAR | 60 | － | - |
+| 相対請求金額6 | `relative_invoice_amount_6` | VARCHAR | 24 | － | - |
+| 相対割引金額6 | `relative_discount_amount_6` | VARCHAR | 24 | － | - |
+| 相対割引率6 | `relative_discount_rate_6` | VARCHAR | 18 | － | - |
+| 相対割引開始月6 | `relative_discount_start_month_6` | VARCHAR | 6 | － | - |
+| 相対期間6 | `relative_period_6` | DECIMAL | 3 | － | - |
+| 相対pdカテゴリ7 | `relative_pd_category_7` | VARCHAR | 1800 | － | - |
+| 相対pd名称7 | `relative_pd_name_7` | VARCHAR | 1800 | － | - |
+| 相対割引方法7 | `relative_discount_method_7` | VARCHAR | 900 | － | - |
+| 相対有効開始日7 | `relative_effective_start_date_7` | VARCHAR | 60 | － | - |
+| 相対有効終了日7 | `relative_effective_end_date_7` | VARCHAR | 60 | － | - |
+| 相対請求金額7 | `relative_invoice_amount_7` | VARCHAR | 24 | － | - |
+| 相対割引金額7 | `relative_discount_amount_7` | VARCHAR | 24 | － | - |
+| 相対割引率7 | `relative_discount_rate_7` | VARCHAR | 18 | － | - |
+| 相対割引開始月7 | `relative_discount_start_month_7` | VARCHAR | 6 | － | - |
+| 相対期間7 | `relative_period_7` | DECIMAL | 3 | － | - |
+| 相対pdカテゴリ8 | `relative_pd_category_8` | VARCHAR | 1800 | － | - |
+| 相対pd名称8 | `relative_pd_name_8` | VARCHAR | 1800 | － | - |
+| 相対割引方法8 | `relative_discount_method_8` | VARCHAR | 900 | － | - |
+| 相対有効開始日8 | `relative_effective_start_date_8` | VARCHAR | 60 | － | - |
+| 相対有効終了日8 | `relative_effective_end_date_8` | VARCHAR | 60 | － | - |
+| 相対請求金額8 | `relative_invoice_amount_8` | VARCHAR | 24 | － | - |
+| 相対割引金額8 | `relative_discount_amount_8` | VARCHAR | 24 | － | - |
+| 相対割引率8 | `relative_discount_rate_8` | VARCHAR | 18 | － | - |
+| 相対割引開始月8 | `relative_discount_start_month_8` | VARCHAR | 6 | － | - |
+| 相対期間8 | `relative_period_8` | DECIMAL | 3 | － | - |
+| 相対pdカテゴリ9 | `relative_pd_category_9` | VARCHAR | 1800 | － | - |
+| 相対pd名称9 | `relative_pd_name_9` | VARCHAR | 1800 | － | - |
+| 相対割引方法9 | `relative_discount_method_9` | VARCHAR | 900 | － | - |
+| 相対有効開始日9 | `relative_effective_start_date_9` | VARCHAR | 60 | － | - |
+| 相対有効終了日9 | `relative_effective_end_date_9` | VARCHAR | 60 | － | - |
+| 相対請求金額9 | `relative_invoice_amount_9` | VARCHAR | 24 | － | - |
+| 相対割引金額9 | `relative_discount_amount_9` | VARCHAR | 24 | － | - |
+| 相対割引率9 | `relative_discount_rate_9` | VARCHAR | 18 | － | - |
+| 相対割引開始月9 | `relative_discount_start_month_9` | VARCHAR | 6 | － | - |
+| 相対期間9 | `relative_period_9` | DECIMAL | 3 | － | - |
+| 相対pdカテゴリ10 | `relative_pd_category_10` | VARCHAR | 1800 | － | - |
+| 相対pd名称10 | `relative_pd_name_10` | VARCHAR | 1800 | － | - |
+| 相対割引方法10 | `relative_discount_method_10` | VARCHAR | 900 | － | - |
+| 相対有効開始日10 | `relative_effective_start_date_10` | VARCHAR | 60 | － | - |
+| 相対有効終了日10 | `relative_effective_end_date_10` | VARCHAR | 60 | － | - |
+| 相対請求金額10 | `relative_invoice_amount_10` | VARCHAR | 24 | － | - |
+| 相対割引金額10 | `relative_discount_amount_10` | VARCHAR | 24 | － | - |
+| 相対割引率10 | `relative_discount_rate_10` | VARCHAR | 18 | － | - |
+| 相対割引開始月10 | `relative_discount_start_month_10` | VARCHAR | 6 | － | - |
+| 相対期間10 | `relative_period_10` | DECIMAL | 3 | － | - |
+| 相対他pdカテゴリ1 | `relative_other_pd_category_1` | VARCHAR | 1800 | － | - |
+| 相対他pd名称1 | `relative_other_pd_name_1` | VARCHAR | 1800 | － | - |
+| 相対他割引方法1 | `relative_other_discount_method_1` | VARCHAR | 900 | － | - |
+| 相対他有効開始日1 | `relative_other_effective_start_date_1` | VARCHAR | 60 | － | - |
+| 相対他有効終了日1 | `relative_other_effective_end_date_1` | VARCHAR | 60 | － | - |
+| 相対他請求金額1 | `relative_other_invoice_amount_1` | VARCHAR | 24 | － | - |
+| 相対他割引金額1 | `relative_other_discount_amount_1` | VARCHAR | 24 | － | - |
+| 相対他割引率1 | `relative_other_discount_rate_1` | VARCHAR | 18 | － | - |
+| 相対他割引開始月1 | `relative_other_discount_start_month_1` | VARCHAR | 6 | － | - |
+| 相対他期間1 | `relative_other_period_1` | DECIMAL | 3 | － | - |
+| 相対他pdカテゴリ2 | `relative_other_pd_category_2` | VARCHAR | 1800 | － | - |
+| 相対他pd名称2 | `relative_other_pd_name_2` | VARCHAR | 1800 | － | - |
+| 相対他割引方法2 | `relative_other_discount_method_2` | VARCHAR | 900 | － | - |
+| 相対他有効開始日2 | `relative_other_effective_open_start_date_2` | VARCHAR | 60 | － | - |
+| 相対他有効終了日2 | `relative_other_effective_end_date_2` | VARCHAR | 60 | － | - |
+| 相対他請求金額2 | `relative_other_invoice_amount_2` | VARCHAR | 24 | － | - |
+| 相対他割引金額2 | `relative_other_discount_amount_2` | VARCHAR | 24 | － | - |
+| 相対他割引率2 | `relative_other_discount_rate_2` | VARCHAR | 18 | － | - |
+| 相対他割引開始月2 | `relative_other_discount_start_month_2` | VARCHAR | 6 | － | - |
+| 相対他期間2 | `relative_other_period_2` | DECIMAL | 3 | － | - |
+| 相対他pdカテゴリ3 | `relative_other_pd_category_3` | VARCHAR | 1800 | － | - |
+| 相対他pd名称3 | `relative_other_pd_name_3` | VARCHAR | 1800 | － | - |
+| 相対他割引方法3 | `relative_other_discount_method_3` | VARCHAR | 900 | － | - |
+| 相対他有効開始日3 | `relative_other_effective_start_date_3` | VARCHAR | 60 | － | - |
+| 相対他有効終了日3 | `relative_other_effective_end_date_3` | VARCHAR | 60 | － | - |
+| 相対他請求金額3 | `relative_other_invoice_amount_3` | VARCHAR | 24 | － | - |
+| 相対他割引金額3 | `relative_other_discount_amount_3` | VARCHAR | 24 | － | - |
+| 相対他割引率3 | `relative_other_discount_rate_3` | VARCHAR | 18 | － | - |
+| 相対他割引開始月3 | `relative_other_discount_start_month_3` | VARCHAR | 6 | － | - |
+| 相対他期間3 | `relative_other_period_3` | DECIMAL | 3 | － | - |
+| 相対他pdカテゴリ4 | `relative_other_pd_category_4` | VARCHAR | 1800 | － | - |
+| 相対他pd名称4 | `relative_other_pd_name_4` | VARCHAR | 1800 | － | - |
+| 相対他割引方法4 | `relative_other_discount_method_4` | VARCHAR | 900 | － | - |
+| 相対他有効開始日4 | `relative_other_effective_start_date_4` | VARCHAR | 60 | － | - |
+| 相対他有効終了日4 | `relative_other_effective_end_date_4` | VARCHAR | 60 | － | - |
+| 相対他請求金額4 | `relative_other_invoice_amount_4` | VARCHAR | 24 | － | - |
+| 相対他割引金額4 | `relative_other_discount_amount_4` | VARCHAR | 24 | － | - |
+| 相対他割引率4 | `relative_other_discount_rate_4` | VARCHAR | 18 | － | - |
+| 相対他割引開始月4 | `relative_other_discount_start_month_4` | VARCHAR | 6 | － | - |
+| 相対他期間4 | `relative_other_period_4` | DECIMAL | 3 | － | - |
+| 相対他pdカテゴリ5 | `relative_other_pd_category_5` | VARCHAR | 1800 | － | - |
+| 相対他pd名称5 | `relative_other_pd_name_5` | VARCHAR | 1800 | － | - |
+| 相対他割引方法5 | `relative_other_discount_method_5` | VARCHAR | 900 | － | - |
+| 相対他有効開始日5 | `relative_other_effective_start_date_5` | VARCHAR | 60 | － | - |
+| 相対他有効終了日5 | `relative_other_effective_end_date_5` | VARCHAR | 60 | － | - |
+| 相対他請求金額5 | `relative_other_billing_amount_5` | VARCHAR | 24 | － | - |
+| 相対他割引金額5 | `relative_other_discount_amount_5` | VARCHAR | 24 | － | - |
+| 相対他割引率5 | `relative_other_discount_rate_5` | VARCHAR | 18 | － | - |
+| 相対他割引開始月5 | `relative_other_discount_start_month_5` | VARCHAR | 6 | － | - |
+| 相対他期間5 | `relative_other_period_5` | DECIMAL | 3 | － | - |
+| rnt登録事務手数料免除 | `rnt_registration_administrative_fee_waiver` | VARCHAR | 900 | － | - |
+| rnt登録事務手数料金額 | `rnt_registration_administrative_fee_amount` | VARCHAR | 900 | － | - |
+| rnt解約違約金割引方法 | `rnt_cancellation_penalty_discount_method` | VARCHAR | 900 | － | - |
+| rnt解約違約金金額 | `rnt_cancellation_penalty_amount` | VARCHAR | 900 | － | - |
+| r相対op1 | `rrelative_op_1` | VARCHAR | 900 | － | - |
+| r相対プラン1 | `rrelative_plan_1` | VARCHAR | 600 | － | - |
+| r相対割引方法1 | `rrelative_discount_method_1` | VARCHAR | 900 | － | - |
+| r相対有効開始日1 | `rrelative_effective_start_date_1` | VARCHAR | 60 | － | - |
+| r相対有効終了日1 | `rrelative_effective_end_date_1` | VARCHAR | 60 | － | - |
+| r相対金額1 | `rrelative_amount_1` | DECIMAL | 10 | － | - |
+| r相対期間1 | `rrelative_period_1` | DECIMAL | 3 | － | - |
+| r相対op2 | `rrelative_op_2` | VARCHAR | 900 | － | - |
+| r相対プラン2 | `rrelative_plan_2` | VARCHAR | 600 | － | - |
+| r相対割引方法2 | `rrelative_discount_method_2` | VARCHAR | 900 | － | - |
+| r相対有効開始日2 | `rrelative_effective_start_date_2` | VARCHAR | 60 | － | - |
+| r相対有効終了日2 | `rrelative_effective_end_date_2` | VARCHAR | 60 | － | - |
+| r相対金額2 | `rrelative_amount_2` | DECIMAL | 10 | － | - |
+| r相対期間2 | `rrelative_period_2` | DECIMAL | 3 | － | - |
+| r相対op3 | `rrelative_op_3` | VARCHAR | 900 | － | - |
+| r相対プラン3 | `rrelative_plan_3` | VARCHAR | 600 | － | - |
+| r相対割引方法3 | `rrelative_discount_method_3` | VARCHAR | 900 | － | - |
+| r相対有効開始日3 | `rrelative_effective_start_date_3` | VARCHAR | 60 | － | - |
+| r相対有効終了日3 | `rrelative_effective_end_date_3` | VARCHAR | 60 | － | - |
+| r相対金額3 | `rrelative_amount_3` | DECIMAL | 10 | － | - |
+| r相対期間3 | `rrelative_period_3` | DECIMAL | 3 | － | - |
+| r相対op4 | `rrelative_op_4` | VARCHAR | 900 | － | - |
+| r相対プラン4 | `rrelative_plan_4` | VARCHAR | 600 | － | - |
+| r相対割引方法4 | `rrelative_discount_discount_method_4` | VARCHAR | 900 | － | - |
+| r相対有効開始日4 | `rrelative_effective_start_date_4` | VARCHAR | 60 | － | - |
+| r相対有効終了日4 | `rrelative_effective_end_date_4` | VARCHAR | 60 | － | - |
+| r相対金額4 | `rrelative_amount_4` | DECIMAL | 10 | － | - |
+| r相対期間4 | `rrelative_period_4` | DECIMAL | 3 | － | - |
+| r相対op5 | `rrelative_op_5` | VARCHAR | 900 | － | - |
+| r相対プラン5 | `rrelative_plan_5` | VARCHAR | 600 | － | - |
+| r相対割引方法5 | `rrelative_discount_method_5` | VARCHAR | 900 | － | - |
+| r相対有効開始日5 | `rrelative_effective_start_date_5` | VARCHAR | 60 | － | - |
+| r相対有効終了日5 | `rrelative_effective_end_date_5` | VARCHAR | 60 | － | - |
+| r相対金額5 | `rrelative_amount_5` | DECIMAL | 10 | － | - |
+| r相対期間5 | `rrelative_period_5` | DECIMAL | 3 | － | - |
+| r相対他pd名称1 | `rrelative_other_pd_name_1` | VARCHAR | 600 | － | - |
+| r相対他割引方法1 | `rrelative_other_discount_method_1` | VARCHAR | 900 | － | - |
+| r相対他有効開始日1 | `rrelative_other_effective_start_date_1` | VARCHAR | 60 | － | - |
+| r相対他有効終了日1 | `rrelative_other_effective_end_date_1` | VARCHAR | 60 | － | - |
+| r相対他金額1 | `rrelative_other_amount_1` | DECIMAL | 10 | － | - |
+| r相対他期間1 | `rrelative_other_period_1` | DECIMAL | 3 | － | - |
+| r相対他pd名称2 | `rrelative_other_pd_name_2` | VARCHAR | 600 | － | - |
+| r相対他割引方法2 | `rrelative_other_discount_method_2` | VARCHAR | 900 | － | - |
+| r相対他有効開始日2 | `rrelative_other_effective_start_date_2` | VARCHAR | 60 | － | - |
+| r相対他有効終了日2 | `rrelative_other_effective_end_date_2` | VARCHAR | 60 | － | - |
+| r相対他金額2 | `rrelative_other_amount_2` | DECIMAL | 10 | － | - |
+| r相対他期間2 | `rrelative_other_period_2` | DECIMAL | 3 | － | - |
+| r相対他pd名称3 | `rrelative_other_pd_name_3` | VARCHAR | 600 | － | - |
+| r相対他割引方法3 | `rrelative_other_discount_method_3` | VARCHAR | 900 | － | - |
+| r相対他有効開始日3 | `rrelative_other_effective_start_date_3` | VARCHAR | 60 | － | - |
+| r相対他有効終了日3 | `rrelative_other_effective_end_date_3` | VARCHAR | 60 | － | - |
+| r相対他金額3 | `rrelative_other_amount_3` | DECIMAL | 10 | － | - |
+| r相対他期間3 | `rrelative_other_period_3` | DECIMAL | 3 | － | - |
+| r相対他pd名称4 | `rrelative_other_pd_name_4` | VARCHAR | 600 | － | - |
+| r相対他割引方法4 | `rrelative_other_discount_method_method_4` | VARCHAR | 900 | － | - |
+| r相対他有効開始日4 | `r_relative_other_valid_start_date_4` | VARCHAR | 60 | － | - |
+| r相対他有効終了日4 | `r_relative_other_valid_end_date_4` | VARCHAR | 60 | － | - |
+| r相対他金額4 | `r_relative_other_amount_4` | DECIMAL | 10 | － | - |
+| r相対他期間4 | `r_relative_other_period_4` | DECIMAL | 3 | － | - |
+| r相対他pd名称5 | `r_relative_other_pd_name_5` | VARCHAR | 600 | － | - |
+| r相対他割引方法5 | `r_relative_other_discount_method_5` | VARCHAR | 900 | － | - |
+| r相対他有効開始日5 | `r_relative_other_valid_start_date_5` | VARCHAR | 60 | － | - |
+| r相対他有効終了日5 | `r_relative_other_valid_end_date_5` | VARCHAR | 60 | － | - |
+| r相対他金額5 | `r_relative_other_amount_5` | DECIMAL | 10 | － | - |
+| r相対他期間5 | `r_relative_other_period_5` | DECIMAL | 3 | － | - |
+| プラン変更許可範囲1 | `plan_change_permission_range_1` | VARCHAR | 1800 | － | - |
+| プラン変更許可範囲2 | `plan_change_permission_range_2` | VARCHAR | 1800 | － | - |
+| プラン変更許可範囲3 | `plan_change_permission_range_3` | VARCHAR | 1800 | － | - |
+| プラン変更許可範囲4 | `plan_change_permission_range_4` | VARCHAR | 1800 | － | - |
+| プラン変更許可範囲5 | `plan_change_permission_range_5` | VARCHAR | 1800 | － | - |
+| プラン変更許可範囲6 | `plan_change_permission_range_6` | VARCHAR | 1800 | － | - |
+| プラン変更許可範囲7 | `plan_change_permission_range_7` | VARCHAR | 1800 | － | - |
+| プラン変更許可範囲8 | `plan_change_permission_range_8` | VARCHAR | 1800 | － | - |
+| プラン変更許可範囲9 | `plan_change_permission_range_9` | VARCHAR | 1800 | － | - |
+| 解除料免除率 | `cancellation_fee_exemption_rate` | VARCHAR | 12 | － | - |
+| 起算日変更 | `start_date_change` | VARCHAR | 600 | － | - |
+| サマリ作成担当者id | `summary_creator_id` | VARCHAR | 60 | － | - |
+| サマリ作成日時 | `summary_creation_date_and_time` | VARCHAR | 78 | － | - |
+| サマリ更新担当者id | `summary_updater_id` | VARCHAR | 60 | － | - |
+| サマリ更新日時 | `summary_update_date_and_time` | VARCHAR | 78 | － | - |
+| 回線数下限 | `minimum_number_of_lines` | DECIMAL | 11 | － | - |
+| 提供世代種別 | `generation_type` | VARCHAR | 6 | － | - |
+| レンタル機変詳細名称 | `rental_device_change_details_name` | VARCHAR | 900 | － | - |
+| 現端末利用期間名称 | `current_device_usage_period_name` | VARCHAR | 900 | － | - |
+| 現端末回収状況名称 | `current_device_collection_status_name` | VARCHAR | 900 | － | - |
+| 現端末未回収残高 | `current_device_uncollected_balance` | DECIMAL | 11 | － | - |
+| 現端末ブランド名 | `current_device_brand_name` | VARCHAR | 1800 | － | - |
+| 現端末商品コード | `current_device_product_code` | VARCHAR | 45 | － | - |
+| 現端末商品名称 | `current_device_product_name` | VARCHAR | 900 | － | - |
+| 現端末購入月 | `current_device_purchase_month` | VARCHAR | 18 | － | - |
+| 複数回線割引名称 | `multiple_line_discount_name` | VARCHAR | 900 | － | - |
+| 実通話国内音声 | `actual_domestic_voice_calls` | DECIMAL | 11 | － | - |
+| 実通話国内データ | `actual_domestic_data_calls` | DECIMAL | 11 | － | - |
+| 大口割引名称 | `large_volume_discount_name` | VARCHAR | 900 | － | - |
+| 実通話国際電話 | `actual_international_calls` | DECIMAL | 11 | － | - |
+| 国際rmデータ | `international_rm_data` | DECIMAL | 11 | － | - |
+| 国際rm音声 | `international_rm_voice` | DECIMAL | 11 | － | - |
+| シェア相対パケ名称 | `share_relative_package_name` | VARCHAR | 900 | － | - |
+| 違約金減額増額 | `penalty_reduction_increase` | DECIMAL | 11 | － | - |
+| 代理店協業有無名称 | `agency_collaboration_status_name` | VARCHAR | 900 | － | - |
+| 二次代理店コード | `secondary_agency_code` | VARCHAR | 180 | － | - |
+| 二次代理店名 | `secondary_agency_name` | VARCHAR | 900 | － | - |
+| 請求代行業者名称 | `billing_agent_name` | VARCHAR | 900 | － | - |
+| ショット手数料 | `short_term_fee` | DECIMAL | 11 | － | - |
+| 継続手数料率 | `continuing_fee_rate` | VARCHAR | 24 | － | - |
+| カスタマイズ等請求額 | `customization_and_other_billing_amounts` | DECIMAL | 11 | － | - |
+| カスタマイズ等コスト | `customization_and_other_costs` | DECIMAL | 11 | － | - |
+| capex | `capex` | DECIMAL | 11 | － | - |
+| その他調整額 | `other_adjustments` | DECIMAL | 11 | － | - |
+| bizコンシェル定価 | `biz_concierge_list_price` | DECIMAL | 11 | － | - |
+| bizコンシェル値引額 | `biz_concierge_discount_amount` | DECIMAL | 11 | － | - |
+| bizコンシェルコスト | `biz_concierge_cost` | DECIMAL | 11 | － | - |
+| 保守端末ブランド名 | `maintenance_device_brand_name` | VARCHAR | 1800 | － | - |
+| 保守端末商品コード | `maintenance_device_product_code` | VARCHAR | 45 | － | - |
+| 保守端末商品名称 | `maintenance_device_product_name` | VARCHAR | 900 | － | - |
+| 保守端末標準価格 | `maintenance_device_standard_price` | DECIMAL | 11 | － | - |
+| 保守端末値引 | `maintenance_device_discount` | DECIMAL | 11 | － | - |
+| 保守端末数量 | `maintenance_quantity_of_terminals` | DECIMAL | 11 | － | - |
+| wo適用名称 | `wo_applicable_name` | VARCHAR | 900 | － | - |
+| 足回り名称 | `suspension_name` | VARCHAR | 900 | － | - |
+| ntt東西ma内外名称1 | `ntt_east_west_ma_domestic_foreign_name_1` | VARCHAR | 900 | － | - |
+| アクセス回線距離1 | `access_line_distance_1` | VARCHAR | 39 | － | - |
+| 回線数1 | `number_of_lines_1` | DECIMAL | 11 | － | - |
+| 定価1 | `list_price_1` | DECIMAL | 11 | － | - |
+| ntt東西ma内外名称2 | `ntt_east_west_ma_domestic_foreign_name_2` | VARCHAR | 900 | － | - |
+| アクセス回線距離2 | `access_line_distance_2` | VARCHAR | 39 | － | - |
+| 回線数2 | `number_of_lines_2` | DECIMAL | 11 | － | - |
+| 定価2 | `list_price_2` | DECIMAL | 11 | － | - |
+| da1500提供額値引 | `da1500_offer_price_discount` | DECIMAL | 11 | － | - |
+| 内線番号値引 | `extension_number_discount` | DECIMAL | 11 | － | - |
+| 内線番号回線数 | `number_of_extension_number_lines` | DECIMAL | 11 | － | - |
+| 拠点番号値引 | `location_number_discount` | DECIMAL | 11 | － | - |
+| 拠点番号回線数 | `number_of_location_number_lines` | DECIMAL | 11 | － | - |
+| ipbgw登録工事費値引 | `ipbgw_registration_installation_fee_discount` | DECIMAL | 11 | － | - |
+| ipbgw登録工事gw台数 | `number_of_ipbgw_registration_installation_gws` | DECIMAL | 11 | － | - |
+| ip接続ch接続料値引 | `ip_connection_channel_connection_fee_discount` | DECIMAL | 11 | － | - |
+| ip接続ch接続料ch数 | `number_of_ip_connection_channel_connection_fee_channels` | DECIMAL | 11 | － | - |
+| 月額固定コスト | `monthly_fixed_cost` | VARCHAR | 27 | － | - |
+| 月額変動コスト | `monthly_variable_cost` | VARCHAR | 27 | － | - |
+| 請求書一括割引 | `bulk_invoice_discount` | VARCHAR | 900 | － | - |
+| 通話従量率 | `call_pay_as_you_go_rate` | VARCHAR | 24 | － | - |
+| 国際通話従量率 | `international_call_pay_as_you_go_rate` | VARCHAR | 45 | － | - |
+| 国際アクセスチャージ | `international_access_charge` | VARCHAR | 45 | － | - |
+| 旧連結営業貢献利益 | `previous_consolidated_operating_contribution_margin` | VARCHAR | 45 | － | - |
+| 新sbmnpv | `new_sbm_npv` | VARCHAR | 45 | － | - |
+| 相対相談1 | `private_consultation_1` | VARCHAR | 45 | － | - |
+| 相対相談2 | `private_consultation_2` | VARCHAR | 45 | － | - |
+| 相対相談3 | `private_consultation_3` | VARCHAR | 45 | － | - |
+| 相対相談4 | `private_consultation_4` | VARCHAR | 45 | － | - |
+| 相対相談5 | `private_consultation_5` | VARCHAR | 45 | － | - |
+| 相対相談6 | `private_consultation_6` | VARCHAR | 45 | － | - |
+| 相対相談7 | `private_consultation_7` | VARCHAR | 45 | － | - |
+| 相対相談8 | `private_consultation_consultation_8` | VARCHAR | 45 | － | - |
+| 相対相談9 | `consultation_9` | VARCHAR | 45 | － | - |
+| 相対相談10 | `consultation_10` | VARCHAR | 45 | － | - |
+| 適用op料金品目1 | `applicable_op_fee_item_1` | VARCHAR | 1800 | － | - |
+| 適用op基本使用料1 | `applicable_op_basic_fee_1` | DECIMAL | 11 | － | - |
+| 適用op提供金額1 | `applicable_op_provision_amount_1` | DECIMAL | 11 | － | - |
+| 適用op変動費1 | `applicable_op_variable_fee_1` | DECIMAL | 11 | － | - |
+| 適用op固定費1 | `applicable_op_fixed_fee_1` | DECIMAL | 11 | － | - |
+| 適用op開始月1 | `applicable_op_start_month_1` | VARCHAR | 6 | － | - |
+| 適用op期間1 | `applicable_op_period_1` | DECIMAL | 3 | － | - |
+| 適用op永年1 | `applicable_op_perpetual_1` | VARCHAR | 900 | － | - |
+| 適用op料金品目2 | `applicable_op_fee_item_2` | VARCHAR | 1800 | － | - |
+| 適用op基本使用料2 | `applicable_op_basic_fee_2` | DECIMAL | 11 | － | - |
+| 適用op提供金額2 | `applicable_op_provision_amount_2` | DECIMAL | 11 | － | - |
+| 適用op変動費2 | `applicable_op_variable_fee_2` | DECIMAL | 11 | － | - |
+| 適用op固定費2 | `applicable_op_fixed_fee_2` | DECIMAL | 11 | － | - |
+| 適用op開始月2 | `applicable_op_start_month_2` | VARCHAR | 6 | － | - |
+| 適用op期間2 | `applicable_op_period_2` | DECIMAL | 3 | － | - |
+| 適用op永年2 | `applicable_op_perpetual_2` | VARCHAR | 900 | － | - |
+| 適用op料金品目3 | `applicable_op_fee_item_3` | VARCHAR | 1800 | － | - |
+| 適用op基本使用料3 | `applicable_op_basic_fee_3` | DECIMAL | 11 | － | - |
+| 適用op提供金額3 | `applicable_op_provision_amount_3` | DECIMAL | 11 | － | - |
+| 適用op変動費3 | `applicable_op_variable_fee_3` | DECIMAL | 11 | － | - |
+| 適用op固定費3 | `applicable_op_fixed_fee_3` | DECIMAL | 11 | － | - |
+| 適用op開始月3 | `applicable_op_start_month_3` | VARCHAR | 6 | － | - |
+| 適用op期間3 | `applicable_op_period_3` | DECIMAL | 3 | － | - |
+| 適用op永年3 | `applicable_op_perpetual_3` | VARCHAR | 900 | － | - |
+| 適用op料金品目4 | `applicable_op_fee_item_4` | VARCHAR | 1800 | － | - |
+| 適用op基本使用料4 | `applicable_op_basic_fee_4` | DECIMAL | 11 | － | - |
+| 適用op提供金額4 | `applicable_op_provision_amount_4` | DECIMAL | 11 | － | - |
+| 適用op変動費4 | `applicable_op_variable_fee_4` | DECIMAL | 11 | － | - |
+| 適用op固定費4 | `applicable_op_fixed_fee_4` | DECIMAL | 11 | － | - |
+| 適用op開始月4 | `applicable_op_start_month_4` | VARCHAR | 6 | － | - |
+| 適用op期間4 | `applicable_op_period_4` | DECIMAL | 3 | － | - |
+| 適用op永年4 | `applicable_op_permanent_4` | VARCHAR | 900 | － | - |
+| 適用op料金品目5 | `applicable_op_fee_item_5` | VARCHAR | 1800 | － | - |
+| 適用op基本使用料5 | `applicable_op_basic_monthly_fee_5` | DECIMAL | 11 | － | - |
+| 適用op提供金額5 | `applicable_op_provision_amount_5` | DECIMAL | 11 | － | - |
+| 適用op変動費5 | `applicable_op_variable_cost_5` | DECIMAL | 11 | － | - |
+| 適用op固定費5 | `applicable_op_fixed_cost_5` | DECIMAL | 11 | － | - |
+| 適用op開始月5 | `applicable_op_start_month_5` | VARCHAR | 6 | － | - |
+| 適用op期間5 | `applicable_op_period_5` | DECIMAL | 3 | － | - |
+| 適用op永年5 | `applicable_op_permanent_5` | VARCHAR | 900 | － | - |
+| woおとくdi登録請求額 | `wo_otoku_di_registration_bill` | DECIMAL | 11 | － | - |
+| woおとくdi使用請求額 | `wo_otoku_di_usage_bill` | DECIMAL | 11 | － | - |
+| isdn1500回線数 | `number_of_isdn_1500_lines` | DECIMAL | 11 | － | - |
+| isdn1500登録請求額 | `isdn_1500_registration_charges` | DECIMAL | 11 | － | - |
+| isdn1500接続請求額 | `isdn_1500_connection_charges` | DECIMAL | 11 | － | - |
+| isdn1500定額請求額 | `isdn_1500_flat_rate_charges` | DECIMAL | 11 | － | - |
+| isdn64回線数 | `number_of_isdn64_lines` | DECIMAL | 11 | － | - |
+| isdn64登録請求額 | `isdn64_registration_charges` | DECIMAL | 11 | － | - |
+| isdn64接続請求額 | `isdn64_connection_charges` | DECIMAL | 11 | － | - |
+| isdn64定額請求額 | `isdn64_flat_rate_charges` | DECIMAL | 11 | － | - |
+| 解約新規有無 | `new_customer_cancellation_new_customer_cancellation` | VARCHAR | 90 | － | - |
+| 未対応商品コード | `unsupported_product_code` | VARCHAR | 45 | － | - |
+| 未対応商品名称 | `unsupported_product_name` | VARCHAR | 900 | － | - |
+| 疑似シェア試算容量 | `estimated_pseudo_share_capacity` | VARCHAR | 15 | － | - |
+| 疑似シェア超過料 | `estimated_pseudo_share_excess_charge` | VARCHAR | 15 | － | - |
+| esim登録 | `esim_registration` | VARCHAR | 2295 | － | - |

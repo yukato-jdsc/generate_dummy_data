@@ -10,184 +10,184 @@
 
 ## カラム定義
 
-| SEQ | 項目名 | カラム名 | 型 | 桁 | 仮名化 | 説明 |
-| --- | --- | --- | --- | --- | --- | --- |
-|  | 1 | 取次店コード | `agent_code` | VARCHAR | 40 | － | - |
-|  | 2 | 有効開始日 | `valid_start_date` | VARCHAR | 16 | － | - |
-|  | 3 | 有効終了日 | `valid_end_date` | VARCHAR | 16 | － | - |
-|  | 4 | 共通店舗コード | `common_store_code` | VARCHAR | 20 | － | - |
-|  | 5 | chkdigit共通店舗cd | `chkdigit_common_store_cd` | VARCHAR | 22 | － | - |
-|  | 6 | 物流取次店コード | `logistics_agent_code` | VARCHAR | 40 | － | - |
-|  | 7 | chkdigit取次店cd | `chkdigit_agent_cd` | VARCHAR | 40 | － | - |
-|  | 8 | フロント用コード | `front_desk_code` | VARCHAR | 40 | － | - |
-|  | 9 | 一次代理店コード | `primary_agent_code` | VARCHAR | 40 | － | - |
-|  | 10 | chkdigit一次代理店cd | `chkdigit_primary_agent_cd` | VARCHAR | 40 | － | - |
-|  | 11 | 集約一次代理店コード | `aggregated_primary_agent_code` | VARCHAR | 40 | － | - |
-|  | 12 | chkdigit_集_一次代理店cd | `chkdigit_collected_primary_agent_cd` | VARCHAR | 40 | － | - |
-|  | 13 | 集約取次店コード | `aggregated_agent_code` | VARCHAR | 40 | － | - |
-|  | 14 | chkdigit集約取次店cd | `chkdigit_aggregated_agent_cd` | VARCHAR | 40 | － | - |
-|  | 15 | 企業区分 | `company_category` | DECIMAL | 10,0 | － | - |
-|  | 16 | 企業区分正式名称 | `company_category_official_name` | VARCHAR | 1200 | － | - |
-|  | 17 | 店舗種別コード | `store_type_code` | DECIMAL | 10,0 | － | - |
-|  | 18 | 店舗登録設定ptn_cd | `store_registration_settings_ptn_cd` | DECIMAL | 10,0 | － | - |
-|  | 19 | 取次店正式名称 | `aggregator_official_name` | VARCHAR | 1200 | － | - |
-|  | 20 | 取次店略称 | `aggregator_abbreviation` | VARCHAR | 240 | － | - |
-|  | 21 | 取次店カナ名称 | `aggregator_name_katakana` | VARCHAR | 1200 | － | - |
-|  | 22 | 取次店英語名称 | `aggregator_store_name_in_english` | VARCHAR | 1200 | － | - |
-|  | 23 | 登記簿登録法人名 | `registered_corporate_name` | VARCHAR | 600 | － | - |
-|  | 24 | 地域コード | `area_code` | VARCHAR | 20 | － | - |
-|  | 25 | 地域正式名称 | `area_official_name` | VARCHAR | 1200 | － | - |
-|  | 26 | 地域英語コード | `area_english_code` | VARCHAR | 2 | － | - |
-|  | 27 | 地域半角カナ名称 | `area_half_width_kana_name` | VARCHAR | 1200 | － | - |
-|  | 28 | 地域英語名称 | `area_english_name` | VARCHAR | 1200 | － | - |
-|  | 29 | 取次店郵便番号 | `agent_postal_code` | VARCHAR | 20 | － | - |
-|  | 30 | 都道府県コード | `prefecture_code` | VARCHAR | 4 | － | - |
-|  | 31 | 都道府県カナ | `prefecture_kana` | VARCHAR | 96 | － | - |
-|  | 32 | 都道府県漢字 | `prefecture_kanji` | VARCHAR | 96 | － | - |
-|  | 33 | 震災フラグ | `earthquake_flag` | DECIMAL | 10,0 | － | - |
-|  | 34 | 震災フラグ正式名称 | `earthquake_flag_official_name` | VARCHAR | 720 | － | - |
-|  | 35 | 市区町村コード | `city_code` | VARCHAR | 6 | － | - |
-|  | 36 | 市区町村カナ | `city_kana` | VARCHAR | 288 | － | - |
-|  | 37 | 市区町村漢字 | `city_kanji` | VARCHAR | 288 | － | - |
-|  | 38 | 通称コード | `common_name_code` | VARCHAR | 6 | － | - |
-|  | 39 | 通称カナ | `common_name_kana` | VARCHAR | 432 | － | - |
-|  | 40 | 通称漢字 | `common_name_kanji` | VARCHAR | 432 | － | - |
-|  | 41 | 丁目コード | `chome_code` | VARCHAR | 6 | － | - |
-|  | 42 | 丁目カナ | `chome_kana` | VARCHAR | 288 | － | - |
-|  | 43 | 丁目漢字 | `chome_kanji` | VARCHAR | 288 | － | - |
-|  | 44 | 付帯住所 | `additional_address` | VARCHAR | 720 | － | - |
-|  | 45 | 取次店tel_no | `agent_tel_no` | VARCHAR | 30 | － | - |
-|  | 46 | 取次店fax_no | `agent_fax_no` | VARCHAR | 30 | － | - |
-|  | 47 | 登録業務用tel_no | `registration_business_tel_no` | VARCHAR | 32 | － | - |
-|  | 48 | 登録業務用tel_no2 | `registration_business_tel_no_2` | VARCHAR | 32 | － | - |
-|  | 49 | 登録業務用fax_no | `registration_business_fax_no` | VARCHAR | 32 | － | - |
-|  | 50 | 代表者氏名 | `representative_name` | VARCHAR | 720 | － | - |
-|  | 51 | 担当者部署名 | `department_name_of_person_in_charge` | VARCHAR | 1200 | － | - |
-|  | 52 | 担当者氏名 | `name_of_person_in_charge` | VARCHAR | 360 | － | - |
-|  | 53 | 担当者役職 | `position_of_person_in_charge` | VARCHAR | 360 | － | - |
-|  | 54 | 取次店小分類id | `agency_small_category_id` | DECIMAL | 10,0 | － | - |
-|  | 55 | 受注先小分類コード | `order_to_order_small_category_code` | VARCHAR | 6 | － | - |
-|  | 56 | 受注先中分類id | `order_to_order_medium_category_id` | DECIMAL | 10,0 | － | - |
-|  | 57 | 受注先小分類正式名称 | `order_to_order_small_category_full_name` | VARCHAR | 600 | － | - |
-|  | 58 | 受注先小分類半角kn | `order_to_order_small_category_half_width_kn` | VARCHAR | 600 | － | - |
-|  | 59 | 受注先小分類英語名称 | `order_to_order_small_category_english_name` | VARCHAR | 600 | － | - |
-|  | 60 | 受注先中分類コード | `order_to_order_medium_category_code` | VARCHAR | 4 | － | - |
-|  | 61 | 受注先大分類id | `order_to_order_large_category_id` | DECIMAL | 10,0 | － | - |
-|  | 62 | 受注先中分類正式名称 | `order_to_order_medium_category_full_name` | VARCHAR | 600 | － | - |
-|  | 63 | 受注先中分類半角kn | `order_to_order_medium_category_half_width_kn` | VARCHAR | 600 | － | - |
-|  | 64 | 受注先中分類英語名称 | `order_to_order_medium_category_english_name` | VARCHAR | 600 | － | - |
-|  | 65 | 受注先大分類コード | `order_to_order_large_category_code` | VARCHAR | 4 | － | - |
-|  | 66 | 受注先大分類正式名称 | `order_to_order_large_category_full_name` | VARCHAR | 600 | － | - |
-|  | 67 | 受注先大分類半角kn | `order_to_order_large_category_half_width_kn` | VARCHAR | 600 | － | - |
-|  | 68 | 受注先大分類英語名称 | `order_to_order_large_category_english_name` | VARCHAR | 600 | － | - |
-|  | 69 | wms同梱伝票様式 | `wms_packing_slip_format` | VARCHAR | 6 | － | - |
-|  | 70 | wms同梱伝票様式nm | `wms_packing_slip_format_nm` | VARCHAR | 1200 | － | - |
-|  | 71 | wms本伝伝票様式 | `wms_main_slip_format` | VARCHAR | 6 | － | - |
-|  | 72 | wms本伝伝票様式nm | `wms_main_invoice_format_nm` | VARCHAR | 1200 | － | - |
-|  | 73 | wms本伝金額印字flg | `wms_main_invoice_amount_printing_flg` | VARCHAR | 2 | － | - |
-|  | 74 | wms本伝金額印字flg_nm | `wms_main_invoice_amount_printing_flg_nm` | VARCHAR | 1200 | － | - |
-|  | 75 | wms本伝送付先flg | `wms_main_transmission_destination_flg` | VARCHAR | 2 | － | - |
-|  | 76 | wms本伝送付先flg_nm | `wms_main_transmission_destination_flg_nm` | VARCHAR | 120 | － | - |
-|  | 77 | 相手先sys用cd | `cd_for_recipient_sys` | VARCHAR | 20 | － | - |
-|  | 78 | 相手先sys用自社cd | `company_cd_for_recipient_sys` | VARCHAR | 20 | － | - |
-|  | 79 | 卸チャネル | `wholesale_channel` | DECIMAL | 10,0 | － | - |
-|  | 80 | 法人チャネル | `corporate_channel` | DECIMAL | 10,0 | － | - |
-|  | 81 | 直営店判定flg | `direct_store_determination_flg` | DECIMAL | 10,0 | － | - |
-|  | 82 | 直営店判定flg_nm | `direct_store_determination_flg_nm` | VARCHAR | 1200 | － | - |
-|  | 83 | 店舗ユニークコード | `store_unique_code` | VARCHAR | 14 | － | - |
-|  | 84 | 運営店法人コード | `operating_store_corporate_code` | VARCHAR | 14 | － | - |
-|  | 85 | 業務開始日 | `business_start_date` | VARCHAR | 16 | － | - |
-|  | 86 | 業務終了日 | `business_end_date` | VARCHAR | 16 | － | - |
-|  | 87 | 登録業務部門コード | `registered_business_department_code` | VARCHAR | 14 | － | - |
-|  | 88 | 組織id右1桁 | `organization_id__right_1_digit_` | VARCHAR | 2 | － | - |
-|  | 89 | 組織名称 | `organization_name` | VARCHAR | 2400 | － | - |
-|  | 90 | 階層 | `hierarchy` | VARCHAR | 4 | － | - |
-|  | 91 | 上位組織コード | `supervisor_organization_code` | VARCHAR | 14 | － | - |
-|  | 92 | 上位組織コード右1桁 | `supervisor_organization_code__right_1_digit_` | VARCHAR | 2 | － | - |
-|  | 93 | 管理者従業員番号 | `manager_employee_number` | VARCHAR | 14 | － | - |
-|  | 94 | 決裁書番号 | `approval_form_number` | VARCHAR | 40 | － | - |
-|  | 95 | 申込書原本回収通知 | `application_form_original_collection_notification` | VARCHAR | 2 | － | - |
-|  | 96 | 申込書原本回収通知nm | `application_form_original_collection_notification_nm` | VARCHAR | 1200 | － | - |
-|  | 97 | 申込書原本未回収lst | `application_form_original_not_collected_lst` | VARCHAR | 2 | － | - |
-|  | 98 | 申込書原本未回収lst_nm | `application_form_original_not_collected_lst_nm` | VARCHAR | 1200 | － | - |
-|  | 99 | 申込書原本返却先 | `application_form_original_return_address` | VARCHAR | 2 | － | - |
-|  | 100 | 申込書原本返却先nm | `application_form_original_return_address_nm` | VARCHAR | 1200 | － | - |
-|  | 101 | 店舗実績報告送付先 | `store_performance_report_sending_address` | VARCHAR | 2 | － | - |
-|  | 102 | 店舗実績報告送付先nm | `store_performance_report_sending_address_nm` | VARCHAR | 1200 | － | - |
-|  | 103 | ginie権限コード | `ginie_permission_code` | VARCHAR | 4 | － | - |
-|  | 104 | ginie権限コードnm | `ginie_permission_code_nm` | VARCHAR | 1200 | － | - |
-|  | 105 | 操作権限 | `operation_permission` | VARCHAR | 4 | － | - |
-|  | 106 | 操作権限正式名称 | `operation_permission_official_name` | VARCHAR | 1200 | － | - |
-|  | 107 | 手数料計算区分 | `commission_calculation_category` | DECIMAL | 10,0 | － | - |
-|  | 108 | 手数料計算区分nm | `commission_calculation_category_nm` | VARCHAR | 1200 | － | - |
-|  | 109 | 手数料計算終了日 | `commission_calculation_end_date` | VARCHAR | 16 | － | - |
-|  | 110 | 法人取扱店タイプ | `corporate_dealer_type` | VARCHAR | 4 | － | - |
-|  | 111 | 法人取扱店タイプnm | `corporate_dealer_type_nm` | VARCHAR | 1200 | － | - |
-|  | 112 | 業務手数料支払ptn | `service_fee_payment_ptn` | VARCHAR | 4 | － | - |
-|  | 113 | 業務手数料支払ptn_nm | `service_fee_payment_ptn_nm` | VARCHAR | 1200 | － | - |
-|  | 114 | 保守代理店区分 | `maintenance_agency_category` | DECIMAL | 10,0 | － | - |
-|  | 115 | 保守代理店区分nm | `maintenance_agency_category_nm` | VARCHAR | 1200 | － | - |
-|  | 116 | 継続手数料対象外kbn | `not_eligible_for_recurring_fee_kbn` | DECIMAL | 10,0 | － | - |
-|  | 117 | 継続手数料対象外kbn_nm | `not_eligible_for_recurring_fee_kbn_nm` | VARCHAR | 1200 | － | - |
-|  | 118 | ショップ業務委託dt | `shop_outsourcing_dt` | VARCHAR | 16 | － | - |
-|  | 119 | 受注開始日 | `order_start_date` | VARCHAR | 16 | － | - |
-|  | 120 | 受注停止日 | `order_stop_date` | VARCHAR | 16 | － | - |
-|  | 121 | 分割納入区分 | `partial_delivery_category` | DECIMAL | 10,0 | － | - |
-|  | 122 | 分割納入区分正式名称 | `partial_delivery_category__official_name_` | VARCHAR | 1200 | － | - |
-|  | 123 | 実績管理区分 | `performance_management_category` | VARCHAR | 2 | － | - |
-|  | 124 | 実績管理区分正式名称 | `performance_management_category__official_name_` | VARCHAR | 1200 | － | - |
-|  | 125 | 目標管理区分 | `goal_management_category` | VARCHAR | 2 | － | - |
-|  | 126 | 目標管理区分正式名称 | `goal_management_category__official_name_` | VARCHAR | 1200 | － | - |
-|  | 127 | 統計用ショップ区分 | `statistical_shop_category` | VARCHAR | 2 | － | - |
-|  | 128 | 統計用ショップ区分nm | `statistical_shop_category_nm` | VARCHAR | 1200 | － | - |
-|  | 129 | ルートコード | `route_code` | VARCHAR | 20 | － | - |
-|  | 130 | ルートコード正式名称 | `route_code__official_name_` | VARCHAR | 1200 | － | - |
-|  | 131 | 実績集計部門コード | `performance_computing_department_code` | VARCHAR | 14 | － | - |
-|  | 132 | 実績集計部門コードnm | `performance_computing_department_code_nm` | VARCHAR | 1200 | － | - |
-|  | 133 | 実績集計担当者コード | `performance_computing_staff_code` | VARCHAR | 14 | － | - |
-|  | 134 | 実績集計用channel_cd | `performance_computing_channel_cd` | VARCHAR | 6 | － | - |
-|  | 135 | 実績集計用channel_cd_nm | `performance_computing_channel_l_cd_nm` | VARCHAR | 1200 | － | - |
-|  | 136 | チャネルコード | `channel_code` | VARCHAR | 6 | － | - |
-|  | 137 | チャネルコードnm | `channel_code_nm` | VARCHAR | 1200 | － | - |
-|  | 138 | 同報fax_no | `broadcast_fax_no` | VARCHAR | 30 | － | - |
-|  | 139 | 営業統計集計キー | `sales_statistics_summary_key` | VARCHAR | 40 | － | - |
-|  | 140 | ショップ名カナ | `shop_name__kana_` | VARCHAR | 720 | － | - |
-|  | 141 | 割当枠部門コード | `allocation_department_code` | VARCHAR | 14 | － | - |
-|  | 142 | 割当枠コード | `allocation_code` | VARCHAR | 6 | － | - |
-|  | 143 | 割当枠正式名称 | `allocation_official_name` | VARCHAR | 1200 | － | - |
-|  | 144 | 業務引継前取次店cd | `pre_business_transfer_agent_cd` | VARCHAR | 40 | － | - |
-|  | 145 | chkdigit業務前取次店cd | `chkdigit_pre_business_transfer_agent_cd` | VARCHAR | 40 | － | - |
-|  | 146 | arpu責任者区分 | `arpu_manager_category` | VARCHAR | 10 | － | - |
-|  | 147 | arpu管轄本部 | `arpu_headquarters` | VARCHAR | 6 | － | - |
-|  | 148 | 沖縄区分 | `okinawa_category` | VARCHAR | 2 | － | - |
-|  | 149 | 沖縄区分正式名称 | `okinawa_category_official_name` | VARCHAR | 1200 | － | - |
-|  | 150 | step一次代理店コード | `step_primary_distributor_code` | VARCHAR | 40 | － | - |
-|  | 151 | willcomコード | `willcom_code` | VARCHAR | 20 | － | - |
-|  | 152 | jenesys一次代理店cd | `jenesys_primary_distributor_cd` | VARCHAR | 40 | － | - |
-|  | 153 | eaccessコード | `eaccess_code` | VARCHAR | 20 | － | - |
-|  | 154 | 請求先フラグ | `billing_flag` | DECIMAL | 10,0 | － | - |
-|  | 155 | 運営店フラグ | `operating_store_flag` | DECIMAL | 10,0 | － | - |
-|  | 156 | 運営店コード | `operating_store_code` | VARCHAR | 40 | － | - |
-|  | 157 | chkdigit運営店cd | `chkdigit_operating_store_cd` | VARCHAR | 40 | － | - |
-|  | 158 | 加盟店調査承認番号 | `affiliated_store_survey_approval_number` | VARCHAR | 20 | － | - |
-|  | 159 | 予備日付 | `backup_date` | VARCHAR | 16 | － | - |
-|  | 160 | 請求支払集計フラグ | `billing_payment_summary_flag` | DECIMAL | 10,0 | － | - |
-|  | 161 | 請求支払集計コード | `billing_payment_summary_code` | VARCHAR | 40 | － | - |
-|  | 162 | chkdigit請求支払集計cd | `chkdigit_billing_payment_summary_cd` | VARCHAR | 40 | － | - |
-|  | 163 | ショップ分類コード | `shop_classification_code` | VARCHAR | 8 | － | - |
-|  | 164 | 物流流通チャネルcd | `logistics_channel_cd` | VARCHAR | 4 | － | - |
-|  | 165 | 店舗主副フラグ | `sub_store_owner_flag` | DECIMAL | 10,0 | － | - |
-|  | 166 | 店舗主コード | `store_owner_code` | VARCHAR | 40 | － | - |
-|  | 167 | chkdigit店舗主cd | `chkdigit_store_owner_cd` | VARCHAR | 40 | － | - |
-|  | 168 | グループ管理フラグ | `group_management_flag` | DECIMAL | 10,0 | － | - |
-|  | 169 | グループ主コード | `group_master_code` | VARCHAR | 20 | － | - |
-|  | 170 | 販促品出荷flg | `promotional_item_shipping_flag` | DECIMAL | 10,0 | － | - |
-|  | 171 | 販促品出荷flg_nm | `promotional_item_shipping_flag_nm` | VARCHAR | 1200 | － | - |
-|  | 172 | 旧地域コード | `old_region_code` | VARCHAR | 20 | － | - |
-|  | 173 | mvno区分 | `mvno_category` | VARCHAR | 10 | － | - |
-|  | 174 | mvno区分正式名称 | `mvno_category_official_name` | VARCHAR | 1200 | － | - |
-|  | 175 | mvno属性 | `mvno_attribute` | VARCHAR | 4 | － | - |
-|  | 176 | mvno属性正式名称 | `mvno_attribute_official_name` | VARCHAR | 1200 | － | - |
-|  | 177 | 法人マイナンバー | `corporate_my_number` | VARCHAR | 26 | － | - |
-|  | 178 | 法人名称 | `corporate_name` | VARCHAR | 1800 | － | - |
-|  | 179 | 管理責任者名 | `manager_name` | VARCHAR | 600 | － | - |
+| 項目名 | カラム名 | 型 | 桁 | 仮名化 | 説明 |
+| --- | --- | --- | --- | --- | --- |
+| 取次店コード | `agent_code` | VARCHAR | 40 | － | - |
+| 有効開始日 | `valid_start_date` | VARCHAR | 16 | － | - |
+| 有効終了日 | `valid_end_date` | VARCHAR | 16 | － | - |
+| 共通店舗コード | `common_store_code` | VARCHAR | 20 | － | - |
+| chkdigit共通店舗cd | `chkdigit_common_store_cd` | VARCHAR | 22 | － | - |
+| 物流取次店コード | `logistics_agent_code` | VARCHAR | 40 | － | - |
+| chkdigit取次店cd | `chkdigit_agent_cd` | VARCHAR | 40 | － | - |
+| フロント用コード | `front_desk_code` | VARCHAR | 40 | － | - |
+| 一次代理店コード | `primary_agent_code` | VARCHAR | 40 | － | - |
+| chkdigit一次代理店cd | `chkdigit_primary_agent_cd` | VARCHAR | 40 | － | - |
+| 集約一次代理店コード | `aggregated_primary_agent_code` | VARCHAR | 40 | － | - |
+| chkdigit_集_一次代理店cd | `chkdigit_collected_primary_agent_cd` | VARCHAR | 40 | － | - |
+| 集約取次店コード | `aggregated_agent_code` | VARCHAR | 40 | － | - |
+| chkdigit集約取次店cd | `chkdigit_aggregated_agent_cd` | VARCHAR | 40 | － | - |
+| 企業区分 | `company_category` | DECIMAL | 10,0 | － | - |
+| 企業区分正式名称 | `company_category_official_name` | VARCHAR | 1200 | － | - |
+| 店舗種別コード | `store_type_code` | DECIMAL | 10,0 | － | - |
+| 店舗登録設定ptn_cd | `store_registration_settings_ptn_cd` | DECIMAL | 10,0 | － | - |
+| 取次店正式名称 | `aggregator_official_name` | VARCHAR | 1200 | － | - |
+| 取次店略称 | `aggregator_abbreviation` | VARCHAR | 240 | － | - |
+| 取次店カナ名称 | `aggregator_name_katakana` | VARCHAR | 1200 | － | - |
+| 取次店英語名称 | `aggregator_store_name_in_english` | VARCHAR | 1200 | － | - |
+| 登記簿登録法人名 | `registered_corporate_name` | VARCHAR | 600 | － | - |
+| 地域コード | `area_code` | VARCHAR | 20 | － | - |
+| 地域正式名称 | `area_official_name` | VARCHAR | 1200 | － | - |
+| 地域英語コード | `area_english_code` | VARCHAR | 2 | － | - |
+| 地域半角カナ名称 | `area_half_width_kana_name` | VARCHAR | 1200 | － | - |
+| 地域英語名称 | `area_english_name` | VARCHAR | 1200 | － | - |
+| 取次店郵便番号 | `agent_postal_code` | VARCHAR | 20 | － | - |
+| 都道府県コード | `prefecture_code` | VARCHAR | 4 | － | - |
+| 都道府県カナ | `prefecture_kana` | VARCHAR | 96 | － | - |
+| 都道府県漢字 | `prefecture_kanji` | VARCHAR | 96 | － | - |
+| 震災フラグ | `earthquake_flag` | DECIMAL | 10,0 | － | - |
+| 震災フラグ正式名称 | `earthquake_flag_official_name` | VARCHAR | 720 | － | - |
+| 市区町村コード | `city_code` | VARCHAR | 6 | － | - |
+| 市区町村カナ | `city_kana` | VARCHAR | 288 | － | - |
+| 市区町村漢字 | `city_kanji` | VARCHAR | 288 | － | - |
+| 通称コード | `common_name_code` | VARCHAR | 6 | － | - |
+| 通称カナ | `common_name_kana` | VARCHAR | 432 | － | - |
+| 通称漢字 | `common_name_kanji` | VARCHAR | 432 | － | - |
+| 丁目コード | `chome_code` | VARCHAR | 6 | － | - |
+| 丁目カナ | `chome_kana` | VARCHAR | 288 | － | - |
+| 丁目漢字 | `chome_kanji` | VARCHAR | 288 | － | - |
+| 付帯住所 | `additional_address` | VARCHAR | 720 | － | - |
+| 取次店tel_no | `agent_tel_no` | VARCHAR | 30 | － | - |
+| 取次店fax_no | `agent_fax_no` | VARCHAR | 30 | － | - |
+| 登録業務用tel_no | `registration_business_tel_no` | VARCHAR | 32 | － | - |
+| 登録業務用tel_no2 | `registration_business_tel_no_2` | VARCHAR | 32 | － | - |
+| 登録業務用fax_no | `registration_business_fax_no` | VARCHAR | 32 | － | - |
+| 代表者氏名 | `representative_name` | VARCHAR | 720 | － | - |
+| 担当者部署名 | `department_name_of_person_in_charge` | VARCHAR | 1200 | － | - |
+| 担当者氏名 | `name_of_person_in_charge` | VARCHAR | 360 | － | - |
+| 担当者役職 | `position_of_person_in_charge` | VARCHAR | 360 | － | - |
+| 取次店小分類id | `agency_small_category_id` | DECIMAL | 10,0 | － | - |
+| 受注先小分類コード | `order_to_order_small_category_code` | VARCHAR | 6 | － | - |
+| 受注先中分類id | `order_to_order_medium_category_id` | DECIMAL | 10,0 | － | - |
+| 受注先小分類正式名称 | `order_to_order_small_category_full_name` | VARCHAR | 600 | － | - |
+| 受注先小分類半角kn | `order_to_order_small_category_half_width_kn` | VARCHAR | 600 | － | - |
+| 受注先小分類英語名称 | `order_to_order_small_category_english_name` | VARCHAR | 600 | － | - |
+| 受注先中分類コード | `order_to_order_medium_category_code` | VARCHAR | 4 | － | - |
+| 受注先大分類id | `order_to_order_large_category_id` | DECIMAL | 10,0 | － | - |
+| 受注先中分類正式名称 | `order_to_order_medium_category_full_name` | VARCHAR | 600 | － | - |
+| 受注先中分類半角kn | `order_to_order_medium_category_half_width_kn` | VARCHAR | 600 | － | - |
+| 受注先中分類英語名称 | `order_to_order_medium_category_english_name` | VARCHAR | 600 | － | - |
+| 受注先大分類コード | `order_to_order_large_category_code` | VARCHAR | 4 | － | - |
+| 受注先大分類正式名称 | `order_to_order_large_category_full_name` | VARCHAR | 600 | － | - |
+| 受注先大分類半角kn | `order_to_order_large_category_half_width_kn` | VARCHAR | 600 | － | - |
+| 受注先大分類英語名称 | `order_to_order_large_category_english_name` | VARCHAR | 600 | － | - |
+| wms同梱伝票様式 | `wms_packing_slip_format` | VARCHAR | 6 | － | - |
+| wms同梱伝票様式nm | `wms_packing_slip_format_nm` | VARCHAR | 1200 | － | - |
+| wms本伝伝票様式 | `wms_main_slip_format` | VARCHAR | 6 | － | - |
+| wms本伝伝票様式nm | `wms_main_invoice_format_nm` | VARCHAR | 1200 | － | - |
+| wms本伝金額印字flg | `wms_main_invoice_amount_printing_flg` | VARCHAR | 2 | － | - |
+| wms本伝金額印字flg_nm | `wms_main_invoice_amount_printing_flg_nm` | VARCHAR | 1200 | － | - |
+| wms本伝送付先flg | `wms_main_transmission_destination_flg` | VARCHAR | 2 | － | - |
+| wms本伝送付先flg_nm | `wms_main_transmission_destination_flg_nm` | VARCHAR | 120 | － | - |
+| 相手先sys用cd | `cd_for_recipient_sys` | VARCHAR | 20 | － | - |
+| 相手先sys用自社cd | `company_cd_for_recipient_sys` | VARCHAR | 20 | － | - |
+| 卸チャネル | `wholesale_channel` | DECIMAL | 10,0 | － | - |
+| 法人チャネル | `corporate_channel` | DECIMAL | 10,0 | － | - |
+| 直営店判定flg | `direct_store_determination_flg` | DECIMAL | 10,0 | － | - |
+| 直営店判定flg_nm | `direct_store_determination_flg_nm` | VARCHAR | 1200 | － | - |
+| 店舗ユニークコード | `store_unique_code` | VARCHAR | 14 | － | - |
+| 運営店法人コード | `operating_store_corporate_code` | VARCHAR | 14 | － | - |
+| 業務開始日 | `business_start_date` | VARCHAR | 16 | － | - |
+| 業務終了日 | `business_end_date` | VARCHAR | 16 | － | - |
+| 登録業務部門コード | `registered_business_department_code` | VARCHAR | 14 | － | - |
+| 組織id右1桁 | `organization_id__right_1_digit_` | VARCHAR | 2 | － | - |
+| 組織名称 | `organization_name` | VARCHAR | 2400 | － | - |
+| 階層 | `hierarchy` | VARCHAR | 4 | － | - |
+| 上位組織コード | `supervisor_organization_code` | VARCHAR | 14 | － | - |
+| 上位組織コード右1桁 | `supervisor_organization_code__right_1_digit_` | VARCHAR | 2 | － | - |
+| 管理者従業員番号 | `manager_employee_number` | VARCHAR | 14 | － | - |
+| 決裁書番号 | `approval_form_number` | VARCHAR | 40 | － | - |
+| 申込書原本回収通知 | `application_form_original_collection_notification` | VARCHAR | 2 | － | - |
+| 申込書原本回収通知nm | `application_form_original_collection_notification_nm` | VARCHAR | 1200 | － | - |
+| 申込書原本未回収lst | `application_form_original_not_collected_lst` | VARCHAR | 2 | － | - |
+| 申込書原本未回収lst_nm | `application_form_original_not_collected_lst_nm` | VARCHAR | 1200 | － | - |
+| 申込書原本返却先 | `application_form_original_return_address` | VARCHAR | 2 | － | - |
+| 申込書原本返却先nm | `application_form_original_return_address_nm` | VARCHAR | 1200 | － | - |
+| 店舗実績報告送付先 | `store_performance_report_sending_address` | VARCHAR | 2 | － | - |
+| 店舗実績報告送付先nm | `store_performance_report_sending_address_nm` | VARCHAR | 1200 | － | - |
+| ginie権限コード | `ginie_permission_code` | VARCHAR | 4 | － | - |
+| ginie権限コードnm | `ginie_permission_code_nm` | VARCHAR | 1200 | － | - |
+| 操作権限 | `operation_permission` | VARCHAR | 4 | － | - |
+| 操作権限正式名称 | `operation_permission_official_name` | VARCHAR | 1200 | － | - |
+| 手数料計算区分 | `commission_calculation_category` | DECIMAL | 10,0 | － | - |
+| 手数料計算区分nm | `commission_calculation_category_nm` | VARCHAR | 1200 | － | - |
+| 手数料計算終了日 | `commission_calculation_end_date` | VARCHAR | 16 | － | - |
+| 法人取扱店タイプ | `corporate_dealer_type` | VARCHAR | 4 | － | - |
+| 法人取扱店タイプnm | `corporate_dealer_type_nm` | VARCHAR | 1200 | － | - |
+| 業務手数料支払ptn | `service_fee_payment_ptn` | VARCHAR | 4 | － | - |
+| 業務手数料支払ptn_nm | `service_fee_payment_ptn_nm` | VARCHAR | 1200 | － | - |
+| 保守代理店区分 | `maintenance_agency_category` | DECIMAL | 10,0 | － | - |
+| 保守代理店区分nm | `maintenance_agency_category_nm` | VARCHAR | 1200 | － | - |
+| 継続手数料対象外kbn | `not_eligible_for_recurring_fee_kbn` | DECIMAL | 10,0 | － | - |
+| 継続手数料対象外kbn_nm | `not_eligible_for_recurring_fee_kbn_nm` | VARCHAR | 1200 | － | - |
+| ショップ業務委託dt | `shop_outsourcing_dt` | VARCHAR | 16 | － | - |
+| 受注開始日 | `order_start_date` | VARCHAR | 16 | － | - |
+| 受注停止日 | `order_stop_date` | VARCHAR | 16 | － | - |
+| 分割納入区分 | `partial_delivery_category` | DECIMAL | 10,0 | － | - |
+| 分割納入区分正式名称 | `partial_delivery_category__official_name_` | VARCHAR | 1200 | － | - |
+| 実績管理区分 | `performance_management_category` | VARCHAR | 2 | － | - |
+| 実績管理区分正式名称 | `performance_management_category__official_name_` | VARCHAR | 1200 | － | - |
+| 目標管理区分 | `goal_management_category` | VARCHAR | 2 | － | - |
+| 目標管理区分正式名称 | `goal_management_category__official_name_` | VARCHAR | 1200 | － | - |
+| 統計用ショップ区分 | `statistical_shop_category` | VARCHAR | 2 | － | - |
+| 統計用ショップ区分nm | `statistical_shop_category_nm` | VARCHAR | 1200 | － | - |
+| ルートコード | `route_code` | VARCHAR | 20 | － | - |
+| ルートコード正式名称 | `route_code__official_name_` | VARCHAR | 1200 | － | - |
+| 実績集計部門コード | `performance_computing_department_code` | VARCHAR | 14 | － | - |
+| 実績集計部門コードnm | `performance_computing_department_code_nm` | VARCHAR | 1200 | － | - |
+| 実績集計担当者コード | `performance_computing_staff_code` | VARCHAR | 14 | － | - |
+| 実績集計用channel_cd | `performance_computing_channel_cd` | VARCHAR | 6 | － | - |
+| 実績集計用channel_cd_nm | `performance_computing_channel_l_cd_nm` | VARCHAR | 1200 | － | - |
+| チャネルコード | `channel_code` | VARCHAR | 6 | － | - |
+| チャネルコードnm | `channel_code_nm` | VARCHAR | 1200 | － | - |
+| 同報fax_no | `broadcast_fax_no` | VARCHAR | 30 | － | - |
+| 営業統計集計キー | `sales_statistics_summary_key` | VARCHAR | 40 | － | - |
+| ショップ名カナ | `shop_name__kana_` | VARCHAR | 720 | － | - |
+| 割当枠部門コード | `allocation_department_code` | VARCHAR | 14 | － | - |
+| 割当枠コード | `allocation_code` | VARCHAR | 6 | － | - |
+| 割当枠正式名称 | `allocation_official_name` | VARCHAR | 1200 | － | - |
+| 業務引継前取次店cd | `pre_business_transfer_agent_cd` | VARCHAR | 40 | － | - |
+| chkdigit業務前取次店cd | `chkdigit_pre_business_transfer_agent_cd` | VARCHAR | 40 | － | - |
+| arpu責任者区分 | `arpu_manager_category` | VARCHAR | 10 | － | - |
+| arpu管轄本部 | `arpu_headquarters` | VARCHAR | 6 | － | - |
+| 沖縄区分 | `okinawa_category` | VARCHAR | 2 | － | - |
+| 沖縄区分正式名称 | `okinawa_category_official_name` | VARCHAR | 1200 | － | - |
+| step一次代理店コード | `step_primary_distributor_code` | VARCHAR | 40 | － | - |
+| willcomコード | `willcom_code` | VARCHAR | 20 | － | - |
+| jenesys一次代理店cd | `jenesys_primary_distributor_cd` | VARCHAR | 40 | － | - |
+| eaccessコード | `eaccess_code` | VARCHAR | 20 | － | - |
+| 請求先フラグ | `billing_flag` | DECIMAL | 10,0 | － | - |
+| 運営店フラグ | `operating_store_flag` | DECIMAL | 10,0 | － | - |
+| 運営店コード | `operating_store_code` | VARCHAR | 40 | － | - |
+| chkdigit運営店cd | `chkdigit_operating_store_cd` | VARCHAR | 40 | － | - |
+| 加盟店調査承認番号 | `affiliated_store_survey_approval_number` | VARCHAR | 20 | － | - |
+| 予備日付 | `backup_date` | VARCHAR | 16 | － | - |
+| 請求支払集計フラグ | `billing_payment_summary_flag` | DECIMAL | 10,0 | － | - |
+| 請求支払集計コード | `billing_payment_summary_code` | VARCHAR | 40 | － | - |
+| chkdigit請求支払集計cd | `chkdigit_billing_payment_summary_cd` | VARCHAR | 40 | － | - |
+| ショップ分類コード | `shop_classification_code` | VARCHAR | 8 | － | - |
+| 物流流通チャネルcd | `logistics_channel_cd` | VARCHAR | 4 | － | - |
+| 店舗主副フラグ | `sub_store_owner_flag` | DECIMAL | 10,0 | － | - |
+| 店舗主コード | `store_owner_code` | VARCHAR | 40 | － | - |
+| chkdigit店舗主cd | `chkdigit_store_owner_cd` | VARCHAR | 40 | － | - |
+| グループ管理フラグ | `group_management_flag` | DECIMAL | 10,0 | － | - |
+| グループ主コード | `group_master_code` | VARCHAR | 20 | － | - |
+| 販促品出荷flg | `promotional_item_shipping_flag` | DECIMAL | 10,0 | － | - |
+| 販促品出荷flg_nm | `promotional_item_shipping_flag_nm` | VARCHAR | 1200 | － | - |
+| 旧地域コード | `old_region_code` | VARCHAR | 20 | － | - |
+| mvno区分 | `mvno_category` | VARCHAR | 10 | － | - |
+| mvno区分正式名称 | `mvno_category_official_name` | VARCHAR | 1200 | － | - |
+| mvno属性 | `mvno_attribute` | VARCHAR | 4 | － | - |
+| mvno属性正式名称 | `mvno_attribute_official_name` | VARCHAR | 1200 | － | - |
+| 法人マイナンバー | `corporate_my_number` | VARCHAR | 26 | － | - |
+| 法人名称 | `corporate_name` | VARCHAR | 1800 | － | - |
+| 管理責任者名 | `manager_name` | VARCHAR | 600 | － | - |
