@@ -1,11 +1,11 @@
 # (DWH)統一企業情報
 
 - マート名: `m_hjn_smt_統一企業情報`
-- CSVファイル名: `corp_customer_info_all_1.csv`, `corp_customer_info_all_2.csv`, `corp_customer_info_diff.csv`
+- CSVファイル名: `corp_customer_info_all.csv`, `corp_customer_info_diff.csv`
 - 全量更新 or 差分更新: 差分更新
 - 更新頻度: 日次
 - データ数: 全件（300万件）、差分更新（46,021件）
-- データ量: 全件（400MB×2分割）、差分更新（34.02MB）
+- データ量: 全件（800MB）、差分更新（34.02MB）
 - データ概要: SUMMITの統一企業情報を保有。
 - 参考データ: `sample_data/corp_customer_info.csv`
 

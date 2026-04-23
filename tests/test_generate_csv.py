@@ -26,8 +26,7 @@ DEFAULT_OUTPUT_FILES = [
     "bfs_service_summary_devices_diff.csv",
     "compass_sales_approval_all.csv",
     "compass_sales_approval_diff.csv",
-    "corp_customer_info_all_1.csv",
-    "corp_customer_info_all_2.csv",
+    "corp_customer_info_all.csv",
     "corp_customer_info_diff.csv",
     "m_agency_all.csv",
     "m_agency_diff.csv",
@@ -137,8 +136,7 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
     _, bfs_device_diff_rows = read_csv(generated_default_dir, "bfs_service_summary_devices_diff.csv")
     _, bfs_accessories_all_rows = read_csv(generated_default_dir, "bfs_service_summary_accessories_all.csv")
     _, bfs_accessories_diff_rows = read_csv(generated_default_dir, "bfs_service_summary_accessories_diff.csv")
-    _, dwh_all_1_rows = read_csv(generated_default_dir, "corp_customer_info_all_1.csv")
-    _, dwh_all_2_rows = read_csv(generated_default_dir, "corp_customer_info_all_2.csv")
+    _, dwh_all_rows = read_csv(generated_default_dir, "corp_customer_info_all.csv")
     _, dwh_diff_rows = read_csv(generated_default_dir, "corp_customer_info_diff.csv")
 
     assert len(campaign_rows) == 50
@@ -153,8 +151,7 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
     assert len(bfs_device_diff_rows) == 100
     assert len(bfs_accessories_all_rows) == 1000
     assert len(bfs_accessories_diff_rows) == 100
-    assert len(dwh_all_1_rows) == 500
-    assert len(dwh_all_2_rows) == 500
+    assert len(dwh_all_rows) == 1000
     assert len(dwh_diff_rows) == 100
 
 
@@ -180,12 +177,11 @@ def test_targets_bfs_only_generates_two_files(tmp_path: Path) -> None:
     ]
 
 
-def test_targets_corp_only_generates_three_files(tmp_path: Path) -> None:
-    """corp 指定では統一企業情報の3ファイルだけを生成する。"""
+def test_targets_corp_only_generates_two_files(tmp_path: Path) -> None:
+    """corp 指定では統一企業情報の2ファイルだけを生成する。"""
     run_script(str(tmp_path), "--targets", "corp")
     assert generated_files(tmp_path) == [
-        "corp_customer_info_all_1.csv",
-        "corp_customer_info_all_2.csv",
+        "corp_customer_info_all.csv",
         "corp_customer_info_diff.csv",
     ]
 
@@ -225,8 +221,7 @@ def test_console_outputs_generated_file_names(tmp_path: Path) -> None:
     assert "m_agency_diff.csv" in completed.stdout
     assert "compass_sales_approval_all.csv" in completed.stdout
     assert "compass_sales_approval_diff.csv" in completed.stdout
-    assert "corp_customer_info_all_1.csv" in completed.stdout
-    assert "corp_customer_info_all_2.csv" in completed.stdout
+    assert "corp_customer_info_all.csv" in completed.stdout
     assert "corp_customer_info_diff.csv" in completed.stdout
     assert "m_product_all.csv" not in completed.stdout
 
@@ -302,8 +297,7 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
     bfs_device_diff_header, _ = read_csv(generated_default_dir, "bfs_service_summary_devices_diff.csv")
     bfs_accessories_all_header, _ = read_csv(generated_default_dir, "bfs_service_summary_accessories_all.csv")
     bfs_accessories_diff_header, _ = read_csv(generated_default_dir, "bfs_service_summary_accessories_diff.csv")
-    dwh_all_1_header, _ = read_csv(generated_default_dir, "corp_customer_info_all_1.csv")
-    dwh_all_2_header, _ = read_csv(generated_default_dir, "corp_customer_info_all_2.csv")
+    dwh_all_header, _ = read_csv(generated_default_dir, "corp_customer_info_all.csv")
     dwh_diff_header, _ = read_csv(generated_default_dir, "corp_customer_info_diff.csv")
 
     assert campaign_header[0] == "キャンペーンid"
@@ -318,8 +312,7 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
     assert bfs_device_diff_header[0] == "エントリ番号"
     assert bfs_accessories_all_header[0] == "エントリ番号"
     assert bfs_accessories_diff_header[0] == "エントリ番号"
-    assert dwh_all_1_header[0] == "統一企業コード"
-    assert dwh_all_2_header[0] == "統一企業コード"
+    assert dwh_all_header[0] == "統一企業コード"
     assert dwh_diff_header[0] == "統一企業コード"
     for header in (
         campaign_header,
@@ -333,8 +326,7 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
         bfs_device_diff_header,
         bfs_accessories_all_header,
         bfs_accessories_diff_header,
-        dwh_all_1_header,
-        dwh_all_2_header,
+        dwh_all_header,
         dwh_diff_header,
     ):
         assert "id" not in header
@@ -353,8 +345,7 @@ def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir:
     bfs_device_diff_header, _ = read_csv(generated_default_dir, "bfs_service_summary_devices_diff.csv")
     bfs_accessories_all_header, _ = read_csv(generated_default_dir, "bfs_service_summary_accessories_all.csv")
     bfs_accessories_diff_header, _ = read_csv(generated_default_dir, "bfs_service_summary_accessories_diff.csv")
-    dwh_all_1_header, _ = read_csv(generated_default_dir, "corp_customer_info_all_1.csv")
-    dwh_all_2_header, _ = read_csv(generated_default_dir, "corp_customer_info_all_2.csv")
+    dwh_all_header, _ = read_csv(generated_default_dir, "corp_customer_info_all.csv")
     dwh_diff_header, _ = read_csv(generated_default_dir, "corp_customer_info_diff.csv")
 
     expected_headers = {
@@ -380,9 +371,8 @@ def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir:
     assert bfs_device_all_header == bfs_device_diff_header
     assert bfs_accessories_all_header[:4] == expected_headers["bfs_accessories"]
     assert bfs_accessories_all_header == bfs_accessories_diff_header
-    assert dwh_all_1_header[:4] == expected_headers["dwh"]
-    assert dwh_all_1_header == dwh_all_2_header
-    assert dwh_all_1_header == dwh_diff_header
+    assert dwh_all_header[:4] == expected_headers["dwh"]
+    assert dwh_all_header == dwh_diff_header
 
 
 def test_load_specs_can_read_a_directory_of_markdown_files(tmp_path: Path) -> None:
@@ -499,8 +489,7 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
     _, bfs_device_diff_rows = read_csv(generated_seed7_dir, "bfs_service_summary_devices_diff.csv")
     _, bfs_accessories_all_rows = read_csv(generated_seed7_dir, "bfs_service_summary_accessories_all.csv")
     _, bfs_accessories_diff_rows = read_csv(generated_seed7_dir, "bfs_service_summary_accessories_diff.csv")
-    _, dwh_all_1_rows = read_csv(generated_seed7_dir, "corp_customer_info_all_1.csv")
-    _, dwh_all_2_rows = read_csv(generated_seed7_dir, "corp_customer_info_all_2.csv")
+    _, dwh_all_rows = read_csv(generated_seed7_dir, "corp_customer_info_all.csv")
     _, dwh_diff_rows = read_csv(generated_seed7_dir, "corp_customer_info_diff.csv")
 
     expected_prefixes = {
@@ -514,8 +503,7 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
         "bfs_device_diff": "EN",
         "bfs_accessories_all": "EN",
         "bfs_accessories_diff": "EN",
-        "dwh_all_1": "",
-        "dwh_all_2": "",
+        "dwh_all": "",
         "dwh_diff": "",
     }
 
@@ -541,9 +529,7 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
         assert row[0].startswith(expected_prefixes["bfs_accessories_all"])
     for row in bfs_accessories_diff_rows[:2]:
         assert row[0].startswith(expected_prefixes["bfs_accessories_diff"])
-    for row in dwh_all_1_rows[:2]:
-        assert len(row[0]) > 0
-    for row in dwh_all_2_rows[:2]:
+    for row in dwh_all_rows[:2]:
         assert len(row[0]) > 0
     for row in dwh_diff_rows[:2]:
         assert len(row[0]) > 0
@@ -625,15 +611,13 @@ def test_default_run_fills_every_cell_in_all_csvs(generated_seed7_dir: Path) -> 
         assert_all_cells_filled(header, rows, name)
 
 
-def test_dwh_company_codes_do_not_overlap_between_full_splits(generated_seed7_dir: Path) -> None:
-    """DWH 全量2分割の統一企業コードは相互に重複しない。"""
-    all_1_header, all_1_rows = read_csv(generated_seed7_dir, "corp_customer_info_all_1.csv")
-    _, all_2_rows = read_csv(generated_seed7_dir, "corp_customer_info_all_2.csv")
-    code_index = all_1_header.index("統一企業コード")
+def test_dwh_company_codes_are_unique_in_all_file(generated_seed7_dir: Path) -> None:
+    """DWH 全量CSVの統一企業コードはファイル内で重複しない。"""
+    header, rows = read_csv(generated_seed7_dir, "corp_customer_info_all.csv")
+    code_index = header.index("統一企業コード")
 
-    codes_1 = {row[code_index] for row in all_1_rows}
-    codes_2 = {row[code_index] for row in all_2_rows}
-    assert not (codes_1 & codes_2)
+    codes = [row[code_index] for row in rows]
+    assert len(codes) == len(set(codes))
 
 
 def test_dwh_parent_and_invalidity_fields_are_consistent(generated_seed7_dir: Path) -> None:

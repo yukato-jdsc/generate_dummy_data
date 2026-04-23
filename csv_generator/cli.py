@@ -10,7 +10,7 @@ from .format_spec import load_specs
 from .generators import BFS_FAMILY_FILES, DWH_FAMILY_FILES, CsvGenerator, CsvWriteJob, run_csv_write_job
 from .io import build_output_path, write_csv
 
-CORP_OUTPUT_KEYS = ("dwh_all_1", "dwh_all_2", "dwh_diff")
+CORP_OUTPUT_KEYS = tuple(output_key for output_key, _ in DWH_FAMILY_FILES)
 COMPASS_OUTPUT_KEYS = ("compass_all", "compass_diff")
 
 

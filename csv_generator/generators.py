@@ -39,8 +39,7 @@ BFS_FAMILY_FILES = (
     ("bfs_accessories", "bfs_accessories_diff", "diff"),
 )
 DWH_FAMILY_FILES = (
-    ("dwh_all_1", "all_1"),
-    ("dwh_all_2", "all_2"),
+    ("dwh_all", "all"),
     ("dwh_diff", "diff"),
 )
 DWH_PRIMARY_INDUSTRY_NAMES = ["情報サービス業", "総合工事業", "保険業", "銀行業", "専門サービス業"]
@@ -1016,7 +1015,7 @@ class CsvGenerator:
         return [clip(resolver(column, context, index), column.max_length) for column in columns]
 
     def write_dwh_files(self, output_dir: Path, compress: bool = False) -> None:
-        """DWH統一企業情報の全量2分割と差分を逐次書き出す。"""
+        """DWH統一企業情報の全量と差分を逐次書き出す。"""
         for output_key, variant in DWH_FAMILY_FILES:
             self.write_dwh_file(output_dir, output_key, variant, compress=compress)
 
@@ -1147,11 +1146,9 @@ class CsvGenerator:
 
     def _dwh_base_index(self, index: int, variant: str) -> int:
         """DWHファイル種別ごとの基準インデックスを返す。"""
-        if variant == "all_1":
+        if variant == "all":
             return index
-        if variant == "all_2":
-            return self.counts["dwh_all_1"] + index
-        return self.counts["dwh_all_1"] + self.counts["dwh_all_2"] + index
+        return self.counts["dwh_all"] + index
 
     def write_bfs_files(self, output_dir: Path, compress: bool = False) -> None:
         """BFS関連CSVをまとめて逐次書き出す。"""

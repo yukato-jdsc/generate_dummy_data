@@ -2,7 +2,7 @@
 
 `docs/format/` 配下の定義をもとに、アプリ取り込み用のテストCSVを生成します。
 
-対象は次の15ファイルです。
+対象は次の14ファイルです。
 
 - `m_campaign_all.csv`
 - `m_agency_all.csv`
@@ -10,8 +10,7 @@
 - `compass_sales_approval_all.csv`
 - `compass_sales_approval_diff.csv`
 - `m_product_all.csv`
-- `corp_customer_info_all_1.csv`
-- `corp_customer_info_all_2.csv`
+- `corp_customer_info_all.csv`
 - `corp_customer_info_diff.csv`
 - `bfs_entry_informations_all.csv`
 - `bfs_entry_informations_diff.csv`
@@ -63,8 +62,7 @@ uv run python generate_csv.py --seed 7
 | `compass_sales_approval_all.csv` | 100 | 160,000 |
 | `compass_sales_approval_diff.csv` | 20 | 2,000 |
 | `m_product_all.csv` | 1,000 | 122,802 |
-| `corp_customer_info_all_1.csv` | 500 | 1,500,000 |
-| `corp_customer_info_all_2.csv` | 500 | 1,500,000 |
+| `corp_customer_info_all.csv` | 1,000 | 3,000,000 |
 | `corp_customer_info_diff.csv` | 100 | 46,021 |
 | `bfs_entry_informations_all.csv` | 1,000 | 2,000,000 |
 | `bfs_entry_informations_diff.csv` | 100 | 5,921 |
@@ -81,9 +79,8 @@ uv run python generate_csv.py --seed 7
   - `compass_sales_approval_all.csv`
   - `compass_sales_approval_diff.csv`
 - `product` を含む場合は `m_product_all.csv` を生成します
-- `corp` を含む場合は次の3ファイルを生成します
-  - `corp_customer_info_all_1.csv`
-  - `corp_customer_info_all_2.csv`
+- `corp` を含む場合は次の2ファイルを生成します
+  - `corp_customer_info_all.csv`
   - `corp_customer_info_diff.csv`
 - `bfs` を含む場合は次の6ファイルを生成します
   - `bfs_entry_informations_all.csv`
