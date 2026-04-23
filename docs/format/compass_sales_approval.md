@@ -1,10 +1,10 @@
 # (COMPASS)営業決裁
 
 - マート名: `b_hjn_com_営業決裁`
-- CSVファイル名: `compass_sales_approval.csv`
+- CSVファイル名: `compass_sales_approval_all.csv` , `compass_sales_approval_diff.csv`
 - 全量更新 or 差分更新: 差分更新
 - 更新頻度: 日次
-- データ数: 初期移行（160,000件）、日次差分（件数不明）
+- データ数: 初期移行（160,000件）、日次差分（2,000件）
 - データ量: 初期移行（200MB、2年分）、日次差分（不明）
 - データ概要: COMPASSより連携される「営業決裁」を公開する
 - 参考データ: `sample_data/compass_sales_approval.csv` 

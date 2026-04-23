@@ -2,12 +2,13 @@
 
 `docs/format/` 配下の定義をもとに、アプリ取り込み用のテストCSVを生成します。
 
-対象は次の14ファイルです。
+対象は次の15ファイルです。
 
 - `m_campaign_all.csv`
 - `m_agency_all.csv`
 - `m_agency_diff.csv`
-- `compass_sales_approval.csv`
+- `compass_sales_approval_all.csv`
+- `compass_sales_approval_diff.csv`
 - `m_product_all.csv`
 - `corp_customer_info_all_1.csv`
 - `corp_customer_info_all_2.csv`
@@ -59,7 +60,8 @@ uv run python generate_csv.py --seed 7
 | `m_campaign_all.csv` | 50 | 1,612 |
 | `m_agency_all.csv` | 1,000 | 1,200,000 |
 | `m_agency_diff.csv` | 53 | 53 |
-| `compass_sales_approval.csv` | 100 | 160,000 |
+| `compass_sales_approval_all.csv` | 100 | 160,000 |
+| `compass_sales_approval_diff.csv` | 20 | 2,000 |
 | `m_product_all.csv` | 1,000 | 122,802 |
 | `corp_customer_info_all_1.csv` | 500 | 1,500,000 |
 | `corp_customer_info_all_2.csv` | 500 | 1,500,000 |
@@ -75,7 +77,9 @@ uv run python generate_csv.py --seed 7
 
 - `campaign` を含む場合は `m_campaign_all.csv` を生成します
 - `agency` を含む場合は `m_agency_all.csv` と `m_agency_diff.csv` を同時に生成します
-- `compass` を含む場合は `compass_sales_approval.csv` を生成します
+- `compass` を含む場合は次の2ファイルを生成します
+  - `compass_sales_approval_all.csv`
+  - `compass_sales_approval_diff.csv`
 - `product` を含む場合は `m_product_all.csv` を生成します
 - `corp` を含む場合は次の3ファイルを生成します
   - `corp_customer_info_all_1.csv`
@@ -94,6 +98,11 @@ uv run python generate_csv.py --seed 7
 
 `m_agency_diff.csv` は独立生成ではなく、同じ実行で作られた `m_agency_all.csv` の母集団から 53 件を抽出して生成します。  
 そのため、`m_agency_diff.csv` は `m_agency_all.csv` の部分集合になります。
+
+## COMPASS差分CSVについて
+
+`compass_sales_approval_diff.csv` は独立生成ではなく、同じ実行で作られた `compass_sales_approval_all.csv` の母集団から件数ぶん抽出し、主要業務列を更新した差分データとして生成します。  
+そのため、`compass_sales_approval_diff.csv` は `approval_number` をはじめとする主要識別子を `compass_sales_approval_all.csv` と共有しつつ、件名、日時、売上・利益系、備考などの内容が更新されます。
 
 ## 生成ルール
 

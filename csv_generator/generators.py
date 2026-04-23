@@ -101,7 +101,7 @@ def run_csv_write_job(job: CsvWriteJob) -> None:
     elif job.job_type == "product":
         generator.write_product_file(output_dir, compress=job.compress)
     elif job.job_type == "compass":
-        generator.write_compass_file(output_dir, compress=job.compress)
+        generator.write_compass_files(output_dir, compress=job.compress)
     elif job.job_type == "agency":
         generator.write_agency_files(output_dir, compress=job.compress)
     elif job.job_type == "dwh":
@@ -125,7 +125,8 @@ class CsvGenerator:
         self.seed = seed
         self.counts = counts
         self.values = ValueFactory(seed)
-        self.diff_sample_size = counts["agency_diff"]
+        self.agency_diff_sample_size = counts["agency_diff"]
+        self.compass_diff_sample_size = counts["compass_diff"]
 
     def _build_rows(self, count: int, row_factory: Callable[[int], list[str]]) -> list[list[str]]:
         """指定件数ぶんの行をまとめて生成する。"""
@@ -204,15 +205,23 @@ class CsvGenerator:
         """指定した仕様キーのヘッダー表示名一覧を返す。"""
         return [column.header_label for column in self.specs[spec_key]]
 
-    def write_compass_file(self, output_dir: Path, compress: bool = False) -> None:
-        """営業決裁CSVを逐次書き出しする。"""
+    def write_compass_files(self, output_dir: Path, compress: bool = False) -> None:
+        """営業決裁の全量CSVと差分CSVを同時に出力する。"""
         headers = self._header_labels("compass")
-        self._write_rows(
-            build_output_path(output_dir, OUTPUT_FILES["compass"], compress),
-            headers,
-            self.counts["compass"],
-            lambda index: self._compass_row(self._compass_context(index), index),
-        )
+        sampled: list[tuple[int, dict[str, str]]] = []
+        sampler = random.Random(self.seed + 1)
+        handle, writer = open_csv_writer(build_output_path(output_dir, OUTPUT_FILES["compass_all"], compress))
+        try:
+            writer.writerow(headers)
+            for index in range(self.counts["compass_all"]):
+                context = self._compass_context(index)
+                writer.writerow(self._compass_row(context, index))
+                self._update_compass_reservoir(sampled, (index, context), index, sampler)
+        finally:
+            handle.close()
+        sampled.sort(key=lambda item: item[1]["approval_number"])
+        diff_rows = [self._compass_row(self._compass_diff_context(context, index), index) for index, context in sampled]
+        write_csv(build_output_path(output_dir, OUTPUT_FILES["compass_diff"], compress), headers, diff_rows)
 
     def _update_reservoir(
         self,
@@ -222,11 +231,32 @@ class CsvGenerator:
         sampler: random.Random,
     ) -> None:
         """差分CSV用に、全量行から固定件数をリザーバサンプリングする。"""
-        if len(sampled) < self.diff_sample_size:
+        self._update_sampled_rows(sampled, row, index, sampler, self.agency_diff_sample_size)
+
+    def _update_compass_reservoir(
+        self,
+        sampled: list[tuple[int, dict[str, str]]],
+        row: tuple[int, dict[str, str]],
+        index: int,
+        sampler: random.Random,
+    ) -> None:
+        """営業決裁差分CSV用に、全量行から固定件数を抽出する。"""
+        self._update_sampled_rows(sampled, row, index, sampler, self.compass_diff_sample_size)
+
+    def _update_sampled_rows(
+        self,
+        sampled: list[tuple[int, dict[str, str]]],
+        row: tuple[int, dict[str, str]],
+        index: int,
+        sampler: random.Random,
+        sample_size: int,
+    ) -> None:
+        """リザーバサンプリングで固定件数の行を更新する。"""
+        if len(sampled) < sample_size:
             sampled.append(row)
             return
         choice = sampler.randint(0, index)
-        if choice < self.diff_sample_size:
+        if choice < sample_size:
             sampled[choice] = row
 
     def agency_context(self, index: int) -> dict[str, str]:
@@ -508,7 +538,7 @@ class CsvGenerator:
     def compass_rows(self) -> list[list[str]]:
         """営業決裁CSVの全行をメモリ上で生成する。"""
         return self._build_rows(
-            self.counts["compass"],
+            self.counts["compass_all"],
             lambda index: self._compass_row(self._compass_context(index), index),
         )
 
@@ -749,6 +779,74 @@ class CsvGenerator:
             "last_processing_date_and_time": ymdhms_millis(approval_at + timedelta(hours=3)),
             "approval_history": "一次承認済み;最終承認済み",
         }
+
+    def _compass_diff_context(self, base_context: dict[str, str], index: int) -> dict[str, str]:
+        """営業決裁差分向けに、主要業務列を更新した文脈を返す。"""
+        context = dict(base_context)
+        application_at = datetime.fromisoformat(base_context["date_and_time_of_application"])
+        approval_at = datetime.fromisoformat(base_context["approval_date"])
+        last_updated_at = datetime.fromisoformat(base_context["last_updated_date"])
+        sales_amount = int(base_context["sales_yen"])
+        diff_application_at = application_at + timedelta(days=7 + (index % 5), minutes=15)
+        diff_approval_at = approval_at + timedelta(days=7 + (index % 5), minutes=45)
+        diff_last_updated_at = last_updated_at + timedelta(days=8 + (index % 3), hours=1)
+        diff_execution_date = datetime.strptime(base_context["scheduled_execution_date"], "%Y-%m-%d").date() + timedelta(
+            days=14 + (index % 7)
+        )
+        diff_start_date = datetime.strptime(base_context["contract_start_date"], "%Y-%m-%d").date() + timedelta(
+            days=14 + (index % 7)
+        )
+        diff_expiration_date = datetime.strptime(base_context["expiration_date"], "%Y-%m-%d").date() + timedelta(days=30)
+        diff_sales_amount = sales_amount + 125_000 + (index % 9) * 25_000
+        diff_contribution = int(diff_sales_amount * 0.19)
+        diff_operating_profit = int(diff_sales_amount * 0.13)
+        diff_incentive = int(diff_sales_amount * 0.035)
+        diff_contact_name = self.values.person_name()
+        diff_inputter = self.values.person_name()
+        context.update(
+            {
+                "approval_subject": f'{base_context["company_name"]}向け営業決裁 変更 {index % 30 + 1}',
+                "date_and_time_of_application": ymdhms_millis(diff_application_at),
+                "scheduled_execution_date": ymd_dash(diff_execution_date),
+                "name_of_approved_person": self.values.person_name(),
+                "contact_name": diff_contact_name,
+                "contact_phone_number": self.values.phone("080", 21_000_000 + index),
+                "project_name": f'{base_context["company_name"]}向けモバイル提案変更{index % 50 + 1}',
+                "contract_start_date": ymd_dash(diff_start_date),
+                "sales_yen": str(diff_sales_amount),
+                "variable_operating_profit_yen": str(int(diff_sales_amount * 0.26)),
+                "operating_contribution_margin_yen": str(diff_contribution),
+                "operating_profit_yen": str(diff_operating_profit),
+                "voice_sales_contribution_margin_yen": str(int(diff_sales_amount * 0.05)),
+                "id_data_approval_base_profit_yen": str(int(diff_sales_amount * 0.035)),
+                "is_ni_product_sales_approval_base_profit_yen": str(int(diff_sales_amount * 0.025)),
+                "mobile_sales_contribution_margin_yen": str(int(diff_sales_amount * 0.15)),
+                "incentive_amount_yen": str(diff_incentive),
+                "total_external_expenses_purchases_yen": str(int(diff_sales_amount * 0.34)),
+                "voice_otoku_hikari_phone_sales_contribution_margin_yen": str(int(diff_sales_amount * 0.015)),
+                "deduction_adjustment_refund_recovery_amount_yen": str(40_000 + (index % 10) * 2_000),
+                "total_external_expenses_yen": str(int(diff_sales_amount * 0.27)),
+                "total_sales_amount_yen": str(diff_sales_amount + 180_000),
+                "notes": f"案件変更差分{index % 100 + 1}。売上条件と保守条件の見直しを反映。",
+                "additions_changes": "回線数、売上、利益率、保守条件、承認コメントを更新",
+                "inputter": diff_inputter,
+                "input_date": ymdhms_millis(diff_last_updated_at),
+                "approval_date": ymdhms_millis(diff_approval_at),
+                "expiration_date": ymd_dash(diff_expiration_date),
+                "additional_information_field": "差分更新: 価格条件と保守体制の再協議結果を反映",
+                "last_updated_date": ymdhms_millis(diff_last_updated_at),
+                "last_reference_date": ymdhms_millis(diff_last_updated_at + timedelta(hours=2)),
+                "last_viewed_date": ymdhms_millis(diff_last_updated_at + timedelta(hours=5)),
+                "systemmodstamp": ymdhms_millis(diff_last_updated_at + timedelta(hours=1)),
+                "summary_supplement_applicant_only": "申請者メモ: 条件見直しに伴い差分更新を実施",
+                "comment_1": "営業部差分確認済み",
+                "comment_3": "与信確認結果更新済み",
+                "comment_4": "変更後試算条件を反映済み",
+                "last_processing_date_and_time": ymdhms_millis(diff_approval_at + timedelta(hours=4)),
+                "approval_history": "一次承認済み;条件変更承認済み;最終承認済み",
+            }
+        )
+        return context
 
     def _product_context(self, index: int) -> dict[str, str]:
         """商品1行ぶんの主要属性をテンプレートから組み立てる。"""

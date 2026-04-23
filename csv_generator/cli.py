@@ -11,6 +11,7 @@ from .generators import BFS_FAMILY_FILES, DWH_FAMILY_FILES, CsvGenerator, CsvWri
 from .io import build_output_path, write_csv
 
 CORP_OUTPUT_KEYS = ("dwh_all_1", "dwh_all_2", "dwh_diff")
+COMPASS_OUTPUT_KEYS = ("compass_all", "compass_diff")
 
 
 def announce_output(path: Path) -> None:
@@ -125,7 +126,11 @@ def job_output_paths(jobs: list[CsvWriteJob], output_dir: Path) -> list[Path]:
             paths.append(build_output_path(output_dir, OUTPUT_FILES["agency_all"], job.compress))
             paths.append(build_output_path(output_dir, OUTPUT_FILES["agency_diff"], job.compress))
             continue
-        assert job.output_key is not None or job.job_type in {"campaign", "product", "compass"}
+        if job.job_type == "compass":
+            paths.append(build_output_path(output_dir, OUTPUT_FILES["compass_all"], job.compress))
+            paths.append(build_output_path(output_dir, OUTPUT_FILES["compass_diff"], job.compress))
+            continue
+        assert job.output_key is not None or job.job_type in {"campaign", "product"}
         output_key = job.output_key or job.job_type
         paths.append(build_output_path(output_dir, OUTPUT_FILES[output_key], job.compress))
     return paths
@@ -200,9 +205,11 @@ def _write_agency_csvs(output_dir: Path, generator: CsvGenerator, compress: bool
 
 
 def _write_compass_csv(output_dir: Path, generator: CsvGenerator, compress: bool) -> None:
-    """compass 対象のCSVを書き出す。"""
-    announce_output(build_output_path(output_dir, OUTPUT_FILES["compass"], compress))
-    generator.write_compass_file(output_dir, compress=compress)
+    """compass 対象の全量・差分CSVを書き出す。"""
+    announce_outputs(
+        [build_output_path(output_dir, OUTPUT_FILES[output_key], compress) for output_key in COMPASS_OUTPUT_KEYS]
+    )
+    generator.write_compass_files(output_dir, compress=compress)
 
 
 def _write_bfs_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) -> None:
