@@ -2,7 +2,7 @@
 
 `docs/format/` 配下の定義をもとに、アプリ取り込み用のテストCSVを生成します。
 
-対象は次の14ファイルです。
+対象は次の15ファイルです。
 
 - `m_キャンペーン.csv`
 - `m_取次店_all.csv`
@@ -10,7 +10,8 @@
 - `b_hjn_com_営業決裁.csv`
 - `b_hjn_com_営業決裁_diff.csv`
 - `m_商品_all.csv`
-- `m_hjn_smt_統一企業情報.csv`
+- `m_hjn_smt_統一企業情報_1.csv`
+- `m_hjn_smt_統一企業情報_2.csv`
 - `m_hjn_smt_統一企業情報_diff.csv`
 - `b_hjn_bfs_モバイル_エントリ情報.csv`
 - `b_hjn_bfs_モバイル_エントリ情報_diff.csv`
@@ -62,7 +63,8 @@ uv run python generate_csv.py --seed 7
 | `b_hjn_com_営業決裁.csv` | 100 | 160,000 |
 | `b_hjn_com_営業決裁_diff.csv` | 20 | 2,000 |
 | `m_商品_all.csv` | 1,000 | 122,802 |
-| `m_hjn_smt_統一企業情報.csv` | 1,000 | 3,000,000 |
+| `m_hjn_smt_統一企業情報_1.csv` | 500 | 1,500,000 |
+| `m_hjn_smt_統一企業情報_2.csv` | 500 | 1,500,000 |
 | `m_hjn_smt_統一企業情報_diff.csv` | 100 | 46,021 |
 | `b_hjn_bfs_モバイル_エントリ情報.csv` | 1,000 | 2,000,000 |
 | `b_hjn_bfs_モバイル_エントリ情報_diff.csv` | 100 | 5,921 |
@@ -79,8 +81,9 @@ uv run python generate_csv.py --seed 7
   - `b_hjn_com_営業決裁.csv`
   - `b_hjn_com_営業決裁_diff.csv`
 - `product` を含む場合は `m_商品_all.csv` を生成します
-- `corp` を含む場合は次の2ファイルを生成します
-  - `m_hjn_smt_統一企業情報.csv`
+- `corp` を含む場合は次の3ファイルを生成します
+  - `m_hjn_smt_統一企業情報_1.csv`
+  - `m_hjn_smt_統一企業情報_2.csv`
   - `m_hjn_smt_統一企業情報_diff.csv`
 - `bfs` を含む場合は次の6ファイルを生成します
   - `b_hjn_bfs_モバイル_エントリ情報.csv`

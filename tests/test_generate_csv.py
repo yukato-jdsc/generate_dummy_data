@@ -13,7 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from csv_generator.cli import parse_jobs, parse_targets, resolve_job_count, write_target_csv
+from csv_generator.config import DEFAULT_COUNTS
 from csv_generator.format_spec import load_specs, parse_section_columns
+from csv_generator.generators import CsvGenerator
 from csv_generator.io import build_output_path
 
 SCRIPT = ROOT / "generate_csv.py"
@@ -26,7 +28,8 @@ DEFAULT_OUTPUT_FILES = [
     "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv",
     "b_hjn_com_営業決裁.csv",
     "b_hjn_com_営業決裁_diff.csv",
-    "m_hjn_smt_統一企業情報.csv",
+    "m_hjn_smt_統一企業情報_1.csv",
+    "m_hjn_smt_統一企業情報_2.csv",
     "m_hjn_smt_統一企業情報_diff.csv",
     "m_キャンペーン.csv",
     "m_取次店_all.csv",
@@ -136,8 +139,9 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
     _, bfs_device_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
     _, bfs_accessories_all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
     _, bfs_accessories_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
-    _, dwh_all_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報.csv")
-    _, dwh_diff_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
+    _, corp_all_1_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_1.csv")
+    _, corp_all_2_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_2.csv")
+    _, corp_diff_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
 
     assert len(campaign_rows) == 50
     assert len(agency_rows) == 1000
@@ -151,8 +155,9 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
     assert len(bfs_device_diff_rows) == 100
     assert len(bfs_accessories_all_rows) == 1000
     assert len(bfs_accessories_diff_rows) == 100
-    assert len(dwh_all_rows) == 1000
-    assert len(dwh_diff_rows) == 100
+    assert len(corp_all_1_rows) == 500
+    assert len(corp_all_2_rows) == 500
+    assert len(corp_diff_rows) == 100
 
 
 def test_targets_campaign_only_generates_single_file(tmp_path: Path) -> None:
@@ -177,11 +182,12 @@ def test_targets_bfs_only_generates_two_files(tmp_path: Path) -> None:
     ]
 
 
-def test_targets_corp_only_generates_two_files(tmp_path: Path) -> None:
-    """corp 指定では統一企業情報の2ファイルだけを生成する。"""
+def test_targets_corp_only_generates_three_files(tmp_path: Path) -> None:
+    """corp 指定では統一企業情報の3ファイルだけを生成する。"""
     run_script(str(tmp_path), "--targets", "corp")
     assert generated_files(tmp_path) == [
-        "m_hjn_smt_統一企業情報.csv",
+        "m_hjn_smt_統一企業情報_1.csv",
+        "m_hjn_smt_統一企業情報_2.csv",
         "m_hjn_smt_統一企業情報_diff.csv",
     ]
 
@@ -221,7 +227,8 @@ def test_console_outputs_generated_file_names(tmp_path: Path) -> None:
     assert "m_取次店_all_diff.csv" in completed.stdout
     assert "b_hjn_com_営業決裁.csv" in completed.stdout
     assert "b_hjn_com_営業決裁_diff.csv" in completed.stdout
-    assert "m_hjn_smt_統一企業情報.csv" in completed.stdout
+    assert "m_hjn_smt_統一企業情報_1.csv" in completed.stdout
+    assert "m_hjn_smt_統一企業情報_2.csv" in completed.stdout
     assert "m_hjn_smt_統一企業情報_diff.csv" in completed.stdout
     assert "m_商品_all.csv" not in completed.stdout
 
@@ -297,8 +304,9 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
     bfs_device_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
     bfs_accessories_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
     bfs_accessories_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
-    dwh_all_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報.csv")
-    dwh_diff_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
+    corp_all_1_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_1.csv")
+    corp_all_2_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_2.csv")
+    corp_diff_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
 
     assert campaign_header[0] == "キャンペーンid"
     assert agency_header[0] == "取次店コード"
@@ -312,8 +320,9 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
     assert bfs_device_diff_header[0] == "エントリ番号"
     assert bfs_accessories_all_header[0] == "エントリ番号"
     assert bfs_accessories_diff_header[0] == "エントリ番号"
-    assert dwh_all_header[0] == "統一企業コード"
-    assert dwh_diff_header[0] == "統一企業コード"
+    assert corp_all_1_header[0] == "統一企業コード"
+    assert corp_all_2_header[0] == "統一企業コード"
+    assert corp_diff_header[0] == "統一企業コード"
     for header in (
         campaign_header,
         agency_header,
@@ -326,8 +335,9 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
         bfs_device_diff_header,
         bfs_accessories_all_header,
         bfs_accessories_diff_header,
-        dwh_all_header,
-        dwh_diff_header,
+        corp_all_1_header,
+        corp_all_2_header,
+        corp_diff_header,
     ):
         assert "id" not in header
 
@@ -345,8 +355,9 @@ def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir:
     bfs_device_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
     bfs_accessories_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
     bfs_accessories_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
-    dwh_all_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報.csv")
-    dwh_diff_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
+    corp_all_1_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_1.csv")
+    corp_all_2_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_2.csv")
+    corp_diff_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
 
     expected_headers = {
         "campaign": ["キャンペーンid", "キャンペーン名称", "説明", "有効開始日"],
@@ -356,7 +367,7 @@ def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir:
         "bfs": ["エントリ番号", "件名", "作成区分", "オーダ種別"],
         "bfs_device": ["エントリ番号", "サマリ番号", "回線数", "レンタルセット端末"],
         "bfs_accessories": ["エントリ番号", "サマリ番号", "シリアル付付属品", "商品コード"],
-        "dwh": ["統一企業コード", "法人管理番号", "dunsnumber", "法人格コード"],
+        "corp": ["統一企業コード", "法人管理番号", "dunsnumber", "法人格コード"],
     }
 
     assert campaign_header[:4] == expected_headers["campaign"]
@@ -371,8 +382,9 @@ def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir:
     assert bfs_device_all_header == bfs_device_diff_header
     assert bfs_accessories_all_header[:4] == expected_headers["bfs_accessories"]
     assert bfs_accessories_all_header == bfs_accessories_diff_header
-    assert dwh_all_header[:4] == expected_headers["dwh"]
-    assert dwh_all_header == dwh_diff_header
+    assert corp_all_1_header[:4] == expected_headers["corp"]
+    assert corp_all_1_header == corp_all_2_header
+    assert corp_all_1_header == corp_diff_header
 
 
 def test_load_specs_can_read_a_directory_of_markdown_files(tmp_path: Path) -> None:
@@ -457,19 +469,19 @@ def test_load_specs_includes_bfs_entry_information() -> None:
     ]
 
 
-def test_load_specs_includes_dwh_unified_company_information() -> None:
-    """実フォーマットの DWH 統一企業情報定義が読み込める。"""
+def test_load_specs_includes_corp_unified_company_information() -> None:
+    """実フォーマットの統一企業情報定義が corp キーで読み込める。"""
     specs = load_specs(ROOT / "docs/format")
 
-    assert "dwh" in specs
-    assert len(specs["dwh"]) == 63
-    assert [column.name for column in specs["dwh"][:4]] == [
+    assert "corp" in specs
+    assert len(specs["corp"]) == 63
+    assert [column.name for column in specs["corp"][:4]] == [
         "統一企業コード",
         "法人管理番号",
         "dunsnumber",
         "法人格コード",
     ]
-    assert [column.header_label for column in specs["dwh"][:4]] == [
+    assert [column.header_label for column in specs["corp"][:4]] == [
         "統一企業コード",
         "法人管理番号",
         "dunsnumber",
@@ -489,8 +501,9 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
     _, bfs_device_diff_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
     _, bfs_accessories_all_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
     _, bfs_accessories_diff_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
-    _, dwh_all_rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報.csv")
-    _, dwh_diff_rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_diff.csv")
+    _, corp_all_1_rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_1.csv")
+    _, corp_all_2_rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_2.csv")
+    _, corp_diff_rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_diff.csv")
 
     expected_prefixes = {
         "campaign": "CP",
@@ -503,8 +516,9 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
         "bfs_device_diff": "EN",
         "bfs_accessories_all": "EN",
         "bfs_accessories_diff": "EN",
-        "dwh_all": "",
-        "dwh_diff": "",
+        "corp_all_1": "",
+        "corp_all_2": "",
+        "corp_diff": "",
     }
 
     for row in campaign_rows[:2]:
@@ -529,9 +543,11 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
         assert row[0].startswith(expected_prefixes["bfs_accessories_all"])
     for row in bfs_accessories_diff_rows[:2]:
         assert row[0].startswith(expected_prefixes["bfs_accessories_diff"])
-    for row in dwh_all_rows[:2]:
+    for row in corp_all_1_rows[:2]:
         assert len(row[0]) > 0
-    for row in dwh_diff_rows[:2]:
+    for row in corp_all_2_rows[:2]:
+        assert len(row[0]) > 0
+    for row in corp_diff_rows[:2]:
         assert len(row[0]) > 0
 
 
@@ -611,17 +627,37 @@ def test_default_run_fills_every_cell_in_all_csvs(generated_seed7_dir: Path) -> 
         assert_all_cells_filled(header, rows, name)
 
 
-def test_dwh_company_codes_are_unique_in_all_file(generated_seed7_dir: Path) -> None:
-    """DWH 全量CSVの統一企業コードはファイル内で重複しない。"""
-    header, rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報.csv")
+def test_corp_company_codes_are_unique_across_all_files(generated_seed7_dir: Path) -> None:
+    """corp 全量CSVの統一企業コードは分割後も重複しない。"""
+    header, rows_1 = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_1.csv")
+    _, rows_2 = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_2.csv")
     code_index = header.index("統一企業コード")
 
-    codes = [row[code_index] for row in rows]
+    codes = [row[code_index] for row in [*rows_1, *rows_2]]
     assert len(codes) == len(set(codes))
 
 
-def test_dwh_parent_and_invalidity_fields_are_consistent(generated_seed7_dir: Path) -> None:
-    """DWH の親企業・無効理由関連の最低限の整合を確認する。"""
+def test_corp_all_files_split_rows_in_order(generated_seed7_dir: Path) -> None:
+    """corp 全量CSVは前半と後半に分割され、統一企業コードの順序が連続する。"""
+    header, rows_1 = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_1.csv")
+    _, rows_2 = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_2.csv")
+    code_index = header.index("統一企業コード")
+
+    assert rows_1[-1][code_index] < rows_2[0][code_index]
+
+
+def test_corp_split_counts_put_extra_row_in_first_file() -> None:
+    """奇数件のcorp全量は先頭ファイルを1件多くして分割する。"""
+    specs = load_specs(ROOT / "docs/format")
+    counts = dict(DEFAULT_COUNTS)
+    counts["corp_all"] = 5
+    generator = CsvGenerator(specs=specs, seed=42, counts=counts)
+
+    assert generator._corp_split_counts() == (3, 2)
+
+
+def test_corp_parent_and_invalidity_fields_are_consistent(generated_seed7_dir: Path) -> None:
+    """corp の親企業・無効理由関連の最低限の整合を確認する。"""
     header, rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_diff.csv")
     company_code_index = header.index("統一企業コード")
     parent_flag_index = header.index("親企業フラグ")

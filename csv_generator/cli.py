@@ -7,10 +7,10 @@ from pathlib import Path
 
 from .config import ColumnSpec, DEFAULT_COUNTS, DEFAULT_SEED, FULL_COUNTS, OUTPUT_FILES, VALID_TARGETS
 from .format_spec import load_specs
-from .generators import BFS_FAMILY_FILES, DWH_FAMILY_FILES, CsvGenerator, CsvWriteJob, run_csv_write_job
+from .generators import BFS_FAMILY_FILES, CORP_FAMILY_FILES, CsvGenerator, CsvWriteJob, run_csv_write_job
 from .io import build_output_path, write_csv
 
-CORP_OUTPUT_KEYS = tuple(output_key for output_key, _ in DWH_FAMILY_FILES)
+CORP_OUTPUT_KEYS = tuple(output_key for output_key, _ in CORP_FAMILY_FILES)
 COMPASS_OUTPUT_KEYS = ("compass_all", "compass_diff")
 
 
@@ -102,8 +102,8 @@ def build_jobs(
         elif target == "compass":
             jobs.append(CsvWriteJob(job_type="compass", **common))
         elif target == "corp":
-            for output_key, variant in DWH_FAMILY_FILES:
-                jobs.append(CsvWriteJob(job_type="dwh", output_key=output_key, variant=variant, **common))
+            for output_key, variant in CORP_FAMILY_FILES:
+                jobs.append(CsvWriteJob(job_type="corp", output_key=output_key, variant=variant, **common))
         elif target == "bfs":
             for spec_key, output_key, variant in BFS_FAMILY_FILES:
                 jobs.append(
@@ -232,7 +232,7 @@ def _write_corp_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) 
     announce_outputs(
         [build_output_path(output_dir, OUTPUT_FILES[output_key], compress) for output_key in CORP_OUTPUT_KEYS]
     )
-    generator.write_dwh_files(output_dir, compress=compress)
+    generator.write_corp_files(output_dir, compress=compress)
 
 
 def main() -> None:

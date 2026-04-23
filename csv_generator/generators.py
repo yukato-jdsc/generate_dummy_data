@@ -38,18 +38,19 @@ BFS_FAMILY_FILES = (
     ("bfs_accessories", "bfs_accessories_all", "all"),
     ("bfs_accessories", "bfs_accessories_diff", "diff"),
 )
-DWH_FAMILY_FILES = (
-    ("dwh_all", "all"),
-    ("dwh_diff", "diff"),
+CORP_FAMILY_FILES = (
+    ("corp_all_1", "all_1"),
+    ("corp_all_2", "all_2"),
+    ("corp_diff", "diff"),
 )
-DWH_PRIMARY_INDUSTRY_NAMES = ["情報サービス業", "総合工事業", "保険業", "銀行業", "専門サービス業"]
-DWH_SECONDARY_INDUSTRY_NAMES = ["情報通信機械製造業", "総合工事業", "保険業", "銀行業", "専門サービス業"]
-DWH_ORGANIZATION_TYPES = ["内資", "外資", "公共"]
-DWH_CORPORATE_POSITIONS = ["代表取締役", "代表社員", "理事長"]
-DWH_INVALID_REASONS = ("10", "20", "30", "40")
-DWH_SB_LARGE_CATEGORIES = ["情報通信", "建設", "金融"]
-DWH_SB_MIDDLE_CATEGORIES = ["ソフトウェア", "設備工事", "保険"]
-DWH_SB_SMALL_CATEGORIES = ["SaaS", "通信設備", "法人保険"]
+CORP_PRIMARY_INDUSTRY_NAMES = ["情報サービス業", "総合工事業", "保険業", "銀行業", "専門サービス業"]
+CORP_SECONDARY_INDUSTRY_NAMES = ["情報通信機械製造業", "総合工事業", "保険業", "銀行業", "専門サービス業"]
+CORP_ORGANIZATION_TYPES = ["内資", "外資", "公共"]
+CORP_CORPORATE_POSITIONS = ["代表取締役", "代表社員", "理事長"]
+CORP_INVALID_REASONS = ("10", "20", "30", "40")
+CORP_SB_LARGE_CATEGORIES = ["情報通信", "建設", "金融"]
+CORP_SB_MIDDLE_CATEGORIES = ["ソフトウェア", "設備工事", "保険"]
+CORP_SB_SMALL_CATEGORIES = ["SaaS", "通信設備", "法人保険"]
 DEVICE_MANUFACTURERS = ["Apple", "Samsung", "Sony", "Google", "SHARP"]
 DEVICE_CLASSES = ["スマートフォン", "タブレット", "モバイルルーター", "フィーチャーフォン", "PC"]
 DEVICE_MODEL_NAMES = ["iPhone 14", "Galaxy S23", "Xperia 10 IV", "Pixel 8", "AQUOS sense8"]
@@ -103,10 +104,10 @@ def run_csv_write_job(job: CsvWriteJob) -> None:
         generator.write_compass_files(output_dir, compress=job.compress)
     elif job.job_type == "agency":
         generator.write_agency_files(output_dir, compress=job.compress)
-    elif job.job_type == "dwh":
+    elif job.job_type == "corp":
         assert job.output_key is not None
         assert job.variant is not None
-        generator.write_dwh_file(output_dir, job.output_key, job.variant, compress=job.compress)
+        generator.write_corp_file(output_dir, job.output_key, job.variant, compress=job.compress)
     elif job.job_type == "bfs":
         assert job.spec_key is not None
         assert job.output_key is not None
@@ -1014,27 +1015,27 @@ class CsvGenerator:
         """列ごとの補完規則を使って1行を組み立てる。"""
         return [clip(resolver(column, context, index), column.max_length) for column in columns]
 
-    def write_dwh_files(self, output_dir: Path, compress: bool = False) -> None:
-        """DWH統一企業情報の全量と差分を逐次書き出す。"""
-        for output_key, variant in DWH_FAMILY_FILES:
-            self.write_dwh_file(output_dir, output_key, variant, compress=compress)
+    def write_corp_files(self, output_dir: Path, compress: bool = False) -> None:
+        """統一企業情報の全量と差分を逐次書き出す。"""
+        for output_key, variant in CORP_FAMILY_FILES:
+            self.write_corp_file(output_dir, output_key, variant, compress=compress)
 
-    def write_dwh_file(self, output_dir: Path, output_key: str, variant: str, compress: bool = False) -> None:
-        """DWH統一企業情報の1ファイルを逐次書き出しする。"""
+    def write_corp_file(self, output_dir: Path, output_key: str, variant: str, compress: bool = False) -> None:
+        """統一企業情報の1ファイルを逐次書き出しする。"""
         self._write_rows(
             build_output_path(output_dir, OUTPUT_FILES[output_key], compress),
-            self._header_labels("dwh"),
-            self.counts[output_key],
-            lambda index: self._dwh_row(self._dwh_context(index, variant)),
+            self._header_labels("corp"),
+            self._corp_row_count(variant),
+            lambda index: self._corp_row(self._corp_context(index, variant)),
         )
 
-    def _dwh_row(self, context: dict[str, str]) -> list[str]:
-        """DWH統一企業情報の文脈を列順の1行へ変換する。"""
-        return self._row_from_context(self.specs["dwh"], context)
+    def _corp_row(self, context: dict[str, str]) -> list[str]:
+        """統一企業情報の文脈を列順の1行へ変換する。"""
+        return self._row_from_context(self.specs["corp"], context)
 
-    def _dwh_context(self, index: int, variant: str) -> dict[str, str]:
-        """DWH統一企業情報1行ぶんの主要属性を組み立てる。"""
-        base_index = self._dwh_base_index(index, variant)
+    def _corp_context(self, index: int, variant: str) -> dict[str, str]:
+        """統一企業情報1行ぶんの主要属性を組み立てる。"""
+        base_index = self._corp_base_index(index, variant)
         pref = PREFECTURES[base_index % len(PREFECTURES)]
         company_code = self.values.code("UC", base_index + 1, 8)
         parent_code = self.values.code("UC", ((base_index // 7) + 1), 8)
@@ -1050,7 +1051,7 @@ class CsvGenerator:
         representative_kana_half = self.values.company_short_name_kana_half()
         representative_kana_full = self.values.company_short_name_kana_full()
         invalid_flag = "1" if base_index % 9 == 0 else "0"
-        invalid_reason = DWH_INVALID_REASONS[base_index % len(DWH_INVALID_REASONS)] if invalid_flag == "1" else "0"
+        invalid_reason = CORP_INVALID_REASONS[base_index % len(CORP_INVALID_REASONS)] if invalid_flag == "1" else "0"
         parent_flag = "1" if base_index % 5 == 0 else "0"
         registered_at = datetime(2020, 1, 1, 9, 0) + timedelta(days=base_index % 1200, minutes=base_index % 60)
         updated_at = registered_at + timedelta(days=(base_index % 30) + 1, minutes=15)
@@ -1058,8 +1059,8 @@ class CsvGenerator:
         updated_at_text = updated_at.strftime("%Y/%m/%d %H:%M")
         primary_code = str(300 + (base_index % 600))
         secondary_code = str(600 + (base_index % 300))
-        primary_name = DWH_PRIMARY_INDUSTRY_NAMES[base_index % len(DWH_PRIMARY_INDUSTRY_NAMES)]
-        secondary_name = DWH_SECONDARY_INDUSTRY_NAMES[(base_index + 1) % len(DWH_SECONDARY_INDUSTRY_NAMES)]
+        primary_name = CORP_PRIMARY_INDUSTRY_NAMES[base_index % len(CORP_PRIMARY_INDUSTRY_NAMES)]
+        secondary_name = CORP_SECONDARY_INDUSTRY_NAMES[(base_index + 1) % len(CORP_SECONDARY_INDUSTRY_NAMES)]
         dunsnumber = self.values.number_string(9, 690_000_000 + base_index)
         securities_code = self.values.number_string(4, 1000 + (base_index % 8000))
         merged_company_code = self.values.code("UC", 5_000_000 + base_index + 1, 8) if invalid_reason == "10" else "0"
@@ -1099,13 +1100,13 @@ class CsvGenerator:
             "電話番号": self.values.phone(pref["phone_area"], 10_000_000 + base_index),
             "主業コード": primary_code,
             "従業コード": secondary_code,
-            "代表者役職名": DWH_CORPORATE_POSITIONS[base_index % len(DWH_CORPORATE_POSITIONS)],
+            "代表者役職名": CORP_CORPORATE_POSITIONS[base_index % len(CORP_CORPORATE_POSITIONS)],
             "代表者氏名カナ": representative_kana_half,
             "代表者氏名カナ全角": representative_kana_full,
             "代表者氏名": representative_name,
             "主業名": primary_name,
             "従業名": secondary_name,
-            "組織区分": DWH_ORGANIZATION_TYPES[base_index % len(DWH_ORGANIZATION_TYPES)],
+            "組織区分": CORP_ORGANIZATION_TYPES[base_index % len(CORP_ORGANIZATION_TYPES)],
             "事業内容": business_description,
             "重要度ランク": operator_rank,
             "証券コード": securities_code,
@@ -1113,9 +1114,9 @@ class CsvGenerator:
             "合併企業番号": merged_company_code,
             "親企業フラグ": parent_flag,
             "親企業番号": parent_company_code,
-            "sb業種大": DWH_SB_LARGE_CATEGORIES[base_index % len(DWH_SB_LARGE_CATEGORIES)],
-            "sb業種中": DWH_SB_MIDDLE_CATEGORIES[base_index % len(DWH_SB_MIDDLE_CATEGORIES)],
-            "sb業種小": DWH_SB_SMALL_CATEGORIES[base_index % len(DWH_SB_SMALL_CATEGORIES)],
+            "sb業種大": CORP_SB_LARGE_CATEGORIES[base_index % len(CORP_SB_LARGE_CATEGORIES)],
+            "sb業種中": CORP_SB_MIDDLE_CATEGORIES[base_index % len(CORP_SB_MIDDLE_CATEGORIES)],
+            "sb業種小": CORP_SB_SMALL_CATEGORIES[base_index % len(CORP_SB_SMALL_CATEGORIES)],
             "備考1": note_1,
             "備考2": note_2,
             "備考3": note_3,
@@ -1144,11 +1145,39 @@ class CsvGenerator:
             "備考": customer_note,
         }
 
-    def _dwh_base_index(self, index: int, variant: str) -> int:
-        """DWHファイル種別ごとの基準インデックスを返す。"""
-        if variant == "all":
-            return index
-        return self.counts["dwh_all"] + index
+    def _corp_base_index(self, index: int, variant: str) -> int:
+        """corpファイル種別ごとの基準インデックスを返す。"""
+        if variant in {"all_1", "all_2"}:
+            return self._corp_split_offset(variant) + index
+        if variant == "diff":
+            return self.counts["corp_all"] + index
+        raise ValueError(f"Unknown corp variant: {variant}")
+
+    def _corp_row_count(self, variant: str) -> int:
+        """corpファイル種別ごとの出力件数を返す。"""
+        first_count, second_count = self._corp_split_counts()
+        if variant == "all_1":
+            return first_count
+        if variant == "all_2":
+            return second_count
+        if variant == "diff":
+            return self.counts["corp_diff"]
+        raise ValueError(f"Unknown corp variant: {variant}")
+
+    def _corp_split_counts(self) -> tuple[int, int]:
+        """corp全量件数を前半・後半の2ファイルぶんへ分割する。"""
+        first_count = (self.counts["corp_all"] + 1) // 2
+        second_count = self.counts["corp_all"] - first_count
+        return first_count, second_count
+
+    def _corp_split_offset(self, variant: str) -> int:
+        """corp全量分割ファイルの開始インデックスを返す。"""
+        if variant == "all_1":
+            return 0
+        if variant == "all_2":
+            first_count, _ = self._corp_split_counts()
+            return first_count
+        raise ValueError(f"Unknown corp split variant: {variant}")
 
     def write_bfs_files(self, output_dir: Path, compress: bool = False) -> None:
         """BFS関連CSVをまとめて逐次書き出す。"""
