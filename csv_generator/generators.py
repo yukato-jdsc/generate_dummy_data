@@ -28,6 +28,7 @@ from .config import (
 )
 from .format_spec import load_specs
 from .io import build_output_path, open_csv_writer, write_csv
+from .progress import NullProgressReporter, QueueProgressReporter, TqdmProgressReporter
 from .values import ValueFactory, clip, hms, ymd, ymd_dash, ymdhm, ymdhms_millis
 
 BFS_FAMILY_FILES = (
@@ -75,6 +76,9 @@ ACCESSORY_PRODUCT_NAMES = [
     "Bluetoothヘッドセット",
 ]
 
+ProgressReporter = NullProgressReporter | QueueProgressReporter | TqdmProgressReporter
+ProgressFactory = Callable[[Path, int], ProgressReporter]
+
 
 @dataclass(frozen=True)
 class CsvWriteJob:
@@ -91,28 +95,47 @@ class CsvWriteJob:
     variant: str | None = None
 
 
-def run_csv_write_job(job: CsvWriteJob) -> None:
+def run_csv_write_job(
+    job: CsvWriteJob,
+    progress_factory: ProgressFactory | None = None,
+    progress_queue: object | None = None,
+) -> None:
     """ジョブ定義に従って1ワーカーぶんのCSV生成を実行する。"""
+    if progress_factory is None and progress_queue is not None:
+        progress_factory = lambda path, total_rows: QueueProgressReporter(path, total_rows, progress_queue)
     specs = load_specs(Path(job.format_dir))
     generator = CsvGenerator(specs=specs, seed=job.seed, counts=job.counts)
     output_dir = Path(job.output_dir)
     if job.job_type == "campaign":
-        generator.write_campaign_file(output_dir, compress=job.compress)
+        generator.write_campaign_file(output_dir, compress=job.compress, progress_factory=progress_factory)
     elif job.job_type == "product":
-        generator.write_product_file(output_dir, compress=job.compress)
+        generator.write_product_file(output_dir, compress=job.compress, progress_factory=progress_factory)
     elif job.job_type == "compass":
-        generator.write_compass_files(output_dir, compress=job.compress)
+        generator.write_compass_files(output_dir, compress=job.compress, progress_factory=progress_factory)
     elif job.job_type == "agency":
-        generator.write_agency_files(output_dir, compress=job.compress)
+        generator.write_agency_files(output_dir, compress=job.compress, progress_factory=progress_factory)
     elif job.job_type == "corp":
         assert job.output_key is not None
         assert job.variant is not None
-        generator.write_corp_file(output_dir, job.output_key, job.variant, compress=job.compress)
+        generator.write_corp_file(
+            output_dir,
+            job.output_key,
+            job.variant,
+            compress=job.compress,
+            progress_factory=progress_factory,
+        )
     elif job.job_type == "bfs":
         assert job.spec_key is not None
         assert job.output_key is not None
         assert job.variant is not None
-        generator.write_bfs_file(output_dir, job.spec_key, job.output_key, job.variant, compress=job.compress)
+        generator.write_bfs_file(
+            output_dir,
+            job.spec_key,
+            job.output_key,
+            job.variant,
+            compress=job.compress,
+            progress_factory=progress_factory,
+        )
     else:
         raise ValueError(f"Unknown job type: {job.job_type}")
 
@@ -141,27 +164,52 @@ class CsvGenerator:
         headers: list[str],
         count: int,
         row_factory: Callable[[int], list[str]],
+        progress_reporter: ProgressReporter | None = None,
     ) -> None:
         """指定件数ぶんの行を逐次書き出す。"""
         handle, writer = open_csv_writer(path)
         try:
+            if progress_reporter is not None:
+                progress_reporter.start()
             writer.writerow(headers)
             for index in range(count):
                 writer.writerow(row_factory(index))
+                if progress_reporter is not None:
+                    progress_reporter.advance(index + 1)
         finally:
+            if progress_reporter is not None:
+                progress_reporter.finish()
             handle.close()
+
+    def _build_progress_reporter(
+        self,
+        progress_factory: ProgressFactory | None,
+        path: Path,
+        row_count: int,
+    ) -> ProgressReporter | None:
+        """進捗表示が有効な場合だけ対象ファイル用レポーターを返す。"""
+        if progress_factory is None:
+            return None
+        return progress_factory(path, row_count)
 
     def campaign_rows(self) -> list[list[str]]:
         """キャンペーンCSVの全行をメモリ上で生成する。"""
         return self._build_rows(self.counts["campaign"], self._campaign_row)
 
-    def write_campaign_file(self, output_dir: Path, compress: bool = False) -> None:
+    def write_campaign_file(
+        self,
+        output_dir: Path,
+        compress: bool = False,
+        progress_factory: ProgressFactory | None = None,
+    ) -> None:
         """キャンペーンCSVを逐次書き出しする。"""
+        path = build_output_path(output_dir, OUTPUT_FILES["campaign"], compress)
         self._write_rows(
-            build_output_path(output_dir, OUTPUT_FILES["campaign"], compress),
+            path,
             self._header_labels("campaign"),
             self.counts["campaign"],
             self._campaign_row,
+            progress_reporter=self._build_progress_reporter(progress_factory, path, self.counts["campaign"]),
         )
 
     def _campaign_row(self, index: int) -> list[str]:
@@ -183,45 +231,75 @@ class CsvGenerator:
         """キャンペーン名テンプレートをインデックスから組み立てる。"""
         return f"{CAMPAIGN_PREFIXES[index % len(CAMPAIGN_PREFIXES)]}{CAMPAIGN_SUFFIXES[index % len(CAMPAIGN_SUFFIXES)]}"
 
-    def write_agency_files(self, output_dir: Path, compress: bool = False) -> None:
+    def write_agency_files(
+        self,
+        output_dir: Path,
+        compress: bool = False,
+        progress_factory: ProgressFactory | None = None,
+    ) -> None:
         """取次店の全量CSVと差分CSVを同時に出力する。"""
         headers = self._header_labels("agency")
         sampled: list[tuple[int, dict[str, str]]] = []
         sampler = random.Random(self.seed)
-        handle, writer = open_csv_writer(build_output_path(output_dir, OUTPUT_FILES["agency_all"], compress))
+        all_path = build_output_path(output_dir, OUTPUT_FILES["agency_all"], compress)
+        all_progress = self._build_progress_reporter(progress_factory, all_path, self.counts["agency_all"])
+        handle, writer = open_csv_writer(all_path)
         try:
+            if all_progress is not None:
+                all_progress.start()
             writer.writerow(headers)
             for index in range(self.counts["agency_all"]):
                 context = self.agency_context(index)
                 writer.writerow(self._agency_row(context, index))
+                if all_progress is not None:
+                    all_progress.advance(index + 1)
                 self._update_reservoir(sampled, (index, context), index, sampler)
         finally:
+            if all_progress is not None:
+                all_progress.finish()
             handle.close()
         sampled.sort(key=lambda item: item[1]["agent_code"])
         diff_rows = [self._agency_row(context, index) for index, context in sampled]
-        write_csv(build_output_path(output_dir, OUTPUT_FILES["agency_diff"], compress), headers, diff_rows)
+        diff_path = build_output_path(output_dir, OUTPUT_FILES["agency_diff"], compress)
+        diff_progress = self._build_progress_reporter(progress_factory, diff_path, len(diff_rows))
+        write_csv(diff_path, headers, diff_rows, progress_reporter=diff_progress)
 
     def _header_labels(self, spec_key: str) -> list[str]:
         """指定した仕様キーのヘッダー表示名一覧を返す。"""
         return [column.header_label for column in self.specs[spec_key]]
 
-    def write_compass_files(self, output_dir: Path, compress: bool = False) -> None:
+    def write_compass_files(
+        self,
+        output_dir: Path,
+        compress: bool = False,
+        progress_factory: ProgressFactory | None = None,
+    ) -> None:
         """営業決裁の全量CSVと差分CSVを同時に出力する。"""
         headers = self._header_labels("compass")
         sampled: list[tuple[int, dict[str, str]]] = []
         sampler = random.Random(self.seed + 1)
-        handle, writer = open_csv_writer(build_output_path(output_dir, OUTPUT_FILES["compass_all"], compress))
+        all_path = build_output_path(output_dir, OUTPUT_FILES["compass_all"], compress)
+        all_progress = self._build_progress_reporter(progress_factory, all_path, self.counts["compass_all"])
+        handle, writer = open_csv_writer(all_path)
         try:
+            if all_progress is not None:
+                all_progress.start()
             writer.writerow(headers)
             for index in range(self.counts["compass_all"]):
                 context = self._compass_context(index)
                 writer.writerow(self._compass_row(context, index))
+                if all_progress is not None:
+                    all_progress.advance(index + 1)
                 self._update_compass_reservoir(sampled, (index, context), index, sampler)
         finally:
+            if all_progress is not None:
+                all_progress.finish()
             handle.close()
         sampled.sort(key=lambda item: item[1]["approval_number"])
         diff_rows = [self._compass_row(self._compass_diff_context(context, index), index) for index, context in sampled]
-        write_csv(build_output_path(output_dir, OUTPUT_FILES["compass_diff"], compress), headers, diff_rows)
+        diff_path = build_output_path(output_dir, OUTPUT_FILES["compass_diff"], compress)
+        diff_progress = self._build_progress_reporter(progress_factory, diff_path, len(diff_rows))
+        write_csv(diff_path, headers, diff_rows, progress_reporter=diff_progress)
 
     def _update_reservoir(
         self,
@@ -526,13 +604,20 @@ class CsvGenerator:
             lambda index: self._product_row(self._product_context(index), index),
         )
 
-    def write_product_file(self, output_dir: Path, compress: bool = False) -> None:
+    def write_product_file(
+        self,
+        output_dir: Path,
+        compress: bool = False,
+        progress_factory: ProgressFactory | None = None,
+    ) -> None:
         """商品CSVを逐次書き出しする。"""
+        path = build_output_path(output_dir, OUTPUT_FILES["product"], compress)
         self._write_rows(
-            build_output_path(output_dir, OUTPUT_FILES["product"], compress),
+            path,
             self._header_labels("product"),
             self.counts["product"],
             lambda index: self._product_row(self._product_context(index), index),
+            progress_reporter=self._build_progress_reporter(progress_factory, path, self.counts["product"]),
         )
 
     def compass_rows(self) -> list[list[str]]:
@@ -1015,18 +1100,39 @@ class CsvGenerator:
         """列ごとの補完規則を使って1行を組み立てる。"""
         return [clip(resolver(column, context, index), column.max_length) for column in columns]
 
-    def write_corp_files(self, output_dir: Path, compress: bool = False) -> None:
+    def write_corp_files(
+        self,
+        output_dir: Path,
+        compress: bool = False,
+        progress_factory: ProgressFactory | None = None,
+    ) -> None:
         """統一企業情報の全量と差分を逐次書き出す。"""
         for output_key, variant in CORP_FAMILY_FILES:
-            self.write_corp_file(output_dir, output_key, variant, compress=compress)
+            self.write_corp_file(
+                output_dir,
+                output_key,
+                variant,
+                compress=compress,
+                progress_factory=progress_factory,
+            )
 
-    def write_corp_file(self, output_dir: Path, output_key: str, variant: str, compress: bool = False) -> None:
+    def write_corp_file(
+        self,
+        output_dir: Path,
+        output_key: str,
+        variant: str,
+        compress: bool = False,
+        progress_factory: ProgressFactory | None = None,
+    ) -> None:
         """統一企業情報の1ファイルを逐次書き出しする。"""
+        row_count = self._corp_row_count(variant)
+        path = build_output_path(output_dir, OUTPUT_FILES[output_key], compress)
         self._write_rows(
-            build_output_path(output_dir, OUTPUT_FILES[output_key], compress),
+            path,
             self._header_labels("corp"),
-            self._corp_row_count(variant),
+            row_count,
             lambda index: self._corp_row(self._corp_context(index, variant)),
+            progress_reporter=self._build_progress_reporter(progress_factory, path, row_count),
         )
 
     def _corp_row(self, context: dict[str, str]) -> list[str]:
@@ -1179,10 +1285,22 @@ class CsvGenerator:
             return first_count
         raise ValueError(f"Unknown corp split variant: {variant}")
 
-    def write_bfs_files(self, output_dir: Path, compress: bool = False) -> None:
+    def write_bfs_files(
+        self,
+        output_dir: Path,
+        compress: bool = False,
+        progress_factory: ProgressFactory | None = None,
+    ) -> None:
         """BFS関連CSVをまとめて逐次書き出す。"""
         for spec_key, output_key, variant in BFS_FAMILY_FILES:
-            self.write_bfs_file(output_dir, spec_key, output_key, variant, compress=compress)
+            self.write_bfs_file(
+                output_dir,
+                spec_key,
+                output_key,
+                variant,
+                compress=compress,
+                progress_factory=progress_factory,
+            )
 
     def write_bfs_file(
         self,
@@ -1191,6 +1309,7 @@ class CsvGenerator:
         output_key: str,
         variant: str,
         compress: bool = False,
+        progress_factory: ProgressFactory | None = None,
     ) -> None:
         """BFS関連CSVの1ファイルを逐次書き出しする。"""
         row_factories = {
@@ -1205,6 +1324,7 @@ class CsvGenerator:
             output_key,
             variant,
             row_factories[spec_key],
+            progress_factory,
         )
 
     def _write_bfs_family_file(
@@ -1215,14 +1335,17 @@ class CsvGenerator:
         output_key: str,
         variant: str,
         row_factory: Callable[[dict[str, str], int], list[str]],
+        progress_factory: ProgressFactory | None = None,
     ) -> None:
         """BFSファミリーの1ファイルを仕様キー別に逐次出力する。"""
         headers = self._header_labels(spec_key)
+        path = build_output_path(output_dir, OUTPUT_FILES[output_key], compress)
         self._write_rows(
-            build_output_path(output_dir, OUTPUT_FILES[output_key], compress),
+            path,
             headers,
             self.counts[output_key],
             lambda index: row_factory(self._bfs_service_context(index, variant), index),
+            progress_reporter=self._build_progress_reporter(progress_factory, path, self.counts[output_key]),
         )
 
     def _bfs_row(self, context: dict[str, str], index: int) -> list[str]:

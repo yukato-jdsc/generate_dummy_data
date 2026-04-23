@@ -5,6 +5,10 @@ import gzip
 from pathlib import Path
 from typing import TextIO
 
+from .progress import NullProgressReporter, QueueProgressReporter, TqdmProgressReporter
+
+ProgressReporter = NullProgressReporter | QueueProgressReporter | TqdmProgressReporter
+
 
 def _create_csv_writer(handle: TextIO) -> csv.writer:
     """全文字列を常にダブルクォートするCSV writerを生成する。"""
@@ -26,12 +30,24 @@ def build_output_path(output_dir: Path, output_name: str, compress: bool) -> Pat
     return path
 
 
-def write_csv(path: Path, headers: list[str], rows: list[list[str]]) -> None:
-    """BOM付きUTF-8でCSVを一括書き出しする。"""
+def write_csv(
+    path: Path,
+    headers: list[str],
+    rows: list[list[str]],
+    progress_reporter: ProgressReporter | None = None,
+) -> None:
+    """BOM付きUTF-8でCSVを書き出し、必要に応じて進捗を通知する。"""
     with _open_text_writer(path) as fh:
         writer = _create_csv_writer(fh)
+        if progress_reporter is not None:
+            progress_reporter.start()
         writer.writerow(headers)
-        writer.writerows(rows)
+        for index, row in enumerate(rows, start=1):
+            writer.writerow(row)
+            if progress_reporter is not None:
+                progress_reporter.advance(index)
+        if progress_reporter is not None:
+            progress_reporter.finish()
 
 
 def open_csv_writer(path: Path) -> tuple[TextIO, csv.writer]:

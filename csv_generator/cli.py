@@ -3,12 +3,15 @@ from __future__ import annotations
 import argparse
 import os
 from concurrent.futures import ProcessPoolExecutor
+from multiprocessing import Manager
 from pathlib import Path
+from queue import Empty
 
 from .config import ColumnSpec, DEFAULT_COUNTS, DEFAULT_SEED, FULL_COUNTS, OUTPUT_FILES, VALID_TARGETS
 from .format_spec import load_specs
-from .generators import BFS_FAMILY_FILES, CORP_FAMILY_FILES, CsvGenerator, CsvWriteJob, run_csv_write_job
+from .generators import BFS_FAMILY_FILES, CORP_FAMILY_FILES, CsvGenerator, CsvWriteJob, ProgressFactory, run_csv_write_job
 from .io import build_output_path, write_csv
+from .progress import NullProgressReporter, ProgressDisplayManager, ProgressEvent, TqdmProgressReporter, is_tty_stream
 
 CORP_OUTPUT_KEYS = tuple(output_key for output_key, _ in CORP_FAMILY_FILES)
 COMPASS_OUTPUT_KEYS = ("compass_all", "compass_diff")
@@ -16,7 +19,23 @@ COMPASS_OUTPUT_KEYS = ("compass_all", "compass_diff")
 
 def announce_output(path: Path) -> None:
     """これから生成するCSVファイルの出力先をコンソールへ表示する。"""
-    print(f"Generating {path}")
+    if is_tty_stream():
+        return
+    print(f"Generating {path}", flush=True)
+
+
+def build_progress_factory(position_lookup: dict[str, int] | None = None) -> ProgressFactory:
+    """TTY有無に応じた進捗レポーター生成関数を返す。"""
+    if not is_tty_stream():
+        return lambda path, total_rows: NullProgressReporter()
+
+    def factory(path: Path, total_rows: int) -> TqdmProgressReporter:
+        position = 0
+        if position_lookup is not None:
+            position = position_lookup.get(str(path), 0)
+        return TqdmProgressReporter(path, total_rows, position=position)
+
+    return factory
 
 
 def parse_args() -> argparse.Namespace:
@@ -138,14 +157,45 @@ def job_output_paths(jobs: list[CsvWriteJob], output_dir: Path) -> list[Path]:
 
 def execute_jobs(jobs: list[CsvWriteJob], max_workers: int) -> None:
     """ジョブ一覧を直列またはプロセス並列で実行する。"""
+    output_paths = job_output_paths(jobs, Path(jobs[0].output_dir))
+    position_lookup = {str(path): index for index, path in enumerate(output_paths)}
+    progress_factory = build_progress_factory(position_lookup)
     if max_workers == 1:
         for job in jobs:
-            run_csv_write_job(job)
+            run_csv_write_job(job, progress_factory=progress_factory)
         return
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        futures = [executor.submit(run_csv_write_job, job) for job in jobs]
-        for future in futures:
-            future.result()
+    if not is_tty_stream():
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            futures = [executor.submit(run_csv_write_job, job) for job in jobs]
+            for future in futures:
+                future.result()
+        return
+    with Manager() as manager:
+        progress_queue = manager.Queue()
+        display_manager = ProgressDisplayManager(output_paths)
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            futures = [
+                executor.submit(run_csv_write_job, job, progress_queue=progress_queue)
+                for job in jobs
+            ]
+            while True:
+                try:
+                    event = progress_queue.get(timeout=0.1)
+                    if isinstance(event, ProgressEvent):
+                        display_manager.handle(event)
+                except Empty:
+                    if all(future.done() for future in futures):
+                        break
+            while True:
+                try:
+                    event = progress_queue.get_nowait()
+                    if isinstance(event, ProgressEvent):
+                        display_manager.handle(event)
+                except Empty:
+                    break
+            for future in futures:
+                future.result()
+        display_manager.close()
 
 
 def write_target_csv(
@@ -158,7 +208,9 @@ def write_target_csv(
     """生成対象CSVの出力先表示と書き出しをまとめて行う。"""
     path = build_output_path(output_dir, output_name, compress)
     announce_output(path)
-    write_csv(path, headers, rows)
+    progress_factory = build_progress_factory()
+    progress_reporter = progress_factory(path, len(rows))
+    write_csv(path, headers, rows, progress_reporter=progress_reporter)
 
 
 def _write_campaign_csv(
@@ -201,7 +253,7 @@ def _write_agency_csvs(output_dir: Path, generator: CsvGenerator, compress: bool
             build_output_path(output_dir, OUTPUT_FILES["agency_diff"], compress),
         ]
     )
-    generator.write_agency_files(output_dir, compress=compress)
+    generator.write_agency_files(output_dir, compress=compress, progress_factory=build_progress_factory())
 
 
 def _write_compass_csv(output_dir: Path, generator: CsvGenerator, compress: bool) -> None:
@@ -209,7 +261,11 @@ def _write_compass_csv(output_dir: Path, generator: CsvGenerator, compress: bool
     announce_outputs(
         [build_output_path(output_dir, OUTPUT_FILES[output_key], compress) for output_key in COMPASS_OUTPUT_KEYS]
     )
-    generator.write_compass_files(output_dir, compress=compress)
+    generator.write_compass_files(
+        output_dir,
+        compress=compress,
+        progress_factory=build_progress_factory(),
+    )
 
 
 def _write_bfs_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) -> None:
@@ -224,7 +280,7 @@ def _write_bfs_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) -
             build_output_path(output_dir, OUTPUT_FILES["bfs_accessories_diff"], compress),
         ]
     )
-    generator.write_bfs_files(output_dir, compress=compress)
+    generator.write_bfs_files(output_dir, compress=compress, progress_factory=build_progress_factory())
 
 
 def _write_corp_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) -> None:
@@ -232,7 +288,7 @@ def _write_corp_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) 
     announce_outputs(
         [build_output_path(output_dir, OUTPUT_FILES[output_key], compress) for output_key in CORP_OUTPUT_KEYS]
     )
-    generator.write_corp_files(output_dir, compress=compress)
+    generator.write_corp_files(output_dir, compress=compress, progress_factory=build_progress_factory())
 
 
 def main() -> None:

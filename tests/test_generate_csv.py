@@ -17,6 +17,8 @@ from csv_generator.config import DEFAULT_COUNTS
 from csv_generator.format_spec import load_specs, parse_section_columns
 from csv_generator.generators import CsvGenerator
 from csv_generator.io import build_output_path
+from csv_generator import progress as progress_module
+from csv_generator.progress import NullProgressReporter, TqdmProgressReporter
 
 SCRIPT = ROOT / "generate_csv.py"
 DEFAULT_OUTPUT_FILES = [
@@ -233,6 +235,51 @@ def test_console_outputs_generated_file_names(tmp_path: Path) -> None:
     assert "m_商品_all.csv" not in completed.stdout
 
 
+def test_console_does_not_emit_progress_lines_when_not_tty(tmp_path: Path) -> None:
+    """非TTY環境では進捗バー由来の行を出力しない。"""
+    completed = run_script(str(tmp_path), "--targets", "campaign")
+
+    assert "Generating" in completed.stdout
+    assert "0%" not in completed.stdout
+    assert "100%" not in completed.stdout
+
+
+def test_null_progress_reporter_emits_nothing(capsys: pytest.CaptureFixture[str]) -> None:
+    """非TTY用の無効化レポーターは標準出力へ何も出さない。"""
+    reporter = NullProgressReporter()
+
+    reporter.start()
+    reporter.advance(1)
+    reporter.finish()
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_tqdm_progress_reporter_leaves_completed_bar(monkeypatch: pytest.MonkeyPatch) -> None:
+    """TTY向けバーは完了後も100%のまま残す設定で初期化する。"""
+    captured_kwargs: dict[str, object] = {}
+
+    class DummyBar:
+        def update(self, delta: int) -> None:
+            return None
+
+        def close(self) -> None:
+            return None
+
+    def fake_tqdm(*args: object, **kwargs: object) -> DummyBar:
+        captured_kwargs.update(kwargs)
+        return DummyBar()
+
+    monkeypatch.setattr(progress_module, "tqdm", fake_tqdm)
+
+    reporter = TqdmProgressReporter(Path("sample.csv"), total_rows=3)
+    reporter.start()
+
+    assert captured_kwargs["leave"] is True
+
+
 def test_same_seed_is_deterministic(tmp_path: Path) -> None:
     first_tmp = tmp_path / "first"
     second_tmp = tmp_path / "second"
@@ -254,7 +301,7 @@ def test_jobs_parallel_output_generates_expected_files(tmp_path: Path) -> None:
     parallel_dir.mkdir()
 
     targets = "campaign,agency,compass"
-    run_script(str(parallel_dir), "--targets", targets, "--seed", "7", "--jobs", "2", timeout=120)
+    completed = run_script(str(parallel_dir), "--targets", targets, "--seed", "7", "--jobs", "2", timeout=120)
 
     assert generated_files(parallel_dir) == [
         "b_hjn_com_営業決裁.csv",
@@ -263,6 +310,8 @@ def test_jobs_parallel_output_generates_expected_files(tmp_path: Path) -> None:
         "m_取次店_all.csv",
         "m_取次店_all_diff.csv",
     ]
+    assert "0%" not in completed.stdout
+    assert "100%" not in completed.stdout
 
 
 def test_output_path_adds_gzip_suffix_when_compressing(tmp_path: Path) -> None:
