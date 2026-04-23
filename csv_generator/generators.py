@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -25,6 +26,7 @@ from .config import (
     PRODUCT_TEMPLATES,
     ColumnSpec,
 )
+from .format_spec import load_specs
 from .io import build_output_path, open_csv_writer, write_csv
 from .values import ValueFactory, clip, hms, ymd, ymd_dash, ymdhm, ymdhms_millis
 
@@ -74,6 +76,47 @@ ACCESSORY_PRODUCT_NAMES = [
 ]
 
 
+@dataclass(frozen=True)
+class CsvWriteJob:
+    """単一ワーカーへ渡すCSV生成ジョブの入力を保持する。"""
+
+    job_type: str
+    output_dir: str
+    format_dir: str
+    seed: int
+    counts: dict[str, int]
+    compress: bool
+    output_key: str | None = None
+    spec_key: str | None = None
+    variant: str | None = None
+
+
+def run_csv_write_job(job: CsvWriteJob) -> None:
+    """ジョブ定義に従って1ワーカーぶんのCSV生成を実行する。"""
+    specs = load_specs(Path(job.format_dir))
+    generator = CsvGenerator(specs=specs, seed=job.seed, counts=job.counts)
+    output_dir = Path(job.output_dir)
+    if job.job_type == "campaign":
+        generator.write_campaign_file(output_dir, compress=job.compress)
+    elif job.job_type == "product":
+        generator.write_product_file(output_dir, compress=job.compress)
+    elif job.job_type == "compass":
+        generator.write_compass_file(output_dir, compress=job.compress)
+    elif job.job_type == "agency":
+        generator.write_agency_files(output_dir, compress=job.compress)
+    elif job.job_type == "dwh":
+        assert job.output_key is not None
+        assert job.variant is not None
+        generator.write_dwh_file(output_dir, job.output_key, job.variant, compress=job.compress)
+    elif job.job_type == "bfs":
+        assert job.spec_key is not None
+        assert job.output_key is not None
+        assert job.variant is not None
+        generator.write_bfs_file(output_dir, job.spec_key, job.output_key, job.variant, compress=job.compress)
+    else:
+        raise ValueError(f"Unknown job type: {job.job_type}")
+
+
 class CsvGenerator:
     """各CSVの行データを生成し、必要に応じてファイルへ出力する。"""
 
@@ -110,6 +153,15 @@ class CsvGenerator:
     def campaign_rows(self) -> list[list[str]]:
         """キャンペーンCSVの全行をメモリ上で生成する。"""
         return self._build_rows(self.counts["campaign"], self._campaign_row)
+
+    def write_campaign_file(self, output_dir: Path, compress: bool = False) -> None:
+        """キャンペーンCSVを逐次書き出しする。"""
+        self._write_rows(
+            build_output_path(output_dir, OUTPUT_FILES["campaign"], compress),
+            self._header_labels("campaign"),
+            self.counts["campaign"],
+            self._campaign_row,
+        )
 
     def _campaign_row(self, index: int) -> list[str]:
         """キャンペーン1行ぶんの列値を組み立てる。"""
@@ -440,6 +492,15 @@ class CsvGenerator:
     def product_rows(self) -> list[list[str]]:
         """商品CSVの全行をメモリ上で生成する。"""
         return self._build_rows(
+            self.counts["product"],
+            lambda index: self._product_row(self._product_context(index), index),
+        )
+
+    def write_product_file(self, output_dir: Path, compress: bool = False) -> None:
+        """商品CSVを逐次書き出しする。"""
+        self._write_rows(
+            build_output_path(output_dir, OUTPUT_FILES["product"], compress),
+            self._header_labels("product"),
             self.counts["product"],
             lambda index: self._product_row(self._product_context(index), index),
         )
@@ -858,14 +919,17 @@ class CsvGenerator:
 
     def write_dwh_files(self, output_dir: Path, compress: bool = False) -> None:
         """DWH統一企業情報の全量2分割と差分を逐次書き出す。"""
-        headers = self._header_labels("dwh")
         for output_key, variant in DWH_FAMILY_FILES:
-            self._write_rows(
-                build_output_path(output_dir, OUTPUT_FILES[output_key], compress),
-                headers,
-                self.counts[output_key],
-                lambda index, current_variant=variant: self._dwh_row(self._dwh_context(index, current_variant)),
-            )
+            self.write_dwh_file(output_dir, output_key, variant, compress=compress)
+
+    def write_dwh_file(self, output_dir: Path, output_key: str, variant: str, compress: bool = False) -> None:
+        """DWH統一企業情報の1ファイルを逐次書き出しする。"""
+        self._write_rows(
+            build_output_path(output_dir, OUTPUT_FILES[output_key], compress),
+            self._header_labels("dwh"),
+            self.counts[output_key],
+            lambda index: self._dwh_row(self._dwh_context(index, variant)),
+        )
 
     def _dwh_row(self, context: dict[str, str]) -> list[str]:
         """DWH統一企業情報の文脈を列順の1行へ変換する。"""
@@ -993,20 +1057,31 @@ class CsvGenerator:
 
     def write_bfs_files(self, output_dir: Path, compress: bool = False) -> None:
         """BFS関連CSVをまとめて逐次書き出す。"""
+        for spec_key, output_key, variant in BFS_FAMILY_FILES:
+            self.write_bfs_file(output_dir, spec_key, output_key, variant, compress=compress)
+
+    def write_bfs_file(
+        self,
+        output_dir: Path,
+        spec_key: str,
+        output_key: str,
+        variant: str,
+        compress: bool = False,
+    ) -> None:
+        """BFS関連CSVの1ファイルを逐次書き出しする。"""
         row_factories = {
             "bfs": self._bfs_row,
             "bfs_device": self._bfs_device_row,
             "bfs_accessories": self._bfs_accessories_row,
         }
-        for spec_key, output_key, variant in BFS_FAMILY_FILES:
-            self._write_bfs_family_file(
-                output_dir,
-                compress,
-                spec_key,
-                output_key,
-                variant,
-                row_factories[spec_key],
-            )
+        self._write_bfs_family_file(
+            output_dir,
+            compress,
+            spec_key,
+            output_key,
+            variant,
+            row_factories[spec_key],
+        )
 
     def _write_bfs_family_file(
         self,

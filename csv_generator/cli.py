@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import argparse
+import os
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 from .config import ColumnSpec, DEFAULT_COUNTS, DEFAULT_SEED, FULL_COUNTS, OUTPUT_FILES, VALID_TARGETS
 from .format_spec import load_specs
-from .generators import CsvGenerator
+from .generators import BFS_FAMILY_FILES, DWH_FAMILY_FILES, CsvGenerator, CsvWriteJob, run_csv_write_job
 from .io import build_output_path, write_csv
 
 CORP_OUTPUT_KEYS = ("dwh_all_1", "dwh_all_2", "dwh_diff")
@@ -23,6 +25,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--targets", default="campaign,agency,compass,product,corp,bfs")
     parser.add_argument("--full", action="store_true")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
+    parser.add_argument("--jobs", default="auto")
     return parser.parse_args()
 
 
@@ -35,6 +38,31 @@ def parse_targets(raw_targets: str) -> list[str]:
     return targets or sorted(VALID_TARGETS)
 
 
+def parse_jobs(raw_jobs: str) -> int | None:
+    """jobs 指定を解釈し、auto は None、数値は正の整数へ変換する。"""
+    normalized = raw_jobs.strip().lower()
+    if normalized == "auto":
+        return None
+    try:
+        jobs = int(normalized)
+    except ValueError as exc:
+        raise SystemExit("--jobs must be 'auto' or a positive integer") from exc
+    if jobs < 1:
+        raise SystemExit("--jobs must be 'auto' or a positive integer")
+    return jobs
+
+
+def resolve_job_count(requested_jobs: int | None, task_count: int, full: bool) -> int:
+    """実行条件から最終的なワーカー数を決定する。"""
+    if task_count <= 1:
+        return 1
+    if requested_jobs is None:
+        if not full:
+            return 1
+        return min(os.cpu_count() or 1, task_count)
+    return min(requested_jobs, task_count)
+
+
 def header_labels(specs: dict[str, list[ColumnSpec]], spec_key: str) -> list[str]:
     """指定したCSV仕様からヘッダー表示名の一覧を取り出す。"""
     return [column.header_label for column in specs[spec_key]]
@@ -44,6 +72,75 @@ def announce_outputs(paths: list[Path]) -> None:
     """複数の出力先を順に表示する。"""
     for path in paths:
         announce_output(path)
+
+
+def build_jobs(
+    targets: list[str],
+    output_dir: Path,
+    format_dir: Path,
+    seed: int,
+    counts: dict[str, int],
+    compress: bool,
+) -> list[CsvWriteJob]:
+    """target 指定をファイル単位の実行ジョブへ展開する。"""
+    jobs: list[CsvWriteJob] = []
+    common = {
+        "output_dir": str(output_dir),
+        "format_dir": str(format_dir),
+        "seed": seed,
+        "counts": counts,
+        "compress": compress,
+    }
+    for target in targets:
+        if target == "campaign":
+            jobs.append(CsvWriteJob(job_type="campaign", **common))
+        elif target == "agency":
+            jobs.append(CsvWriteJob(job_type="agency", **common))
+        elif target == "product":
+            jobs.append(CsvWriteJob(job_type="product", **common))
+        elif target == "compass":
+            jobs.append(CsvWriteJob(job_type="compass", **common))
+        elif target == "corp":
+            for output_key, variant in DWH_FAMILY_FILES:
+                jobs.append(CsvWriteJob(job_type="dwh", output_key=output_key, variant=variant, **common))
+        elif target == "bfs":
+            for spec_key, output_key, variant in BFS_FAMILY_FILES:
+                jobs.append(
+                    CsvWriteJob(
+                        job_type="bfs",
+                        spec_key=spec_key,
+                        output_key=output_key,
+                        variant=variant,
+                        **common,
+                    )
+                )
+    return jobs
+
+
+def job_output_paths(jobs: list[CsvWriteJob], output_dir: Path) -> list[Path]:
+    """ジョブ一覧に対応する実ファイルパス一覧を表示順のまま返す。"""
+    paths: list[Path] = []
+    for job in jobs:
+        if job.job_type == "agency":
+            paths.append(build_output_path(output_dir, OUTPUT_FILES["agency_all"], job.compress))
+            paths.append(build_output_path(output_dir, OUTPUT_FILES["agency_diff"], job.compress))
+            continue
+        assert job.output_key is not None or job.job_type in {"campaign", "product", "compass"}
+        output_key = job.output_key or job.job_type
+        paths.append(build_output_path(output_dir, OUTPUT_FILES[output_key], job.compress))
+    return paths
+
+
+def execute_jobs(jobs: list[CsvWriteJob], max_workers: int) -> None:
+    """ジョブ一覧を直列またはプロセス並列で実行する。"""
+    if max_workers == 1:
+        for job in jobs:
+            run_csv_write_job(job)
+        return
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(run_csv_write_job, job) for job in jobs]
+        for future in futures:
+            future.result()
 
 
 def write_target_csv(
@@ -135,23 +232,31 @@ def main() -> None:
     """CLIの入口として、仕様読込からCSV出力までを統括する。"""
     args = parse_args()
     targets = parse_targets(args.targets)
+    requested_jobs = parse_jobs(args.jobs)
     counts = FULL_COUNTS if args.full else DEFAULT_COUNTS
     compress = args.full
     output_dir = Path(args.output_dir)
+    format_dir = Path("docs/format")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    specs = load_specs(Path("docs/format"))
+    specs = load_specs(format_dir)
     generator = CsvGenerator(specs=specs, seed=args.seed, counts=counts)
-    for target in targets:
-        if target == "campaign":
-            _write_campaign_csv(output_dir, specs, generator, compress)
-        elif target == "agency":
-            _write_agency_csvs(output_dir, generator, compress)
-        elif target == "product":
-            _write_product_csv(output_dir, specs, generator, compress)
-        elif target == "compass":
-            _write_compass_csv(output_dir, generator, compress)
-        elif target == "corp":
-            _write_corp_csvs(output_dir, generator, compress)
-        elif target == "bfs":
-            _write_bfs_csvs(output_dir, generator, compress)
+    if requested_jobs == 1:
+        for target in targets:
+            if target == "campaign":
+                _write_campaign_csv(output_dir, specs, generator, compress)
+            elif target == "agency":
+                _write_agency_csvs(output_dir, generator, compress)
+            elif target == "product":
+                _write_product_csv(output_dir, specs, generator, compress)
+            elif target == "compass":
+                _write_compass_csv(output_dir, generator, compress)
+            elif target == "corp":
+                _write_corp_csvs(output_dir, generator, compress)
+            elif target == "bfs":
+                _write_bfs_csvs(output_dir, generator, compress)
+        return
+
+    jobs = build_jobs(targets, output_dir, format_dir, args.seed, counts, compress)
+    announce_outputs(job_output_paths(jobs, output_dir))
+    execute_jobs(jobs, resolve_job_count(requested_jobs, len(jobs), args.full))

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import gzip
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -9,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from csv_generator.cli import parse_targets, write_target_csv
+from csv_generator.cli import parse_jobs, parse_targets, resolve_job_count, write_target_csv
 from csv_generator.format_spec import load_specs, parse_section_columns
 from csv_generator.io import build_output_path
 
@@ -23,7 +24,12 @@ def test_unit_tests_do_not_use_full_option() -> None:
     assert f'"{forbidden}"' not in source
 
 
-def run_script(output_dir: str, *args: str, expect_success: bool = True) -> subprocess.CompletedProcess[str]:
+def run_script(
+    output_dir: str,
+    *args: str,
+    expect_success: bool = True,
+    timeout: int = 60,
+) -> subprocess.CompletedProcess[str]:
     """CLI を実行し、必要に応じて正常終了を検証する。"""
     command = ["uv", "run", "python", str(SCRIPT), "--output-dir", output_dir, *args]
     completed = subprocess.run(
@@ -32,6 +38,7 @@ def run_script(output_dir: str, *args: str, expect_success: bool = True) -> subp
         text=True,
         capture_output=True,
         check=False,
+        timeout=timeout,
     )
     if expect_success:
         assert completed.returncode == 0, f"stdout:\n{completed.stdout}\n\nstderr:\n{completed.stderr}"
@@ -154,6 +161,27 @@ def test_parse_targets_trims_values_and_defaults_when_empty() -> None:
     assert parse_targets(" , ") == ["agency", "bfs", "campaign", "compass", "corp", "product"]
 
 
+def test_parse_jobs_accepts_auto_and_positive_integer() -> None:
+    """jobs指定は auto または正の整数だけを受け付ける。"""
+    assert parse_jobs("auto") is None
+    assert parse_jobs(" 3 ") == 3
+
+
+def test_resolve_job_count_uses_serial_by_default_and_caps_requested_jobs() -> None:
+    """jobs 解決は通常実行を直列にし、上限は実行タスク数で丸める。"""
+    assert resolve_job_count(None, task_count=3, full=False) == 1
+    assert resolve_job_count(None, task_count=3, full=True) == min(os.cpu_count() or 1, 3)
+    assert resolve_job_count(8, task_count=3, full=False) == 3
+
+
+def test_jobs_argument_rejects_zero(tmp_path: Path) -> None:
+    """jobs には 1 以上の整数だけを許可する。"""
+    completed = run_script(str(tmp_path), "--jobs", "0", expect_success=False)
+
+    assert completed.returncode != 0
+    assert "--jobs" in completed.stderr
+
+
 def test_console_outputs_generated_file_names(tmp_path: Path) -> None:
     completed = run_script(str(tmp_path), "--targets", "campaign,agency,compass,corp")
 
@@ -193,6 +221,22 @@ def test_same_seed_is_deterministic(tmp_path: Path) -> None:
         "m_product_all.csv",
     ]:
         assert (first_tmp / name).read_text(encoding="utf-8-sig") == (second_tmp / name).read_text(
+            encoding="utf-8-sig"
+        )
+
+
+def test_jobs_parallel_output_matches_serial_output(tmp_path: Path) -> None:
+    """jobs 指定を変えても同一 seed の出力内容は一致する。"""
+    serial_dir = tmp_path / "serial"
+    parallel_dir = tmp_path / "parallel"
+    serial_dir.mkdir()
+    parallel_dir.mkdir()
+
+    run_script(str(serial_dir), "--seed", "7", "--jobs", "1", timeout=120)
+    run_script(str(parallel_dir), "--seed", "7", "--jobs", "2", timeout=120)
+
+    for name in generated_files(serial_dir):
+        assert (serial_dir / name).read_text(encoding="utf-8-sig") == (parallel_dir / name).read_text(
             encoding="utf-8-sig"
         )
 
