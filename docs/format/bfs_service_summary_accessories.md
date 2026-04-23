@@ -1,7 +1,9 @@
 # (BFSエントリ)モバイル_サービスサマリ_付属品
 
 - マート名: `b_hjn_bfs_モバイル_サービスサマリ_付属品`
-- CSVファイル名: `bfs_service_summary_accessories_all.csv`, `bfs_service_summary_accessories_diff.csv`
+- CSVファイル名: 
+  - 初期データ: `b_hjn_bfs_モバイル_サービスサマリ_付属品.csv`
+  - 差分データ: `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv`
 - 全量更新 or 差分更新: 差分更新
 - 更新頻度: 日次
 - データ数: 初期移行（300,000件）、日次差分（3,907件）

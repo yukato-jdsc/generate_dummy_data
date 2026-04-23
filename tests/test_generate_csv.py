@@ -18,20 +18,20 @@ from csv_generator.io import build_output_path
 
 SCRIPT = ROOT / "generate_csv.py"
 DEFAULT_OUTPUT_FILES = [
-    "bfs_entry_informations_all.csv",
-    "bfs_entry_informations_diff.csv",
-    "bfs_service_summary_accessories_all.csv",
-    "bfs_service_summary_accessories_diff.csv",
-    "bfs_service_summary_devices_all.csv",
-    "bfs_service_summary_devices_diff.csv",
-    "compass_sales_approval_all.csv",
-    "compass_sales_approval_diff.csv",
-    "corp_customer_info_all.csv",
-    "corp_customer_info_diff.csv",
-    "m_agency_all.csv",
-    "m_agency_diff.csv",
-    "m_campaign_all.csv",
-    "m_product_all.csv",
+    "b_hjn_bfs_モバイル_エントリ情報.csv",
+    "b_hjn_bfs_モバイル_エントリ情報_diff.csv",
+    "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv",
+    "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv",
+    "b_hjn_bfs_モバイル_サービスサマリ_端末.csv",
+    "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv",
+    "b_hjn_com_営業決裁.csv",
+    "b_hjn_com_営業決裁_diff.csv",
+    "m_hjn_smt_統一企業情報.csv",
+    "m_hjn_smt_統一企業情報_diff.csv",
+    "m_キャンペーン.csv",
+    "m_取次店_all.csv",
+    "m_取次店_all_diff.csv",
+    "m_商品_all.csv",
 ]
 
 
@@ -124,20 +124,20 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
     files = generated_files(generated_default_dir)
     assert files == DEFAULT_OUTPUT_FILES
 
-    _, campaign_rows = read_csv(generated_default_dir, "m_campaign_all.csv")
-    _, agency_rows = read_csv(generated_default_dir, "m_agency_all.csv")
-    _, agency_diff_rows = read_csv(generated_default_dir, "m_agency_diff.csv")
-    _, compass_all_rows = read_csv(generated_default_dir, "compass_sales_approval_all.csv")
-    _, compass_diff_rows = read_csv(generated_default_dir, "compass_sales_approval_diff.csv")
-    _, product_rows = read_csv(generated_default_dir, "m_product_all.csv")
-    _, bfs_all_rows = read_csv(generated_default_dir, "bfs_entry_informations_all.csv")
-    _, bfs_diff_rows = read_csv(generated_default_dir, "bfs_entry_informations_diff.csv")
-    _, bfs_device_all_rows = read_csv(generated_default_dir, "bfs_service_summary_devices_all.csv")
-    _, bfs_device_diff_rows = read_csv(generated_default_dir, "bfs_service_summary_devices_diff.csv")
-    _, bfs_accessories_all_rows = read_csv(generated_default_dir, "bfs_service_summary_accessories_all.csv")
-    _, bfs_accessories_diff_rows = read_csv(generated_default_dir, "bfs_service_summary_accessories_diff.csv")
-    _, dwh_all_rows = read_csv(generated_default_dir, "corp_customer_info_all.csv")
-    _, dwh_diff_rows = read_csv(generated_default_dir, "corp_customer_info_diff.csv")
+    _, campaign_rows = read_csv(generated_default_dir, "m_キャンペーン.csv")
+    _, agency_rows = read_csv(generated_default_dir, "m_取次店_all.csv")
+    _, agency_diff_rows = read_csv(generated_default_dir, "m_取次店_all_diff.csv")
+    _, compass_all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
+    _, compass_diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
+    _, product_rows = read_csv(generated_default_dir, "m_商品_all.csv")
+    _, bfs_all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
+    _, bfs_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
+    _, bfs_device_all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
+    _, bfs_device_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+    _, bfs_accessories_all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
+    _, bfs_accessories_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
+    _, dwh_all_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報.csv")
+    _, dwh_diff_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
 
     assert len(campaign_rows) == 50
     assert len(agency_rows) == 1000
@@ -157,23 +157,23 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
 
 def test_targets_campaign_only_generates_single_file(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "campaign")
-    assert generated_files(tmp_path) == ["m_campaign_all.csv"]
+    assert generated_files(tmp_path) == ["m_キャンペーン.csv"]
 
 
 def test_targets_compass_only_generates_single_file(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "compass")
-    assert generated_files(tmp_path) == ["compass_sales_approval_all.csv", "compass_sales_approval_diff.csv"]
+    assert generated_files(tmp_path) == ["b_hjn_com_営業決裁.csv", "b_hjn_com_営業決裁_diff.csv"]
 
 
 def test_targets_bfs_only_generates_two_files(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "bfs")
     assert generated_files(tmp_path) == [
-        "bfs_entry_informations_all.csv",
-        "bfs_entry_informations_diff.csv",
-        "bfs_service_summary_accessories_all.csv",
-        "bfs_service_summary_accessories_diff.csv",
-        "bfs_service_summary_devices_all.csv",
-        "bfs_service_summary_devices_diff.csv",
+        "b_hjn_bfs_モバイル_エントリ情報.csv",
+        "b_hjn_bfs_モバイル_エントリ情報_diff.csv",
+        "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv",
+        "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv",
+        "b_hjn_bfs_モバイル_サービスサマリ_端末.csv",
+        "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv",
     ]
 
 
@@ -181,8 +181,8 @@ def test_targets_corp_only_generates_two_files(tmp_path: Path) -> None:
     """corp 指定では統一企業情報の2ファイルだけを生成する。"""
     run_script(str(tmp_path), "--targets", "corp")
     assert generated_files(tmp_path) == [
-        "corp_customer_info_all.csv",
-        "corp_customer_info_diff.csv",
+        "m_hjn_smt_統一企業情報.csv",
+        "m_hjn_smt_統一企業情報_diff.csv",
     ]
 
 
@@ -216,14 +216,14 @@ def test_jobs_argument_rejects_zero(tmp_path: Path) -> None:
 def test_console_outputs_generated_file_names(tmp_path: Path) -> None:
     completed = run_script(str(tmp_path), "--targets", "campaign,agency,compass,corp")
 
-    assert "m_campaign_all.csv" in completed.stdout
-    assert "m_agency_all.csv" in completed.stdout
-    assert "m_agency_diff.csv" in completed.stdout
-    assert "compass_sales_approval_all.csv" in completed.stdout
-    assert "compass_sales_approval_diff.csv" in completed.stdout
-    assert "corp_customer_info_all.csv" in completed.stdout
-    assert "corp_customer_info_diff.csv" in completed.stdout
-    assert "m_product_all.csv" not in completed.stdout
+    assert "m_キャンペーン.csv" in completed.stdout
+    assert "m_取次店_all.csv" in completed.stdout
+    assert "m_取次店_all_diff.csv" in completed.stdout
+    assert "b_hjn_com_営業決裁.csv" in completed.stdout
+    assert "b_hjn_com_営業決裁_diff.csv" in completed.stdout
+    assert "m_hjn_smt_統一企業情報.csv" in completed.stdout
+    assert "m_hjn_smt_統一企業情報_diff.csv" in completed.stdout
+    assert "m_商品_all.csv" not in completed.stdout
 
 
 def test_same_seed_is_deterministic(tmp_path: Path) -> None:
@@ -250,11 +250,11 @@ def test_jobs_parallel_output_generates_expected_files(tmp_path: Path) -> None:
     run_script(str(parallel_dir), "--targets", targets, "--seed", "7", "--jobs", "2", timeout=120)
 
     assert generated_files(parallel_dir) == [
-        "compass_sales_approval_all.csv",
-        "compass_sales_approval_diff.csv",
-        "m_agency_all.csv",
-        "m_agency_diff.csv",
-        "m_campaign_all.csv",
+        "b_hjn_com_営業決裁.csv",
+        "b_hjn_com_営業決裁_diff.csv",
+        "m_キャンペーン.csv",
+        "m_取次店_all.csv",
+        "m_取次店_all_diff.csv",
     ]
 
 
@@ -285,20 +285,20 @@ def test_write_target_csv_always_quotes_all_string_values(tmp_path: Path) -> Non
 
 
 def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> None:
-    campaign_header, _ = read_csv(generated_default_dir, "m_campaign_all.csv")
-    agency_header, _ = read_csv(generated_default_dir, "m_agency_all.csv")
-    diff_header, _ = read_csv(generated_default_dir, "m_agency_diff.csv")
-    compass_all_header, _ = read_csv(generated_default_dir, "compass_sales_approval_all.csv")
-    compass_diff_header, _ = read_csv(generated_default_dir, "compass_sales_approval_diff.csv")
-    product_header, _ = read_csv(generated_default_dir, "m_product_all.csv")
-    bfs_all_header, _ = read_csv(generated_default_dir, "bfs_entry_informations_all.csv")
-    bfs_diff_header, _ = read_csv(generated_default_dir, "bfs_entry_informations_diff.csv")
-    bfs_device_all_header, _ = read_csv(generated_default_dir, "bfs_service_summary_devices_all.csv")
-    bfs_device_diff_header, _ = read_csv(generated_default_dir, "bfs_service_summary_devices_diff.csv")
-    bfs_accessories_all_header, _ = read_csv(generated_default_dir, "bfs_service_summary_accessories_all.csv")
-    bfs_accessories_diff_header, _ = read_csv(generated_default_dir, "bfs_service_summary_accessories_diff.csv")
-    dwh_all_header, _ = read_csv(generated_default_dir, "corp_customer_info_all.csv")
-    dwh_diff_header, _ = read_csv(generated_default_dir, "corp_customer_info_diff.csv")
+    campaign_header, _ = read_csv(generated_default_dir, "m_キャンペーン.csv")
+    agency_header, _ = read_csv(generated_default_dir, "m_取次店_all.csv")
+    diff_header, _ = read_csv(generated_default_dir, "m_取次店_all_diff.csv")
+    compass_all_header, _ = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
+    compass_diff_header, _ = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
+    product_header, _ = read_csv(generated_default_dir, "m_商品_all.csv")
+    bfs_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
+    bfs_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
+    bfs_device_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
+    bfs_device_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+    bfs_accessories_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
+    bfs_accessories_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
+    dwh_all_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報.csv")
+    dwh_diff_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
 
     assert campaign_header[0] == "キャンペーンid"
     assert agency_header[0] == "取次店コード"
@@ -333,20 +333,20 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
 
 
 def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir: Path) -> None:
-    campaign_header, _ = read_csv(generated_default_dir, "m_campaign_all.csv")
-    agency_header, _ = read_csv(generated_default_dir, "m_agency_all.csv")
-    diff_header, _ = read_csv(generated_default_dir, "m_agency_diff.csv")
-    compass_all_header, _ = read_csv(generated_default_dir, "compass_sales_approval_all.csv")
-    compass_diff_header, _ = read_csv(generated_default_dir, "compass_sales_approval_diff.csv")
-    product_header, _ = read_csv(generated_default_dir, "m_product_all.csv")
-    bfs_all_header, _ = read_csv(generated_default_dir, "bfs_entry_informations_all.csv")
-    bfs_diff_header, _ = read_csv(generated_default_dir, "bfs_entry_informations_diff.csv")
-    bfs_device_all_header, _ = read_csv(generated_default_dir, "bfs_service_summary_devices_all.csv")
-    bfs_device_diff_header, _ = read_csv(generated_default_dir, "bfs_service_summary_devices_diff.csv")
-    bfs_accessories_all_header, _ = read_csv(generated_default_dir, "bfs_service_summary_accessories_all.csv")
-    bfs_accessories_diff_header, _ = read_csv(generated_default_dir, "bfs_service_summary_accessories_diff.csv")
-    dwh_all_header, _ = read_csv(generated_default_dir, "corp_customer_info_all.csv")
-    dwh_diff_header, _ = read_csv(generated_default_dir, "corp_customer_info_diff.csv")
+    campaign_header, _ = read_csv(generated_default_dir, "m_キャンペーン.csv")
+    agency_header, _ = read_csv(generated_default_dir, "m_取次店_all.csv")
+    diff_header, _ = read_csv(generated_default_dir, "m_取次店_all_diff.csv")
+    compass_all_header, _ = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
+    compass_diff_header, _ = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
+    product_header, _ = read_csv(generated_default_dir, "m_商品_all.csv")
+    bfs_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
+    bfs_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
+    bfs_device_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
+    bfs_device_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+    bfs_accessories_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
+    bfs_accessories_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
+    dwh_all_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報.csv")
+    dwh_diff_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
 
     expected_headers = {
         "campaign": ["キャンペーンid", "キャンペーン名称", "説明", "有効開始日"],
@@ -478,19 +478,19 @@ def test_load_specs_includes_dwh_unified_company_information() -> None:
 
 
 def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) -> None:
-    _, campaign_rows = read_csv(generated_seed7_dir, "m_campaign_all.csv")
-    _, agency_rows = read_csv(generated_seed7_dir, "m_agency_all.csv")
-    _, compass_all_rows = read_csv(generated_seed7_dir, "compass_sales_approval_all.csv")
-    _, compass_diff_rows = read_csv(generated_seed7_dir, "compass_sales_approval_diff.csv")
-    _, product_rows = read_csv(generated_seed7_dir, "m_product_all.csv")
-    _, bfs_all_rows = read_csv(generated_seed7_dir, "bfs_entry_informations_all.csv")
-    _, bfs_diff_rows = read_csv(generated_seed7_dir, "bfs_entry_informations_diff.csv")
-    _, bfs_device_all_rows = read_csv(generated_seed7_dir, "bfs_service_summary_devices_all.csv")
-    _, bfs_device_diff_rows = read_csv(generated_seed7_dir, "bfs_service_summary_devices_diff.csv")
-    _, bfs_accessories_all_rows = read_csv(generated_seed7_dir, "bfs_service_summary_accessories_all.csv")
-    _, bfs_accessories_diff_rows = read_csv(generated_seed7_dir, "bfs_service_summary_accessories_diff.csv")
-    _, dwh_all_rows = read_csv(generated_seed7_dir, "corp_customer_info_all.csv")
-    _, dwh_diff_rows = read_csv(generated_seed7_dir, "corp_customer_info_diff.csv")
+    _, campaign_rows = read_csv(generated_seed7_dir, "m_キャンペーン.csv")
+    _, agency_rows = read_csv(generated_seed7_dir, "m_取次店_all.csv")
+    _, compass_all_rows = read_csv(generated_seed7_dir, "b_hjn_com_営業決裁.csv")
+    _, compass_diff_rows = read_csv(generated_seed7_dir, "b_hjn_com_営業決裁_diff.csv")
+    _, product_rows = read_csv(generated_seed7_dir, "m_商品_all.csv")
+    _, bfs_all_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
+    _, bfs_diff_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
+    _, bfs_device_all_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
+    _, bfs_device_diff_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+    _, bfs_accessories_all_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
+    _, bfs_accessories_diff_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
+    _, dwh_all_rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報.csv")
+    _, dwh_diff_rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_diff.csv")
 
     expected_prefixes = {
         "campaign": "CP",
@@ -539,9 +539,9 @@ def test_bfs_summary_files_reference_generated_bfs_entries(tmp_path: Path) -> No
     """BFSサービスサマリのキーが同一実行のBFSエントリと整合することを確認する。"""
     run_script(str(tmp_path), "--targets", "bfs", "--seed", "7")
 
-    bfs_all_header, bfs_all_rows = read_csv(tmp_path, "bfs_entry_informations_all.csv")
-    device_all_header, device_all_rows = read_csv(tmp_path, "bfs_service_summary_devices_all.csv")
-    accessories_all_header, accessories_all_rows = read_csv(tmp_path, "bfs_service_summary_accessories_all.csv")
+    bfs_all_header, bfs_all_rows = read_csv(tmp_path, "b_hjn_bfs_モバイル_エントリ情報.csv")
+    device_all_header, device_all_rows = read_csv(tmp_path, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
+    accessories_all_header, accessories_all_rows = read_csv(tmp_path, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
 
     bfs_entry_numbers = {row[bfs_all_header.index("エントリ番号")] for row in bfs_all_rows}
     device_entry_index = device_all_header.index("エントリ番号")
@@ -561,8 +561,8 @@ def test_bfs_summary_files_reference_generated_bfs_entries(tmp_path: Path) -> No
 
 
 def test_agency_diff_is_subset_of_agency_all(generated_agency_seed11_dir: Path) -> None:
-    agency_header, agency_rows = read_csv(generated_agency_seed11_dir, "m_agency_all.csv")
-    diff_header, diff_rows = read_csv(generated_agency_seed11_dir, "m_agency_diff.csv")
+    agency_header, agency_rows = read_csv(generated_agency_seed11_dir, "m_取次店_all.csv")
+    diff_header, diff_rows = read_csv(generated_agency_seed11_dir, "m_取次店_all_diff.csv")
     assert agency_header == diff_header
 
     assert len(diff_rows) == 53
@@ -575,8 +575,8 @@ def test_agency_diff_is_subset_of_agency_all(generated_agency_seed11_dir: Path) 
 
 def test_compass_diff_updates_subset_of_compass_all(generated_compass_seed11_dir: Path) -> None:
     """営業決裁差分は全量の一部を更新した内容として生成する。"""
-    all_header, all_rows = read_csv(generated_compass_seed11_dir, "compass_sales_approval_all.csv")
-    diff_header, diff_rows = read_csv(generated_compass_seed11_dir, "compass_sales_approval_diff.csv")
+    all_header, all_rows = read_csv(generated_compass_seed11_dir, "b_hjn_com_営業決裁.csv")
+    diff_header, diff_rows = read_csv(generated_compass_seed11_dir, "b_hjn_com_営業決裁_diff.csv")
     assert all_header == diff_header
 
     approval_number_index = all_header.index("決裁番号")
@@ -613,7 +613,7 @@ def test_default_run_fills_every_cell_in_all_csvs(generated_seed7_dir: Path) -> 
 
 def test_dwh_company_codes_are_unique_in_all_file(generated_seed7_dir: Path) -> None:
     """DWH 全量CSVの統一企業コードはファイル内で重複しない。"""
-    header, rows = read_csv(generated_seed7_dir, "corp_customer_info_all.csv")
+    header, rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報.csv")
     code_index = header.index("統一企業コード")
 
     codes = [row[code_index] for row in rows]
@@ -622,7 +622,7 @@ def test_dwh_company_codes_are_unique_in_all_file(generated_seed7_dir: Path) -> 
 
 def test_dwh_parent_and_invalidity_fields_are_consistent(generated_seed7_dir: Path) -> None:
     """DWH の親企業・無効理由関連の最低限の整合を確認する。"""
-    header, rows = read_csv(generated_seed7_dir, "corp_customer_info_diff.csv")
+    header, rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_diff.csv")
     company_code_index = header.index("統一企業コード")
     parent_flag_index = header.index("親企業フラグ")
     parent_company_index = header.index("親企業番号")
@@ -663,7 +663,7 @@ def test_campaign_old_flag_is_always_filled(tmp_path: Path) -> None:
     """キャンペーンの旧フラグは全行で非空欄にする。"""
     run_script(str(tmp_path), "--targets", "campaign", "--seed", "7")
 
-    header, rows = read_csv(tmp_path, "m_campaign_all.csv")
+    header, rows = read_csv(tmp_path, "m_キャンペーン.csv")
     old_flag_index = header.index("旧フラグ")
 
     assert {row[old_flag_index] for row in rows}.issubset({"0", "1"})
@@ -671,7 +671,7 @@ def test_campaign_old_flag_is_always_filled(tmp_path: Path) -> None:
 
 def test_compass_status_is_fixed_to_approved_and_history_is_filled(generated_seed7_dir: Path) -> None:
     """営業決裁のステータス固定と承認履歴非空欄を確認する。"""
-    for file_name in ("compass_sales_approval_all.csv", "compass_sales_approval_diff.csv"):
+    for file_name in ("b_hjn_com_営業決裁.csv", "b_hjn_com_営業決裁_diff.csv"):
         header, rows = read_csv(generated_seed7_dir, file_name)
         status_index = header.index("ステータス")
         history_index = header.index("承認履歴")

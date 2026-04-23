@@ -1,7 +1,9 @@
 # (DWH)統一企業情報
 
 - マート名: `m_hjn_smt_統一企業情報`
-- CSVファイル名: `corp_customer_info_all.csv`, `corp_customer_info_diff.csv`
+- CSVファイル名: 
+  - 初期データ: `m_hjn_smt_統一企業情報.csv`
+  - 差分データ: `m_hjn_smt_統一企業情報_diff.csv`
 - 全量更新 or 差分更新: 差分更新
 - 更新頻度: 日次
 - データ数: 全件（300万件）、差分更新（46,021件）
