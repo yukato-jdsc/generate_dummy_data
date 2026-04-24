@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-
 DEFAULT_SEED = 42
 DEFAULT_COUNTS = {
     "campaign": 50,

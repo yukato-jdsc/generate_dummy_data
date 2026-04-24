@@ -119,6 +119,7 @@ uv run python generate_csv.py --seed 7
 
 ```bash
 uv run pytest
+uv run ruff check .
 ```
 
 実装の責務は次のように分かれています。
