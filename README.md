@@ -118,17 +118,19 @@ uv run python generate_csv.py --seed 7
 
 初期データ側のCSVは全行 `I` です。  
 差分CSVは `I` `U` `D` を混在させます。  
+差分CSVでは `diff_type=I` の行は初期データに存在しない業務キー、`diff_type=U` と `diff_type=D` の行は初期データに存在する業務キーを使います。
 `m_キャンペーン.csv` と `m_商品_all.csv` は全量更新データのため `diff_type` を付与しません。
 
 ## 取次店差分CSVについて
 
-`m_取次店_all_diff.csv` は独立生成ではなく、同じ実行で作られた `m_取次店_all.csv` の母集団から 53 件を抽出して生成します。  
-そのため、`m_取次店_all_diff.csv` は `取次店コード` ベースでは `m_取次店_all.csv` の部分集合になります。
+`m_取次店_all_diff.csv` は同じ実行で作られた `m_取次店_all.csv` とキー整合を持つように生成します。
+`diff_type=I` の `取次店コード` は `m_取次店_all.csv` に未存在、`diff_type=U` と `diff_type=D` の `取次店コード` は `m_取次店_all.csv` に存在する値です。
 
 ## COMPASS差分CSVについて
 
-`b_hjn_com_営業決裁_diff.csv` は独立生成ではなく、同じ実行で作られた `b_hjn_com_営業決裁.csv` の母集団から件数ぶん抽出し、主要業務列を更新した差分データとして生成します。  
-そのため、`b_hjn_com_営業決裁_diff.csv` は `approval_number` をはじめとする主要識別子を `b_hjn_com_営業決裁.csv` と共有しつつ、件名、日時、売上・利益系、備考などの内容が更新されます。
+`b_hjn_com_営業決裁_diff.csv` は同じ実行で作られた `b_hjn_com_営業決裁.csv` とキー整合を持つように生成します。
+`diff_type=I` の `決裁番号` は `b_hjn_com_営業決裁.csv` に未存在、`diff_type=U` と `diff_type=D` の `決裁番号` は `b_hjn_com_営業決裁.csv` に存在する値です。
+`U` と `D` の行では件名、日時、売上・利益系、備考などの主要業務列も更新されます。
 
 ## 生成ルール
 

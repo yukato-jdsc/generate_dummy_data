@@ -145,8 +145,9 @@ uv run python generate_csv.py
 - `m_取次店_all.csv` の `diff_type` は全件 `I`
 - 差分は全量から固定件数をリザーバサンプリングして抽出する
 - 差分CSVのヘッダは全量CSVと同一
-- 差分CSVの `取次店コード` は全量CSVの部分集合になる
 - 差分CSVの `diff_type` は `I` `U` `D` を混在させる
+- 差分CSVの `diff_type=I` は全量CSVに未存在の `取次店コード` を使う
+- 差分CSVの `diff_type=U` と `diff_type=D` は全量CSVに存在する `取次店コード` を使う
 - 差分件数は常に 53 件
 
 ### 6.4 `compass`
@@ -154,8 +155,9 @@ uv run python generate_csv.py
 - `b_hjn_com_営業決裁.csv` と `b_hjn_com_営業決裁_diff.csv` を同時生成する
 - 2ファイルとも先頭列に `diff_type` を追加する
 - `b_hjn_com_営業決裁.csv` の `diff_type` は全件 `I`
-- 差分は全量から固定件数を抽出し、同一の `決裁番号` を維持したまま主要業務列を更新する
 - 差分CSVの `diff_type` は `I` `U` `D` を混在させる
+- 差分CSVの `diff_type=I` は全量CSVに未存在の `決裁番号` を使う
+- 差分CSVの `diff_type=U` と `diff_type=D` は全量CSVに存在する `決裁番号` を使う
 - 少なくとも次の列は全量と差分で異なる値になる
   - `決裁件名`
   - `申請日時`
@@ -163,6 +165,7 @@ uv run python generate_csv.py
   - `売上（円）`
   - `備考`
   - `追加・変更内容`
+- 上記の主要業務列更新は `diff_type=U` と `diff_type=D` に適用する
 - `ステータス` は承認済み系で固定運用される
 
 ### 6.5 `product`
@@ -180,8 +183,9 @@ uv run python generate_csv.py
 - 全量2ファイルの `diff_type` は全件 `I`
 - `_1` は前半、`_2` は後半の連続した順序で出力する
 - `統一企業コード` は `_1` と `_2` をまたいで重複しない
-- `diff` は全量の続き番号帯で別件数を生成する
 - `m_hjn_smt_統一企業情報_diff.csv` の `diff_type` は `I` `U` `D` を混在させる
+- `diff_type=I` は全量2ファイルに未存在の `統一企業コード` を使う
+- `diff_type=U` と `diff_type=D` は全量2ファイルに存在する `統一企業コード` を使う
 - 親企業関連・無効理由関連・登録日時/更新日時には最低限の整合ルールを持たせる
 
 ### 6.7 `bfs`
@@ -195,6 +199,8 @@ uv run python generate_csv.py
 - 全量CSVの `diff_type` は全件 `I`
 - 差分CSVの `diff_type` は `I` `U` `D` を混在させる
 - `エントリ番号` は `EN`、`サマリ番号` は `SM` プレフィックスで生成する
+- `diff_type=I` は初期データに未存在の `エントリ番号` / `サマリ番号` を使う
+- `diff_type=U` と `diff_type=D` は初期データに存在する `エントリ番号` / `サマリ番号` を使う
 - サービスサマリ系は同一実行で生成したBFSエントリと参照整合する
 - 付属品サマリの `紐付けサマリ番号` は `サマリ番号` と同値にする
 

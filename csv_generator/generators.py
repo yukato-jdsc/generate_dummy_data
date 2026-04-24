@@ -27,6 +27,9 @@ from .config import (
     ColumnSpec,
 )
 from .diff_type import (
+    DELETE_DIFF_TYPE,
+    INITIAL_DIFF_TYPE,
+    UPDATE_DIFF_TYPE,
     build_initial_diff_types,
     build_mixed_diff_types,
     build_output_headers,
@@ -207,6 +210,14 @@ class CsvGenerator:
             return None
         return progress_factory(path, row_count)
 
+    def _is_insert_diff_type(self, diff_type: str | None) -> bool:
+        """差分種別が新規追加かどうかを返す。"""
+        return diff_type == INITIAL_DIFF_TYPE
+
+    def _is_existing_diff_type(self, diff_type: str | None) -> bool:
+        """差分種別が既存レコード向けかどうかを返す。"""
+        return diff_type in {UPDATE_DIFF_TYPE, DELETE_DIFF_TYPE}
+
     def campaign_rows(self) -> list[list[str]]:
         """キャンペーンCSVの全行をメモリ上で生成する。"""
         return self._build_rows(self.counts["campaign"], self._campaign_row)
@@ -278,7 +289,7 @@ class CsvGenerator:
         sampled.sort(key=lambda item: item[1]["agent_code"])
         diff_types = build_mixed_diff_types(len(sampled))
         diff_rows = [
-            self._agency_row(context, index, diff_type=diff_types[row_index])
+            self._agency_diff_row(context, index, diff_type=diff_types[row_index], diff_index=row_index)
             for row_index, (index, context) in enumerate(sampled)
         ]
         diff_path = build_output_path(output_dir, OUTPUT_FILES["agency_diff"], compress)
@@ -325,7 +336,7 @@ class CsvGenerator:
         sampled.sort(key=lambda item: item[1]["approval_number"])
         diff_types = build_mixed_diff_types(len(sampled))
         diff_rows = [
-            self._compass_row(self._compass_diff_context(context, index), index, diff_type=diff_types[row_index])
+            self._compass_diff_row(context, index, diff_type=diff_types[row_index], diff_index=row_index)
             for row_index, (index, context) in enumerate(sampled)
         ]
         diff_path = build_output_path(output_dir, OUTPUT_FILES["compass_diff"], compress)
@@ -667,10 +678,36 @@ class CsvGenerator:
         row = self._resolved_row(self.specs["agency"], context, index, self.resolve_agency_value)
         return prepend_diff_type(row, diff_type)
 
+    def _agency_diff_row(
+        self,
+        context: dict[str, str],
+        index: int,
+        diff_type: str,
+        diff_index: int,
+    ) -> list[str]:
+        """差分種別に応じて取次店差分CSVの1行を生成する。"""
+        if self._is_insert_diff_type(diff_type):
+            insert_index = self.counts["agency_all"] + diff_index
+            return self._agency_row(self.agency_context(insert_index), insert_index, diff_type=diff_type)
+        return self._agency_row(context, index, diff_type=diff_type)
+
     def _compass_row(self, context: dict[str, str], index: int, diff_type: str | None = None) -> list[str]:
         """営業決裁文脈を列順の行へ変換する。"""
         row = self._resolved_row(self.specs["compass"], context, index, self.resolve_compass_value)
         return prepend_diff_type(row, diff_type)
+
+    def _compass_diff_row(
+        self,
+        context: dict[str, str],
+        index: int,
+        diff_type: str,
+        diff_index: int,
+    ) -> list[str]:
+        """差分種別に応じて営業決裁差分CSVの1行を生成する。"""
+        if self._is_insert_diff_type(diff_type):
+            insert_index = self.counts["compass_all"] + diff_index
+            return self._compass_row(self._compass_context(insert_index), insert_index, diff_type=diff_type)
+        return self._compass_row(self._compass_diff_context(context, index), index, diff_type=diff_type)
 
     def _compass_context(self, index: int) -> dict[str, str]:
         """営業決裁1行ぶんの主要属性を組み立てる。"""
@@ -1167,7 +1204,10 @@ class CsvGenerator:
             path,
             self._output_headers("corp", output_key),
             row_count,
-            lambda index: self._corp_row(self._corp_context(index, variant), diff_type=diff_types[index]),
+            lambda index: self._corp_row(
+                self._corp_context(index, variant, diff_type=diff_types[index]),
+                diff_type=diff_types[index],
+            ),
             progress_reporter=self._build_progress_reporter(progress_factory, path, row_count),
         )
 
@@ -1175,9 +1215,9 @@ class CsvGenerator:
         """統一企業情報の文脈を列順の1行へ変換する。"""
         return prepend_diff_type(self._row_from_context(self.specs["corp"], context), diff_type)
 
-    def _corp_context(self, index: int, variant: str) -> dict[str, str]:
+    def _corp_context(self, index: int, variant: str, diff_type: str | None = None) -> dict[str, str]:
         """統一企業情報1行ぶんの主要属性を組み立てる。"""
-        base_index = self._corp_base_index(index, variant)
+        base_index = self._corp_base_index(index, variant, diff_type)
         pref = PREFECTURES[base_index % len(PREFECTURES)]
         company_code = self.values.code("UC", base_index + 1, 8)
         parent_code = self.values.code("UC", ((base_index // 7) + 1), 8)
@@ -1287,11 +1327,13 @@ class CsvGenerator:
             "備考": customer_note,
         }
 
-    def _corp_base_index(self, index: int, variant: str) -> int:
+    def _corp_base_index(self, index: int, variant: str, diff_type: str | None = None) -> int:
         """corpファイル種別ごとの基準インデックスを返す。"""
         if variant in {"all_1", "all_2"}:
             return self._corp_split_offset(variant) + index
         if variant == "diff":
+            if self._is_existing_diff_type(diff_type):
+                return index
             return self.counts["corp_all"] + index
         raise ValueError(f"Unknown corp variant: {variant}")
 
@@ -1383,7 +1425,7 @@ class CsvGenerator:
             self._output_headers(spec_key, output_key),
             self.counts[output_key],
             lambda index: row_factory(
-                self._bfs_service_context(index, variant),
+                self._bfs_service_context(index, variant, diff_types[index]),
                 index,
                 diff_type=diff_types[index],
             ),
@@ -1395,9 +1437,9 @@ class CsvGenerator:
         row = self._resolved_row(self.specs["bfs"], context, index, self.resolve_bfs_value)
         return prepend_diff_type(row, diff_type)
 
-    def _bfs_service_context(self, index: int, variant: str) -> dict[str, str]:
+    def _bfs_service_context(self, index: int, variant: str, diff_type: str | None = None) -> dict[str, str]:
         """BFSエントリとサービスサマリで共有する文脈を組み立てる。"""
-        base_index = self._bfs_base_index(index, variant)
+        base_index = self._bfs_base_index(index, variant, diff_type)
         created_at = datetime(2025, 12, 1, 9, 0) + timedelta(hours=base_index % 240, minutes=(base_index * 7) % 60)
         updated_at = created_at + timedelta(minutes=30)
         application_date = BASE_DATE - timedelta(days=base_index % 21)
@@ -1630,11 +1672,13 @@ class CsvGenerator:
             context[f"other_options_{other_index}"] = other_option
         return context
 
-    def _bfs_base_index(self, index: int, variant: str) -> int:
+    def _bfs_base_index(self, index: int, variant: str, diff_type: str | None = None) -> int:
         """全量・差分の種別からBFS採番用の基準インデックスを返す。"""
         if variant == "all":
             return index
-        return 2_000_000 + index
+        if self._is_existing_diff_type(diff_type):
+            return index
+        return self.counts["bfs_all"] + index
 
     def _bfs_device_summary_context(self, context: dict[str, str]) -> dict[str, str]:
         """BFSサービスサマリ端末の基本列をまとめて構築する。"""
