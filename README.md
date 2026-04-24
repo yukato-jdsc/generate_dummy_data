@@ -94,10 +94,36 @@ uv run python generate_csv.py --seed 7
   - `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv`
 - 各CSVは `docs/format/` の列定義どおりに出力します
 
+## `diff_type` 列について
+
+- `m_取次店_all.csv`
+- `m_取次店_all_diff.csv`
+- `b_hjn_com_営業決裁.csv`
+- `b_hjn_com_営業決裁_diff.csv`
+- `m_hjn_smt_統一企業情報_1.csv`
+- `m_hjn_smt_統一企業情報_2.csv`
+- `m_hjn_smt_統一企業情報_diff.csv`
+- `b_hjn_bfs_モバイル_エントリ情報.csv`
+- `b_hjn_bfs_モバイル_エントリ情報_diff.csv`
+- `b_hjn_bfs_モバイル_サービスサマリ_端末.csv`
+- `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv`
+- `b_hjn_bfs_モバイル_サービスサマリ_付属品.csv`
+- `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv`
+
+上記のCSVでは、出力時に先頭列として `diff_type` を追加します。
+
+- `I`: 新規
+- `U`: 更新
+- `D`: 削除
+
+初期データ側のCSVは全行 `I` です。  
+差分CSVは `I` `U` `D` を混在させます。  
+`m_キャンペーン.csv` と `m_商品_all.csv` は全量更新データのため `diff_type` を付与しません。
+
 ## 取次店差分CSVについて
 
 `m_取次店_all_diff.csv` は独立生成ではなく、同じ実行で作られた `m_取次店_all.csv` の母集団から 53 件を抽出して生成します。  
-そのため、`m_取次店_all_diff.csv` は `m_取次店_all.csv` の部分集合になります。
+そのため、`m_取次店_all_diff.csv` は `取次店コード` ベースでは `m_取次店_all.csv` の部分集合になります。
 
 ## COMPASS差分CSVについて
 

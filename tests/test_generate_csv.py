@@ -358,20 +358,33 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
     corp_diff_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
 
     assert campaign_header[0] == "キャンペーンid"
-    assert agency_header[0] == "取次店コード"
-    assert diff_header[0] == "取次店コード"
-    assert compass_all_header[0] == "決裁番号"
-    assert compass_diff_header[0] == "決裁番号"
+    assert agency_header[0] == "diff_type"
+    assert agency_header[1] == "取次店コード"
+    assert diff_header[0] == "diff_type"
+    assert diff_header[1] == "取次店コード"
+    assert compass_all_header[0] == "diff_type"
+    assert compass_all_header[1] == "決裁番号"
+    assert compass_diff_header[0] == "diff_type"
+    assert compass_diff_header[1] == "決裁番号"
     assert product_header[0] == "商品コード"
-    assert bfs_all_header[0] == "エントリ番号"
-    assert bfs_diff_header[0] == "エントリ番号"
-    assert bfs_device_all_header[0] == "エントリ番号"
-    assert bfs_device_diff_header[0] == "エントリ番号"
-    assert bfs_accessories_all_header[0] == "エントリ番号"
-    assert bfs_accessories_diff_header[0] == "エントリ番号"
-    assert corp_all_1_header[0] == "統一企業コード"
-    assert corp_all_2_header[0] == "統一企業コード"
-    assert corp_diff_header[0] == "統一企業コード"
+    assert bfs_all_header[0] == "diff_type"
+    assert bfs_all_header[1] == "エントリ番号"
+    assert bfs_diff_header[0] == "diff_type"
+    assert bfs_diff_header[1] == "エントリ番号"
+    assert bfs_device_all_header[0] == "diff_type"
+    assert bfs_device_all_header[1] == "エントリ番号"
+    assert bfs_device_diff_header[0] == "diff_type"
+    assert bfs_device_diff_header[1] == "エントリ番号"
+    assert bfs_accessories_all_header[0] == "diff_type"
+    assert bfs_accessories_all_header[1] == "エントリ番号"
+    assert bfs_accessories_diff_header[0] == "diff_type"
+    assert bfs_accessories_diff_header[1] == "エントリ番号"
+    assert corp_all_1_header[0] == "diff_type"
+    assert corp_all_1_header[1] == "統一企業コード"
+    assert corp_all_2_header[0] == "diff_type"
+    assert corp_all_2_header[1] == "統一企業コード"
+    assert corp_diff_header[0] == "diff_type"
+    assert corp_diff_header[1] == "統一企業コード"
     for header in (
         campaign_header,
         agency_header,
@@ -389,6 +402,64 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
         corp_diff_header,
     ):
         assert "id" not in header
+
+
+def test_diff_type_header_is_added_only_to_incremental_csvs(generated_default_dir: Path) -> None:
+    """初期データ・差分データを持つCSVだけ先頭に diff_type を付ける。"""
+    incremental_files = (
+        "m_取次店_all.csv",
+        "m_取次店_all_diff.csv",
+        "b_hjn_com_営業決裁.csv",
+        "b_hjn_com_営業決裁_diff.csv",
+        "m_hjn_smt_統一企業情報_1.csv",
+        "m_hjn_smt_統一企業情報_2.csv",
+        "m_hjn_smt_統一企業情報_diff.csv",
+        "b_hjn_bfs_モバイル_エントリ情報.csv",
+        "b_hjn_bfs_モバイル_エントリ情報_diff.csv",
+        "b_hjn_bfs_モバイル_サービスサマリ_端末.csv",
+        "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv",
+        "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv",
+        "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv",
+    )
+    full_refresh_files = ("m_キャンペーン.csv", "m_商品_all.csv")
+
+    for file_name in incremental_files:
+        header, _ = read_csv(generated_default_dir, file_name)
+        assert header[0] == "diff_type"
+
+    for file_name in full_refresh_files:
+        header, _ = read_csv(generated_default_dir, file_name)
+        assert header[0] != "diff_type"
+        assert "diff_type" not in header
+
+
+def test_incremental_initial_csvs_use_diff_type_i_only(generated_default_dir: Path) -> None:
+    """初期データCSVの diff_type は全件 I に固定する。"""
+    for file_name in (
+        "m_取次店_all.csv",
+        "b_hjn_com_営業決裁.csv",
+        "m_hjn_smt_統一企業情報_1.csv",
+        "m_hjn_smt_統一企業情報_2.csv",
+        "b_hjn_bfs_モバイル_エントリ情報.csv",
+        "b_hjn_bfs_モバイル_サービスサマリ_端末.csv",
+        "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv",
+    ):
+        _, rows = read_csv(generated_default_dir, file_name)
+        assert {row[0] for row in rows} == {"I"}
+
+
+def test_diff_csvs_mix_all_diff_types(generated_default_dir: Path) -> None:
+    """差分CSVは各ファイルで I/U/D をすべて含む。"""
+    for file_name in (
+        "m_取次店_all_diff.csv",
+        "b_hjn_com_営業決裁_diff.csv",
+        "m_hjn_smt_統一企業情報_diff.csv",
+        "b_hjn_bfs_モバイル_エントリ情報_diff.csv",
+        "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv",
+        "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv",
+    ):
+        _, rows = read_csv(generated_default_dir, file_name)
+        assert {row[0] for row in rows} == {"I", "U", "D"}
 
 
 def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir: Path) -> None:
@@ -420,18 +491,18 @@ def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir:
     }
 
     assert campaign_header[:4] == expected_headers["campaign"]
-    assert agency_header[:4] == expected_headers["agency"]
-    assert compass_all_header[:4] == expected_headers["compass"]
+    assert agency_header[1:5] == expected_headers["agency"]
+    assert compass_all_header[1:5] == expected_headers["compass"]
     assert compass_all_header == compass_diff_header
     assert product_header[:4] == expected_headers["product"]
     assert agency_header == diff_header
-    assert bfs_all_header[:4] == expected_headers["bfs"]
+    assert bfs_all_header[1:5] == expected_headers["bfs"]
     assert bfs_all_header == bfs_diff_header
-    assert bfs_device_all_header[:4] == expected_headers["bfs_device"]
+    assert bfs_device_all_header[1:5] == expected_headers["bfs_device"]
     assert bfs_device_all_header == bfs_device_diff_header
-    assert bfs_accessories_all_header[:4] == expected_headers["bfs_accessories"]
+    assert bfs_accessories_all_header[1:5] == expected_headers["bfs_accessories"]
     assert bfs_accessories_all_header == bfs_accessories_diff_header
-    assert corp_all_1_header[:4] == expected_headers["corp"]
+    assert corp_all_1_header[1:5] == expected_headers["corp"]
     assert corp_all_1_header == corp_all_2_header
     assert corp_all_1_header == corp_diff_header
 
@@ -573,31 +644,31 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
     for row in campaign_rows[:2]:
         assert row[0].startswith(expected_prefixes["campaign"])
     for row in agency_rows[:2]:
-        assert row[0].startswith(expected_prefixes["agency"])
+        assert row[1].startswith(expected_prefixes["agency"])
     for row in product_rows[:2]:
         assert row[0].startswith(expected_prefixes["product"])
     for row in compass_all_rows[:2]:
-        assert row[0].startswith(expected_prefixes["compass"])
+        assert row[1].startswith(expected_prefixes["compass"])
     for row in compass_diff_rows[:2]:
-        assert row[0].startswith(expected_prefixes["compass"])
+        assert row[1].startswith(expected_prefixes["compass"])
     for row in bfs_all_rows[:2]:
-        assert row[0].startswith(expected_prefixes["bfs_all"])
+        assert row[1].startswith(expected_prefixes["bfs_all"])
     for row in bfs_diff_rows[:2]:
-        assert row[0].startswith(expected_prefixes["bfs_diff"])
+        assert row[1].startswith(expected_prefixes["bfs_diff"])
     for row in bfs_device_all_rows[:2]:
-        assert row[0].startswith(expected_prefixes["bfs_device_all"])
+        assert row[1].startswith(expected_prefixes["bfs_device_all"])
     for row in bfs_device_diff_rows[:2]:
-        assert row[0].startswith(expected_prefixes["bfs_device_diff"])
+        assert row[1].startswith(expected_prefixes["bfs_device_diff"])
     for row in bfs_accessories_all_rows[:2]:
-        assert row[0].startswith(expected_prefixes["bfs_accessories_all"])
+        assert row[1].startswith(expected_prefixes["bfs_accessories_all"])
     for row in bfs_accessories_diff_rows[:2]:
-        assert row[0].startswith(expected_prefixes["bfs_accessories_diff"])
+        assert row[1].startswith(expected_prefixes["bfs_accessories_diff"])
     for row in corp_all_1_rows[:2]:
-        assert len(row[0]) > 0
+        assert len(row[1]) > 0
     for row in corp_all_2_rows[:2]:
-        assert len(row[0]) > 0
+        assert len(row[1]) > 0
     for row in corp_diff_rows[:2]:
-        assert len(row[0]) > 0
+        assert len(row[1]) > 0
 
 
 def test_bfs_summary_files_reference_generated_bfs_entries(tmp_path: Path) -> None:
