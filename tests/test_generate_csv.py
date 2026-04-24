@@ -282,6 +282,16 @@ def test_console_does_not_emit_progress_lines_when_not_tty(tmp_path: Path) -> No
     assert "100%" not in completed.stdout
 
 
+def test_gzip_option_outputs_gzip_csv(tmp_path: Path) -> None:
+    """gzip指定時は通常件数でも `.csv.gz` を生成する。"""
+    completed = run_script(str(tmp_path), "--targets", "campaign", "--gzip")
+
+    assert generated_files(tmp_path) == ["m_キャンペーン.csv.gz"]
+    assert "m_キャンペーン.csv.gz" in completed.stdout
+    _, rows = read_csv(tmp_path, "m_キャンペーン.csv.gz")
+    assert len(rows) == 50
+
+
 def test_null_progress_reporter_emits_nothing(capsys: pytest.CaptureFixture[str]) -> None:
     """非TTY用の無効化レポーターは標準出力へ何も出さない。"""
     reporter = NullProgressReporter()

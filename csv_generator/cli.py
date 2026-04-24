@@ -64,6 +64,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", default="generated_data")
     parser.add_argument("--targets", default="campaign,agency,compass,product,corp,bfs")
     parser.add_argument("--full", action="store_true")
+    parser.add_argument("--gzip", action="store_true")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--jobs", default="auto")
     return parser.parse_args()
@@ -317,7 +318,7 @@ def main() -> None:
     targets = parse_targets(args.targets)
     requested_jobs = parse_jobs(args.jobs)
     counts = FULL_COUNTS if args.full else DEFAULT_COUNTS
-    compress = args.full
+    compress = args.gzip
     output_dir = Path(args.output_dir)
     format_dir = Path("docs/format")
     output_dir.mkdir(parents=True, exist_ok=True)

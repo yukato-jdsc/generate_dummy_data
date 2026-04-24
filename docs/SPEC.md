@@ -33,7 +33,7 @@ CLI は次の6ターゲットをサポートする。
 | `corp` | `m_hjn_smt_統一企業情報_1.csv`、`m_hjn_smt_統一企業情報_2.csv`、`m_hjn_smt_統一企業情報_diff.csv` |
 | `bfs` | `b_hjn_bfs_モバイル_エントリ情報.csv`、`b_hjn_bfs_モバイル_エントリ情報_diff.csv`、`b_hjn_bfs_モバイル_サービスサマリ_端末.csv`、`b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv`、`b_hjn_bfs_モバイル_サービスサマリ_付属品.csv`、`b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` |
 
-`--full` 指定時は各ファイルを gzip 圧縮し、拡張子は `*.csv.gz` になる。
+`--gzip` 指定時は各ファイルを gzip 圧縮し、拡張子は `*.csv.gz` になる。
 
 ## 3. CLI仕様
 
@@ -49,7 +49,8 @@ uv run python generate_csv.py
 | --- | --- |
 | `--output-dir <dir>` | 出力先ディレクトリ。既定値は `generated_data` |
 | `--targets <csv>` | 生成対象。カンマ区切りで指定する。既定値は `campaign,agency,compass,product,corp,bfs` |
-| `--full` | 本番想定件数で生成し、出力を gzip 圧縮する |
+| `--full` | 本番想定件数で生成する |
+| `--gzip` | gzip 圧縮された `*.csv.gz` を生成する |
 | `--seed <int>` | 乱数シード。既定値は `42` |
 | `--jobs <auto\|N>` | 並列実行数。`auto` は通常実行時に1、`--full` 時は `min(CPU数, タスク数)` を採用する |
 
@@ -67,7 +68,7 @@ uv run python generate_csv.py
 - 区切り文字は `,`
 - ヘッダ行あり
 - すべてのセルをダブルクォート付きで出力する
-- 通常実行時は `.csv`、`--full` 時は `.csv.gz`
+- 通常実行時は `.csv`、`--gzip` 時は `.csv.gz`
 
 ### 4.2 ヘッダ定義
 
@@ -101,21 +102,21 @@ uv run python generate_csv.py
 
 | 出力ファイル | 件数 |
 | --- | ---: |
-| `m_キャンペーン.csv.gz` | 1,612 |
-| `m_取次店_all.csv.gz` | 1,200,000 |
-| `m_取次店_all_diff.csv.gz` | 53 |
-| `b_hjn_com_営業決裁.csv.gz` | 160,000 |
-| `b_hjn_com_営業決裁_diff.csv.gz` | 2,000 |
-| `m_商品_all.csv.gz` | 122,802 |
-| `m_hjn_smt_統一企業情報_1.csv.gz` | 1,500,000 |
-| `m_hjn_smt_統一企業情報_2.csv.gz` | 1,500,000 |
-| `m_hjn_smt_統一企業情報_diff.csv.gz` | 46,021 |
-| `b_hjn_bfs_モバイル_エントリ情報.csv.gz` | 2,000,000 |
-| `b_hjn_bfs_モバイル_エントリ情報_diff.csv.gz` | 5,921 |
-| `b_hjn_bfs_モバイル_サービスサマリ_端末.csv.gz` | 1,200,000 |
-| `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv.gz` | 1,210 |
-| `b_hjn_bfs_モバイル_サービスサマリ_付属品.csv.gz` | 300,000 |
-| `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv.gz` | 3,907 |
+| `m_キャンペーン.csv` | 1,612 |
+| `m_取次店_all.csv` | 1,200,000 |
+| `m_取次店_all_diff.csv` | 53 |
+| `b_hjn_com_営業決裁.csv` | 160,000 |
+| `b_hjn_com_営業決裁_diff.csv` | 2,000 |
+| `m_商品_all.csv` | 122,802 |
+| `m_hjn_smt_統一企業情報_1.csv` | 1,500,000 |
+| `m_hjn_smt_統一企業情報_2.csv` | 1,500,000 |
+| `m_hjn_smt_統一企業情報_diff.csv` | 46,021 |
+| `b_hjn_bfs_モバイル_エントリ情報.csv` | 2,000,000 |
+| `b_hjn_bfs_モバイル_エントリ情報_diff.csv` | 5,921 |
+| `b_hjn_bfs_モバイル_サービスサマリ_端末.csv` | 1,200,000 |
+| `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` | 1,210 |
+| `b_hjn_bfs_モバイル_サービスサマリ_付属品.csv` | 300,000 |
+| `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` | 3,907 |
 
 補足:
 
@@ -229,7 +230,7 @@ uv run python generate_csv.py
 - デフォルト実行で15ファイルが生成されること
 - 各ファイルの件数が期待値どおりであること
 - 同一 `--seed` で完全再現できること
-- `--targets`、`--jobs` の解釈が正しいこと
+- `--targets`、`--jobs`、`--gzip` の解釈が正しいこと
 - gzip出力が読み戻せること
 - 全セルが非空欄であること
 - ヘッダが `docs/format/` の日本語表示名と一致すること
