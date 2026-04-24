@@ -12,7 +12,19 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=8.4.1",
+    "ruff>=0.12.0",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test_generate_csv.py" = ["E402"]

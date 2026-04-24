@@ -5,6 +5,7 @@ import gzip
 import os
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -12,12 +13,17 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from csv_generator.cli import parse_jobs, parse_targets, resolve_job_count, write_target_csv
+from csv_generator import progress as progress_module
+from csv_generator.cli import (
+    parse_jobs,
+    parse_targets,
+    resolve_job_count,
+    write_target_csv,
+)
 from csv_generator.config import DEFAULT_COUNTS
 from csv_generator.format_spec import load_specs, parse_section_columns
 from csv_generator.generators import CsvGenerator
 from csv_generator.io import build_output_path
-from csv_generator import progress as progress_module
 from csv_generator.progress import NullProgressReporter, TqdmProgressReporter
 
 SCRIPT = ROOT / "generate_csv.py"
@@ -83,6 +89,11 @@ def read_csv(directory: Path, name: str) -> tuple[list[str], list[list[str]]]:
 def generated_files(directory: Path) -> list[str]:
     """生成された CSV ファイル名をソートして返す。"""
     return sorted(path.name for path in directory.iterdir() if path.is_file())
+
+
+def load_pyproject() -> dict[str, object]:
+    """pyproject.toml を辞書として読み込む。"""
+    return tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
 
 
 def generate_fixture_dir(tmp_path_factory: pytest.TempPathFactory, name: str, *args: str) -> Path:
@@ -165,6 +176,33 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
 def test_targets_campaign_only_generates_single_file(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "campaign")
     assert generated_files(tmp_path) == ["m_キャンペーン.csv"]
+
+
+def test_pyproject_includes_ruff_in_dev_dependencies() -> None:
+    """開発依存関係に ruff を含める。"""
+    pyproject = load_pyproject()
+    dependency_groups = pyproject["dependency-groups"]
+    assert "ruff>=0.12.0" in dependency_groups["dev"]
+
+
+def test_pyproject_defines_ruff_configuration() -> None:
+    """Ruff の lint 設定を pyproject.toml に持つ。"""
+    pyproject = load_pyproject()
+    tool = pyproject["tool"]
+    ruff_config = tool["ruff"]
+    lint_config = ruff_config["lint"]
+
+    assert ruff_config["target-version"] == "py312"
+    assert ruff_config["line-length"] == 88
+    assert lint_config["select"] == ["E", "F", "I", "UP", "B"]
+    assert lint_config["ignore"] == ["E501"]
+    assert lint_config["per-file-ignores"] == {"tests/test_generate_csv.py": ["E402"]}
+
+
+def test_readme_mentions_ruff_check_command() -> None:
+    """README に Ruff 実行手順を載せる。"""
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "uv run ruff check ." in readme
 
 
 def test_targets_compass_only_generates_single_file(tmp_path: Path) -> None:

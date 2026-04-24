@@ -7,11 +7,31 @@ from multiprocessing import Manager
 from pathlib import Path
 from queue import Empty
 
-from .config import ColumnSpec, DEFAULT_COUNTS, DEFAULT_SEED, FULL_COUNTS, OUTPUT_FILES, VALID_TARGETS
+from .config import (
+    DEFAULT_COUNTS,
+    DEFAULT_SEED,
+    FULL_COUNTS,
+    OUTPUT_FILES,
+    VALID_TARGETS,
+    ColumnSpec,
+)
 from .format_spec import load_specs
-from .generators import BFS_FAMILY_FILES, CORP_FAMILY_FILES, CsvGenerator, CsvWriteJob, ProgressFactory, run_csv_write_job
+from .generators import (
+    BFS_FAMILY_FILES,
+    CORP_FAMILY_FILES,
+    CsvGenerator,
+    CsvWriteJob,
+    ProgressFactory,
+    run_csv_write_job,
+)
 from .io import build_output_path, write_csv
-from .progress import NullProgressReporter, ProgressDisplayManager, ProgressEvent, TqdmProgressReporter, is_tty_stream
+from .progress import (
+    NullProgressReporter,
+    ProgressDisplayManager,
+    ProgressEvent,
+    TqdmProgressReporter,
+    is_tty_stream,
+)
 
 CORP_OUTPUT_KEYS = tuple(output_key for output_key, _ in CORP_FAMILY_FILES)
 COMPASS_OUTPUT_KEYS = ("compass_all", "compass_diff")

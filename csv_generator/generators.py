@@ -11,13 +11,13 @@ from .config import (
     CAMPAIGN_PREFIXES,
     CAMPAIGN_SUFFIXES,
     COLORS,
+    COMPANY_CATEGORY_NAMES,
     COMPASS_APPROVAL_TYPES,
     COMPASS_APPROVER_LAYERS,
     COMPASS_BILLING_FORMS,
     COMPASS_CORP_KINDS,
     COMPASS_SALES_CHANNELS,
     COMPASS_SERVICE_TYPES,
-    COMPANY_CATEGORY_NAMES,
     DEPARTMENTS,
     OPERATION_PERMISSION_NAMES,
     OUTPUT_FILES,
@@ -96,6 +96,15 @@ class CsvWriteJob:
     variant: str | None = None
 
 
+def _build_queue_progress_factory(progress_queue: object) -> ProgressFactory:
+    """キュー通知向けの進捗レポーター生成関数を返す。"""
+
+    def factory(path: Path, total_rows: int) -> QueueProgressReporter:
+        return QueueProgressReporter(path, total_rows, progress_queue)
+
+    return factory
+
+
 def run_csv_write_job(
     job: CsvWriteJob,
     progress_factory: ProgressFactory | None = None,
@@ -103,7 +112,7 @@ def run_csv_write_job(
 ) -> None:
     """ジョブ定義に従って1ワーカーぶんのCSV生成を実行する。"""
     if progress_factory is None and progress_queue is not None:
-        progress_factory = lambda path, total_rows: QueueProgressReporter(path, total_rows, progress_queue)
+        progress_factory = _build_queue_progress_factory(progress_queue)
     specs = load_specs(Path(job.format_dir))
     generator = CsvGenerator(specs=specs, seed=job.seed, counts=job.counts)
     output_dir = Path(job.output_dir)

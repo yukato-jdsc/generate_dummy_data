@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from .config import ColumnSpec, SECTION_KEYS
+from .config import SECTION_KEYS, ColumnSpec
 
 
 def load_specs(path: Path) -> dict[str, list[ColumnSpec]]:
