@@ -26,7 +26,12 @@ from .config import (
     PRODUCT_TEMPLATES,
     ColumnSpec,
 )
-from .diff_type import build_initial_diff_types, build_mixed_diff_types, build_output_headers, prepend_diff_type
+from .diff_type import (
+    build_initial_diff_types,
+    build_mixed_diff_types,
+    build_output_headers,
+    prepend_diff_type,
+)
 from .format_spec import load_specs
 from .io import build_output_path, open_csv_writer, write_csv
 from .progress import NullProgressReporter, QueueProgressReporter, TqdmProgressReporter
