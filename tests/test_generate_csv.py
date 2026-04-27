@@ -40,6 +40,7 @@ DEFAULT_OUTPUT_FILES = [
     "m_hjn_smt_統一企業情報_2.csv",
     "m_hjn_smt_統一企業情報_diff.csv",
     "m_キャンペーン.csv",
+    "m_キャンペーン_diff.csv",
     "m_取次店_all.csv",
     "m_取次店_all_diff.csv",
     "m_商品_all.csv",
@@ -155,8 +156,10 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
     _, corp_all_1_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_1.csv")
     _, corp_all_2_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_2.csv")
     _, corp_diff_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
+    _, campaign_diff_rows = read_csv(generated_default_dir, "m_キャンペーン_diff.csv")
 
     assert len(campaign_rows) == 50
+    assert len(campaign_diff_rows) == 50
     assert len(agency_rows) == 1000
     assert len(agency_diff_rows) == 53
     assert len(compass_all_rows) == 100
@@ -173,9 +176,9 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
     assert len(corp_diff_rows) == 100
 
 
-def test_targets_campaign_only_generates_single_file(tmp_path: Path) -> None:
+def test_targets_campaign_only_generates_campaign_files(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "campaign")
-    assert generated_files(tmp_path) == ["m_キャンペーン.csv"]
+    assert generated_files(tmp_path) == ["m_キャンペーン.csv", "m_キャンペーン_diff.csv"]
 
 
 def test_pyproject_includes_ruff_in_dev_dependencies() -> None:
@@ -263,6 +266,7 @@ def test_console_outputs_generated_file_names(tmp_path: Path) -> None:
     completed = run_script(str(tmp_path), "--targets", "campaign,agency,compass,corp")
 
     assert "m_キャンペーン.csv" in completed.stdout
+    assert "m_キャンペーン_diff.csv" in completed.stdout
     assert "m_取次店_all.csv" in completed.stdout
     assert "m_取次店_all_diff.csv" in completed.stdout
     assert "b_hjn_com_営業決裁.csv" in completed.stdout
@@ -286,10 +290,13 @@ def test_gzip_option_outputs_gzip_csv(tmp_path: Path) -> None:
     """gzip指定時は通常件数でも `.csv.gz` を生成する。"""
     completed = run_script(str(tmp_path), "--targets", "campaign", "--gzip")
 
-    assert generated_files(tmp_path) == ["m_キャンペーン.csv.gz"]
+    assert generated_files(tmp_path) == ["m_キャンペーン.csv.gz", "m_キャンペーン_diff.csv.gz"]
     assert "m_キャンペーン.csv.gz" in completed.stdout
+    assert "m_キャンペーン_diff.csv.gz" in completed.stdout
     _, rows = read_csv(tmp_path, "m_キャンペーン.csv.gz")
+    _, diff_rows = read_csv(tmp_path, "m_キャンペーン_diff.csv.gz")
     assert len(rows) == 50
+    assert len(diff_rows) == 50
 
 
 def test_null_progress_reporter_emits_nothing(capsys: pytest.CaptureFixture[str]) -> None:
@@ -355,6 +362,7 @@ def test_jobs_parallel_output_generates_expected_files(tmp_path: Path) -> None:
         "b_hjn_com_営業決裁.csv",
         "b_hjn_com_営業決裁_diff.csv",
         "m_キャンペーン.csv",
+        "m_キャンペーン_diff.csv",
         "m_取次店_all.csv",
         "m_取次店_all_diff.csv",
     ]
@@ -390,6 +398,7 @@ def test_write_target_csv_always_quotes_all_string_values(tmp_path: Path) -> Non
 
 def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> None:
     campaign_header, _ = read_csv(generated_default_dir, "m_キャンペーン.csv")
+    campaign_diff_header, _ = read_csv(generated_default_dir, "m_キャンペーン_diff.csv")
     agency_header, _ = read_csv(generated_default_dir, "m_取次店_all.csv")
     diff_header, _ = read_csv(generated_default_dir, "m_取次店_all_diff.csv")
     compass_all_header, _ = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
@@ -406,6 +415,7 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
     corp_diff_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
 
     assert campaign_header[0] == "キャンペーンid"
+    assert campaign_diff_header[0] == "キャンペーンid"
     assert agency_header[0] == "diff_type"
     assert agency_header[1] == "取次店コード"
     assert diff_header[0] == "diff_type"
@@ -435,6 +445,7 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
     assert corp_diff_header[1] == "統一企業コード"
     for header in (
         campaign_header,
+        campaign_diff_header,
         agency_header,
         compass_all_header,
         compass_diff_header,
@@ -469,7 +480,7 @@ def test_diff_type_header_is_added_only_to_incremental_csvs(generated_default_di
         "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv",
         "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv",
     )
-    full_refresh_files = ("m_キャンペーン.csv", "m_商品_all.csv")
+    full_refresh_files = ("m_キャンペーン.csv", "m_キャンペーン_diff.csv", "m_商品_all.csv")
 
     for file_name in incremental_files:
         header, _ = read_csv(generated_default_dir, file_name)
@@ -512,6 +523,7 @@ def test_diff_csvs_mix_all_diff_types(generated_default_dir: Path) -> None:
 
 def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir: Path) -> None:
     campaign_header, _ = read_csv(generated_default_dir, "m_キャンペーン.csv")
+    campaign_diff_header, _ = read_csv(generated_default_dir, "m_キャンペーン_diff.csv")
     agency_header, _ = read_csv(generated_default_dir, "m_取次店_all.csv")
     diff_header, _ = read_csv(generated_default_dir, "m_取次店_all_diff.csv")
     compass_all_header, _ = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
@@ -539,6 +551,8 @@ def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir:
     }
 
     assert campaign_header[:4] == expected_headers["campaign"]
+    assert campaign_diff_header[:4] == expected_headers["campaign"]
+    assert campaign_header == campaign_diff_header
     assert agency_header[1:5] == expected_headers["agency"]
     assert compass_all_header[1:5] == expected_headers["compass"]
     assert compass_all_header == compass_diff_header
@@ -659,6 +673,7 @@ def test_load_specs_includes_corp_unified_company_information() -> None:
 
 def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) -> None:
     _, campaign_rows = read_csv(generated_seed7_dir, "m_キャンペーン.csv")
+    _, campaign_diff_rows = read_csv(generated_seed7_dir, "m_キャンペーン_diff.csv")
     _, agency_rows = read_csv(generated_seed7_dir, "m_取次店_all.csv")
     _, compass_all_rows = read_csv(generated_seed7_dir, "b_hjn_com_営業決裁.csv")
     _, compass_diff_rows = read_csv(generated_seed7_dir, "b_hjn_com_営業決裁_diff.csv")
@@ -690,6 +705,8 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
     }
 
     for row in campaign_rows[:2]:
+        assert row[0].startswith(expected_prefixes["campaign"])
+    for row in campaign_diff_rows[:2]:
         assert row[0].startswith(expected_prefixes["campaign"])
     for row in agency_rows[:2]:
         assert row[1].startswith(expected_prefixes["agency"])
@@ -803,6 +820,30 @@ def test_bfs_diff_keys_follow_diff_type_semantics(generated_default_dir: Path) -
     assert_diff_keys_match_diff_type(bfs_all_rows, bfs_diff_rows, bfs_header.index("エントリ番号"))
     assert_diff_keys_match_diff_type(device_all_rows, device_diff_rows, device_header.index("エントリ番号"))
     assert_diff_keys_match_diff_type(accessories_all_rows, accessories_diff_rows, accessories_header.index("エントリ番号"))
+
+
+def test_campaign_diff_replaces_deleted_added_and_updated_rows(generated_default_dir: Path) -> None:
+    """キャンペーンdiffは全量更新として削除・追加・更新後の状態を表す。"""
+    all_header, all_rows = read_csv(generated_default_dir, "m_キャンペーン.csv")
+    diff_header, diff_rows = read_csv(generated_default_dir, "m_キャンペーン_diff.csv")
+    key_index = all_header.index("キャンペーンid")
+
+    all_by_id = {row[key_index]: row for row in all_rows}
+    diff_by_id = {row[key_index]: row for row in diff_rows}
+    deleted_ids = set(all_by_id) - set(diff_by_id)
+    added_ids = set(diff_by_id) - set(all_by_id)
+    updated_ids = {
+        campaign_id
+        for campaign_id in set(all_by_id) & set(diff_by_id)
+        if all_by_id[campaign_id] != diff_by_id[campaign_id]
+    }
+
+    assert all_header == diff_header
+    assert "diff_type" not in diff_header
+    assert len(diff_rows) == len(all_rows)
+    assert deleted_ids
+    assert added_ids
+    assert updated_ids
 
 
 def test_agency_diff_existing_keys_are_subset_of_agency_all(generated_agency_seed11_dir: Path) -> None:
@@ -937,10 +978,11 @@ def test_campaign_old_flag_is_always_filled(tmp_path: Path) -> None:
     """キャンペーンの旧フラグは全行で非空欄にする。"""
     run_script(str(tmp_path), "--targets", "campaign", "--seed", "7")
 
-    header, rows = read_csv(tmp_path, "m_キャンペーン.csv")
-    old_flag_index = header.index("旧フラグ")
+    for file_name in ("m_キャンペーン.csv", "m_キャンペーン_diff.csv"):
+        header, rows = read_csv(tmp_path, file_name)
+        old_flag_index = header.index("旧フラグ")
 
-    assert {row[old_flag_index] for row in rows}.issubset({"0", "1"})
+        assert {row[old_flag_index] for row in rows}.issubset({"0", "1"})
 
 
 def test_compass_status_is_fixed_to_approved_and_history_is_filled(generated_seed7_dir: Path) -> None:

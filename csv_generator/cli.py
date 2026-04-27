@@ -34,6 +34,7 @@ from .progress import (
 )
 
 CORP_OUTPUT_KEYS = tuple(output_key for output_key, _ in CORP_FAMILY_FILES)
+CAMPAIGN_OUTPUT_KEYS = ("campaign", "campaign_diff")
 COMPASS_OUTPUT_KEYS = ("compass_all", "compass_diff")
 
 
@@ -162,6 +163,12 @@ def job_output_paths(jobs: list[CsvWriteJob], output_dir: Path) -> list[Path]:
     """ジョブ一覧に対応する実ファイルパス一覧を表示順のまま返す。"""
     paths: list[Path] = []
     for job in jobs:
+        if job.job_type == "campaign":
+            paths.extend(
+                build_output_path(output_dir, OUTPUT_FILES[output_key], job.compress)
+                for output_key in CAMPAIGN_OUTPUT_KEYS
+            )
+            continue
         if job.job_type == "agency":
             paths.append(build_output_path(output_dir, OUTPUT_FILES["agency_all"], job.compress))
             paths.append(build_output_path(output_dir, OUTPUT_FILES["agency_diff"], job.compress))
@@ -234,20 +241,16 @@ def write_target_csv(
     write_csv(path, headers, rows, progress_reporter=progress_reporter)
 
 
-def _write_campaign_csv(
+def _write_campaign_csvs(
     output_dir: Path,
-    specs: dict[str, list[ColumnSpec]],
     generator: CsvGenerator,
     compress: bool,
 ) -> None:
-    """campaign 対象のCSVを書き出す。"""
-    write_target_csv(
-        output_dir,
-        OUTPUT_FILES["campaign"],
-        header_labels(specs, "campaign"),
-        generator.campaign_rows(),
-        compress=compress,
+    """campaign 対象の全量・全量更新diff CSVを書き出す。"""
+    announce_outputs(
+        [build_output_path(output_dir, OUTPUT_FILES[output_key], compress) for output_key in CAMPAIGN_OUTPUT_KEYS]
     )
+    generator.write_campaign_files(output_dir, compress=compress, progress_factory=build_progress_factory())
 
 
 def _write_product_csv(
@@ -328,7 +331,7 @@ def main() -> None:
     if requested_jobs == 1:
         for target in targets:
             if target == "campaign":
-                _write_campaign_csv(output_dir, specs, generator, compress)
+                _write_campaign_csvs(output_dir, generator, compress)
             elif target == "agency":
                 _write_agency_csvs(output_dir, generator, compress)
             elif target == "product":

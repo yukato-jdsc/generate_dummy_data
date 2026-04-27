@@ -125,7 +125,7 @@ def run_csv_write_job(
     generator = CsvGenerator(specs=specs, seed=job.seed, counts=job.counts)
     output_dir = Path(job.output_dir)
     if job.job_type == "campaign":
-        generator.write_campaign_file(output_dir, compress=job.compress, progress_factory=progress_factory)
+        generator.write_campaign_files(output_dir, compress=job.compress, progress_factory=progress_factory)
     elif job.job_type == "product":
         generator.write_product_file(output_dir, compress=job.compress, progress_factory=progress_factory)
     elif job.job_type == "compass":
@@ -166,6 +166,7 @@ class CsvGenerator:
         self.seed = seed
         self.counts = counts
         self.values = ValueFactory(seed)
+        self.campaign_diff_change_size = self._campaign_diff_change_size()
         self.agency_diff_sample_size = counts["agency_diff"]
         self.compass_diff_sample_size = counts["compass_diff"]
 
@@ -218,17 +219,13 @@ class CsvGenerator:
         """差分種別が既存レコード向けかどうかを返す。"""
         return diff_type in {UPDATE_DIFF_TYPE, DELETE_DIFF_TYPE}
 
-    def campaign_rows(self) -> list[list[str]]:
-        """キャンペーンCSVの全行をメモリ上で生成する。"""
-        return self._build_rows(self.counts["campaign"], self._campaign_row)
-
-    def write_campaign_file(
+    def write_campaign_files(
         self,
         output_dir: Path,
         compress: bool = False,
         progress_factory: ProgressFactory | None = None,
     ) -> None:
-        """キャンペーンCSVを逐次書き出しする。"""
+        """キャンペーンの全量CSVと全量更新差分CSVを同時に出力する。"""
         path = build_output_path(output_dir, OUTPUT_FILES["campaign"], compress)
         self._write_rows(
             path,
@@ -237,6 +234,25 @@ class CsvGenerator:
             self._campaign_row,
             progress_reporter=self._build_progress_reporter(progress_factory, path, self.counts["campaign"]),
         )
+        diff_path = build_output_path(output_dir, OUTPUT_FILES["campaign_diff"], compress)
+        self._write_rows(
+            diff_path,
+            self._output_headers("campaign", "campaign_diff"),
+            self.counts["campaign_diff"],
+            self._campaign_diff_row,
+            progress_reporter=self._build_progress_reporter(
+                progress_factory,
+                diff_path,
+                self.counts["campaign_diff"],
+            ),
+        )
+
+    def _campaign_diff_change_size(self) -> int:
+        """キャンペーンdiffで削除・追加・更新に使う件数を返す。"""
+        row_count = self.counts["campaign"]
+        if row_count < 3:
+            return 0
+        return min(max(1, row_count // 10), row_count // 3)
 
     def _campaign_row(self, index: int) -> list[str]:
         """キャンペーン1行ぶんの列値を組み立てる。"""
@@ -247,6 +263,33 @@ class CsvGenerator:
             "campaign_id": self.values.code("CP", index + 1, 10),
             "campaign_name": name,
             "description": f"{name}のテスト投入用データ",
+            "effective_start_date": ymd(start),
+            "effective_end_date": ymd(end),
+            "old_flag": "1" if index % 5 == 0 else "0",
+        }
+        return self._row_from_context(self.specs["campaign"], context)
+
+    def _campaign_diff_row(self, index: int) -> list[str]:
+        """キャンペーンdiffの1行ぶんの列値を組み立てる。"""
+        change_size = self.campaign_diff_change_size
+        insert_start = self.counts["campaign_diff"] - change_size
+        if index >= insert_start:
+            return self._campaign_row(self.counts["campaign"] + index - insert_start)
+
+        base_index = index + change_size
+        if index < change_size:
+            return self._campaign_updated_row(base_index)
+        return self._campaign_row(base_index)
+
+    def _campaign_updated_row(self, index: int) -> list[str]:
+        """既存キャンペーンIDを維持した更新後の行を組み立てる。"""
+        start = BASE_DATE + timedelta(days=index % 30 + 1)
+        end = start + timedelta(days=120 + (index % 60))
+        name = f"{self._campaign_name(index)}改定"
+        context = {
+            "campaign_id": self.values.code("CP", index + 1, 10),
+            "campaign_name": name,
+            "description": f"{name}の全量更新後データ",
             "effective_start_date": ymd(start),
             "effective_end_date": ymd(end),
             "old_flag": "1" if index % 5 == 0 else "0",

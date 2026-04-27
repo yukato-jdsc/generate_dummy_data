@@ -6,6 +6,7 @@ from datetime import date
 DEFAULT_SEED = 42
 DEFAULT_COUNTS = {
     "campaign": 50,
+    "campaign_diff": 50,
     "agency_all": 1_000,
     "agency_diff": 53,
     "compass_all": 100,
@@ -22,6 +23,7 @@ DEFAULT_COUNTS = {
 }
 FULL_COUNTS = {
     "campaign": 1_612,
+    "campaign_diff": 1_612,
     "agency_all": 1_200_000,
     "agency_diff": 53,
     "compass_all": 160_000,
@@ -48,6 +50,7 @@ SECTION_KEYS = {
 }
 OUTPUT_FILES = {
     "campaign": "m_キャンペーン.csv",
+    "campaign_diff": "m_キャンペーン_diff.csv",
     "agency_all": "m_取次店_all.csv",
     "agency_diff": "m_取次店_all_diff.csv",
     "compass_all": "b_hjn_com_営業決裁.csv",
