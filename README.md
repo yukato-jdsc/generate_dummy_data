@@ -2,7 +2,7 @@
 
 `docs/format/` 配下の定義をもとに、アプリ取り込み用のテストCSVを生成します。
 
-対象は次の16ファイルです。
+対象は次の17ファイルです。
 
 - `m_キャンペーン.csv`
 - `m_キャンペーン_diff.csv`
@@ -11,6 +11,7 @@
 - `b_hjn_com_営業決裁.csv`
 - `b_hjn_com_営業決裁_diff.csv`
 - `m_商品_all.csv`
+- `m_商品_all_diff.csv`
 - `m_hjn_smt_統一企業情報_1.csv`
 - `m_hjn_smt_統一企業情報_2.csv`
 - `m_hjn_smt_統一企業情報_diff.csv`
@@ -66,6 +67,7 @@ uv run python generate_csv.py --seed 7
 | `b_hjn_com_営業決裁.csv` | 100 | 160,000 |
 | `b_hjn_com_営業決裁_diff.csv` | 20 | 2,000 |
 | `m_商品_all.csv` | 1,000 | 122,802 |
+| `m_商品_all_diff.csv` | 1,000 | 122,802 |
 | `m_hjn_smt_統一企業情報_1.csv` | 500 | 1,500,000 |
 | `m_hjn_smt_統一企業情報_2.csv` | 500 | 1,500,000 |
 | `m_hjn_smt_統一企業情報_diff.csv` | 100 | 46,021 |
@@ -83,7 +85,7 @@ uv run python generate_csv.py --seed 7
 - `compass` を含む場合は次の2ファイルを生成します
   - `b_hjn_com_営業決裁.csv`
   - `b_hjn_com_営業決裁_diff.csv`
-- `product` を含む場合は `m_商品_all.csv` を生成します
+- `product` を含む場合は `m_商品_all.csv` と `m_商品_all_diff.csv` を同時に生成します
 - `corp` を含む場合は次の3ファイルを生成します
   - `m_hjn_smt_統一企業情報_1.csv`
   - `m_hjn_smt_統一企業情報_2.csv`
@@ -122,12 +124,17 @@ uv run python generate_csv.py --seed 7
 初期データ側のCSVは全行 `I` です。  
 差分CSVは `I` `U` `D` を混在させます。  
 差分CSVでは `diff_type=I` の行は初期データに存在しない業務キー、`diff_type=U` と `diff_type=D` の行は初期データに存在する業務キーを使います。
-`m_キャンペーン.csv`、`m_キャンペーン_diff.csv`、`m_商品_all.csv` は全量更新データのため `diff_type` を付与しません。
+`m_キャンペーン.csv`、`m_キャンペーン_diff.csv`、`m_商品_all.csv`、`m_商品_all_diff.csv` は全量更新データのため `diff_type` を付与しません。
 
 ## キャンペーンdiff CSVについて
 
 `m_キャンペーン_diff.csv` は同じ実行で作られた `m_キャンペーン.csv` を変更した全量更新後データとして生成します。
 `diff_type` は持たず、基準CSVに存在しない追加行、基準CSVから除かれた削除行、同じ `キャンペーンid` で値が変わる更新行を含みます。
+
+## 商品diff CSVについて
+
+`m_商品_all_diff.csv` は同じ実行で作られた `m_商品_all.csv` を変更した全量更新後データとして生成します。
+`diff_type` は持たず、基準CSVに存在しない追加行、基準CSVから除かれた削除行、同じ `商品コード` で値が変わる更新行を含みます。
 
 ## 取次店差分CSVについて
 

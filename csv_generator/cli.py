@@ -13,7 +13,6 @@ from .config import (
     FULL_COUNTS,
     OUTPUT_FILES,
     VALID_TARGETS,
-    ColumnSpec,
 )
 from .format_spec import load_specs
 from .generators import (
@@ -36,6 +35,7 @@ from .progress import (
 CORP_OUTPUT_KEYS = tuple(output_key for output_key, _ in CORP_FAMILY_FILES)
 CAMPAIGN_OUTPUT_KEYS = ("campaign", "campaign_diff")
 COMPASS_OUTPUT_KEYS = ("compass_all", "compass_diff")
+PRODUCT_OUTPUT_KEYS = ("product", "product_diff")
 
 
 def announce_output(path: Path) -> None:
@@ -105,11 +105,6 @@ def resolve_job_count(requested_jobs: int | None, task_count: int, full: bool) -
     return min(requested_jobs, task_count)
 
 
-def header_labels(specs: dict[str, list[ColumnSpec]], spec_key: str) -> list[str]:
-    """指定したCSV仕様からヘッダー表示名の一覧を取り出す。"""
-    return [column.header_label for column in specs[spec_key]]
-
-
 def announce_outputs(paths: list[Path]) -> None:
     """複数の出力先を順に表示する。"""
     for path in paths:
@@ -177,9 +172,14 @@ def job_output_paths(jobs: list[CsvWriteJob], output_dir: Path) -> list[Path]:
             paths.append(build_output_path(output_dir, OUTPUT_FILES["compass_all"], job.compress))
             paths.append(build_output_path(output_dir, OUTPUT_FILES["compass_diff"], job.compress))
             continue
-        assert job.output_key is not None or job.job_type in {"campaign", "product"}
-        output_key = job.output_key or job.job_type
-        paths.append(build_output_path(output_dir, OUTPUT_FILES[output_key], job.compress))
+        if job.job_type == "product":
+            paths.extend(
+                build_output_path(output_dir, OUTPUT_FILES[output_key], job.compress)
+                for output_key in PRODUCT_OUTPUT_KEYS
+            )
+            continue
+        assert job.output_key is not None
+        paths.append(build_output_path(output_dir, OUTPUT_FILES[job.output_key], job.compress))
     return paths
 
 
@@ -253,20 +253,16 @@ def _write_campaign_csvs(
     generator.write_campaign_files(output_dir, compress=compress, progress_factory=build_progress_factory())
 
 
-def _write_product_csv(
+def _write_product_csvs(
     output_dir: Path,
-    specs: dict[str, list[ColumnSpec]],
     generator: CsvGenerator,
     compress: bool,
 ) -> None:
-    """product 対象のCSVを書き出す。"""
-    write_target_csv(
-        output_dir,
-        OUTPUT_FILES["product"],
-        header_labels(specs, "product"),
-        generator.product_rows(),
-        compress=compress,
+    """product 対象の全量・全量更新diff CSVを書き出す。"""
+    announce_outputs(
+        [build_output_path(output_dir, OUTPUT_FILES[output_key], compress) for output_key in PRODUCT_OUTPUT_KEYS]
     )
+    generator.write_product_files(output_dir, compress=compress, progress_factory=build_progress_factory())
 
 
 def _write_agency_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) -> None:
@@ -335,7 +331,7 @@ def main() -> None:
             elif target == "agency":
                 _write_agency_csvs(output_dir, generator, compress)
             elif target == "product":
-                _write_product_csv(output_dir, specs, generator, compress)
+                _write_product_csvs(output_dir, generator, compress)
             elif target == "compass":
                 _write_compass_csv(output_dir, generator, compress)
             elif target == "corp":

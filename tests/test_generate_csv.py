@@ -44,6 +44,7 @@ DEFAULT_OUTPUT_FILES = [
     "m_取次店_all.csv",
     "m_取次店_all_diff.csv",
     "m_商品_all.csv",
+    "m_商品_all_diff.csv",
 ]
 
 
@@ -147,6 +148,7 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
     _, compass_all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
     _, compass_diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
     _, product_rows = read_csv(generated_default_dir, "m_商品_all.csv")
+    _, product_diff_rows = read_csv(generated_default_dir, "m_商品_all_diff.csv")
     _, bfs_all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
     _, bfs_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
     _, bfs_device_all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
@@ -165,6 +167,7 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
     assert len(compass_all_rows) == 100
     assert len(compass_diff_rows) == 20
     assert len(product_rows) == 1000
+    assert len(product_diff_rows) == 1000
     assert len(bfs_all_rows) == 1000
     assert len(bfs_diff_rows) == 100
     assert len(bfs_device_all_rows) == 1000
@@ -179,6 +182,12 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
 def test_targets_campaign_only_generates_campaign_files(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "campaign")
     assert generated_files(tmp_path) == ["m_キャンペーン.csv", "m_キャンペーン_diff.csv"]
+
+
+def test_targets_product_only_generates_product_files(tmp_path: Path) -> None:
+    """product 指定では商品全量と全量更新diffだけを生成する。"""
+    run_script(str(tmp_path), "--targets", "product")
+    assert generated_files(tmp_path) == ["m_商品_all.csv", "m_商品_all_diff.csv"]
 
 
 def test_pyproject_includes_ruff_in_dev_dependencies() -> None:
@@ -355,7 +364,7 @@ def test_jobs_parallel_output_generates_expected_files(tmp_path: Path) -> None:
     parallel_dir = tmp_path / "parallel"
     parallel_dir.mkdir()
 
-    targets = "campaign,agency,compass"
+    targets = "campaign,agency,compass,product"
     completed = run_script(str(parallel_dir), "--targets", targets, "--seed", "7", "--jobs", "2", timeout=120)
 
     assert generated_files(parallel_dir) == [
@@ -365,6 +374,8 @@ def test_jobs_parallel_output_generates_expected_files(tmp_path: Path) -> None:
         "m_キャンペーン_diff.csv",
         "m_取次店_all.csv",
         "m_取次店_all_diff.csv",
+        "m_商品_all.csv",
+        "m_商品_all_diff.csv",
     ]
     assert "0%" not in completed.stdout
     assert "100%" not in completed.stdout
@@ -404,6 +415,7 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
     compass_all_header, _ = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
     compass_diff_header, _ = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
     product_header, _ = read_csv(generated_default_dir, "m_商品_all.csv")
+    product_diff_header, _ = read_csv(generated_default_dir, "m_商品_all_diff.csv")
     bfs_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
     bfs_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
     bfs_device_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
@@ -425,6 +437,7 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
     assert compass_diff_header[0] == "diff_type"
     assert compass_diff_header[1] == "決裁番号"
     assert product_header[0] == "商品コード"
+    assert product_diff_header[0] == "商品コード"
     assert bfs_all_header[0] == "diff_type"
     assert bfs_all_header[1] == "エントリ番号"
     assert bfs_diff_header[0] == "diff_type"
@@ -450,6 +463,7 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
         compass_all_header,
         compass_diff_header,
         product_header,
+        product_diff_header,
         bfs_all_header,
         bfs_diff_header,
         bfs_device_all_header,
@@ -480,7 +494,12 @@ def test_diff_type_header_is_added_only_to_incremental_csvs(generated_default_di
         "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv",
         "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv",
     )
-    full_refresh_files = ("m_キャンペーン.csv", "m_キャンペーン_diff.csv", "m_商品_all.csv")
+    full_refresh_files = (
+        "m_キャンペーン.csv",
+        "m_キャンペーン_diff.csv",
+        "m_商品_all.csv",
+        "m_商品_all_diff.csv",
+    )
 
     for file_name in incremental_files:
         header, _ = read_csv(generated_default_dir, file_name)
@@ -529,6 +548,7 @@ def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir:
     compass_all_header, _ = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
     compass_diff_header, _ = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
     product_header, _ = read_csv(generated_default_dir, "m_商品_all.csv")
+    product_diff_header, _ = read_csv(generated_default_dir, "m_商品_all_diff.csv")
     bfs_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
     bfs_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
     bfs_device_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
@@ -557,6 +577,8 @@ def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir:
     assert compass_all_header[1:5] == expected_headers["compass"]
     assert compass_all_header == compass_diff_header
     assert product_header[:4] == expected_headers["product"]
+    assert product_diff_header[:4] == expected_headers["product"]
+    assert product_header == product_diff_header
     assert agency_header == diff_header
     assert bfs_all_header[1:5] == expected_headers["bfs"]
     assert bfs_all_header == bfs_diff_header
@@ -678,6 +700,7 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
     _, compass_all_rows = read_csv(generated_seed7_dir, "b_hjn_com_営業決裁.csv")
     _, compass_diff_rows = read_csv(generated_seed7_dir, "b_hjn_com_営業決裁_diff.csv")
     _, product_rows = read_csv(generated_seed7_dir, "m_商品_all.csv")
+    _, product_diff_rows = read_csv(generated_seed7_dir, "m_商品_all_diff.csv")
     _, bfs_all_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
     _, bfs_diff_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
     _, bfs_device_all_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
@@ -711,6 +734,8 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
     for row in agency_rows[:2]:
         assert row[1].startswith(expected_prefixes["agency"])
     for row in product_rows[:2]:
+        assert row[0].startswith(expected_prefixes["product"])
+    for row in product_diff_rows[:2]:
         assert row[0].startswith(expected_prefixes["product"])
     for row in compass_all_rows[:2]:
         assert row[1].startswith(expected_prefixes["compass"])
@@ -781,6 +806,33 @@ def assert_diff_keys_match_diff_type(
     assert delete_keys.issubset(all_keys)
 
 
+def assert_full_refresh_diff_replaces_rows(
+    all_header: list[str],
+    all_rows: list[list[str]],
+    diff_header: list[str],
+    diff_rows: list[list[str]],
+    key_label: str,
+) -> None:
+    """全量更新diffが削除・追加・更新後の状態を表すことを検証する。"""
+    key_index = all_header.index(key_label)
+    all_by_key = {row[key_index]: row for row in all_rows}
+    diff_by_key = {row[key_index]: row for row in diff_rows}
+    deleted_keys = set(all_by_key) - set(diff_by_key)
+    added_keys = set(diff_by_key) - set(all_by_key)
+    updated_keys = {
+        key
+        for key in set(all_by_key) & set(diff_by_key)
+        if all_by_key[key] != diff_by_key[key]
+    }
+
+    assert all_header == diff_header
+    assert "diff_type" not in diff_header
+    assert len(diff_rows) == len(all_rows)
+    assert deleted_keys
+    assert added_keys
+    assert updated_keys
+
+
 def test_agency_diff_keys_follow_diff_type_semantics(generated_default_dir: Path) -> None:
     """取次店差分の業務キーは diff_type ごとの意味に合わせる。"""
     header, all_rows = read_csv(generated_default_dir, "m_取次店_all.csv")
@@ -826,24 +878,16 @@ def test_campaign_diff_replaces_deleted_added_and_updated_rows(generated_default
     """キャンペーンdiffは全量更新として削除・追加・更新後の状態を表す。"""
     all_header, all_rows = read_csv(generated_default_dir, "m_キャンペーン.csv")
     diff_header, diff_rows = read_csv(generated_default_dir, "m_キャンペーン_diff.csv")
-    key_index = all_header.index("キャンペーンid")
 
-    all_by_id = {row[key_index]: row for row in all_rows}
-    diff_by_id = {row[key_index]: row for row in diff_rows}
-    deleted_ids = set(all_by_id) - set(diff_by_id)
-    added_ids = set(diff_by_id) - set(all_by_id)
-    updated_ids = {
-        campaign_id
-        for campaign_id in set(all_by_id) & set(diff_by_id)
-        if all_by_id[campaign_id] != diff_by_id[campaign_id]
-    }
+    assert_full_refresh_diff_replaces_rows(all_header, all_rows, diff_header, diff_rows, "キャンペーンid")
 
-    assert all_header == diff_header
-    assert "diff_type" not in diff_header
-    assert len(diff_rows) == len(all_rows)
-    assert deleted_ids
-    assert added_ids
-    assert updated_ids
+
+def test_product_diff_replaces_deleted_added_and_updated_rows(generated_default_dir: Path) -> None:
+    """商品diffは全量更新として削除・追加・更新後の状態を表す。"""
+    all_header, all_rows = read_csv(generated_default_dir, "m_商品_all.csv")
+    diff_header, diff_rows = read_csv(generated_default_dir, "m_商品_all_diff.csv")
+
+    assert_full_refresh_diff_replaces_rows(all_header, all_rows, diff_header, diff_rows, "商品コード")
 
 
 def test_agency_diff_existing_keys_are_subset_of_agency_all(generated_agency_seed11_dir: Path) -> None:

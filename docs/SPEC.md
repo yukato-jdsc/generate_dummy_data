@@ -22,14 +22,14 @@ CLI は次の6ターゲットをサポートする。
 
 ### 2.2 生成ファイル
 
-通常実行時は次の16ファイルを生成する。
+通常実行時は次の17ファイルを生成する。
 
 | ターゲット | 出力ファイル |
 | --- | --- |
 | `campaign` | `m_キャンペーン.csv`、`m_キャンペーン_diff.csv` |
 | `agency` | `m_取次店_all.csv`、`m_取次店_all_diff.csv` |
 | `compass` | `b_hjn_com_営業決裁.csv`、`b_hjn_com_営業決裁_diff.csv` |
-| `product` | `m_商品_all.csv` |
+| `product` | `m_商品_all.csv`、`m_商品_all_diff.csv` |
 | `corp` | `m_hjn_smt_統一企業情報_1.csv`、`m_hjn_smt_統一企業情報_2.csv`、`m_hjn_smt_統一企業情報_diff.csv` |
 | `bfs` | `b_hjn_bfs_モバイル_エントリ情報.csv`、`b_hjn_bfs_モバイル_エントリ情報_diff.csv`、`b_hjn_bfs_モバイル_サービスサマリ_端末.csv`、`b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv`、`b_hjn_bfs_モバイル_サービスサマリ_付属品.csv`、`b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` |
 
@@ -89,6 +89,7 @@ uv run python generate_csv.py
 | `b_hjn_com_営業決裁.csv` | 100 |
 | `b_hjn_com_営業決裁_diff.csv` | 20 |
 | `m_商品_all.csv` | 1,000 |
+| `m_商品_all_diff.csv` | 1,000 |
 | `m_hjn_smt_統一企業情報_1.csv` | 500 |
 | `m_hjn_smt_統一企業情報_2.csv` | 500 |
 | `m_hjn_smt_統一企業情報_diff.csv` | 100 |
@@ -110,6 +111,7 @@ uv run python generate_csv.py
 | `b_hjn_com_営業決裁.csv` | 160,000 |
 | `b_hjn_com_営業決裁_diff.csv` | 2,000 |
 | `m_商品_all.csv` | 122,802 |
+| `m_商品_all_diff.csv` | 122,802 |
 | `m_hjn_smt_統一企業情報_1.csv` | 1,500,000 |
 | `m_hjn_smt_統一企業情報_2.csv` | 1,500,000 |
 | `m_hjn_smt_統一企業情報_diff.csv` | 46,021 |
@@ -178,7 +180,10 @@ uv run python generate_csv.py
 
 - 先頭列は `商品コード`
 - 先頭値は `PRD` プレフィックスのコードを使う
-- 全量更新データのため `diff_type` は付与しない
+- `m_商品_all.csv` と `m_商品_all_diff.csv` を必ず同時生成する
+- 2ファイルとも全量更新データのため `diff_type` は付与しない
+- `m_商品_all_diff.csv` は `m_商品_all.csv` と同じヘッダ、同じ件数で出力する
+- `m_商品_all_diff.csv` は、基準CSVに存在しない追加行、基準CSVから除かれた削除行、同じ `商品コード` で値が変わる更新行を含む
 - 商品カテゴリ、ブランド、メーカー、色、価格などをテンプレートベースで生成する
 - 開始日と終了日、開始時間と終了時間の整合を持たせる
 
@@ -232,7 +237,7 @@ uv run python generate_csv.py
 
 ## 9. テストで担保している事項
 
-- デフォルト実行で16ファイルが生成されること
+- デフォルト実行で17ファイルが生成されること
 - 各ファイルの件数が期待値どおりであること
 - 同一 `--seed` で完全再現できること
 - `--targets`、`--jobs`、`--gzip` の解釈が正しいこと
@@ -241,6 +246,7 @@ uv run python generate_csv.py
 - ヘッダが `docs/format/` の日本語表示名と一致すること
 - `agency_diff` が `agency_all` の部分集合であること
 - `campaign_diff` が全量更新として追加・削除・更新後の状態を表すこと
+- `product_diff` が全量更新として追加・削除・更新後の状態を表すこと
 - `compass_diff` が `compass_all` の一部を更新した内容であること
 - `corp` 全量2ファイルの分割順と一意性が保たれること
 - BFSサービスサマリがBFSエントリ番号を参照していること

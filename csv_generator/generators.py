@@ -127,7 +127,7 @@ def run_csv_write_job(
     if job.job_type == "campaign":
         generator.write_campaign_files(output_dir, compress=job.compress, progress_factory=progress_factory)
     elif job.job_type == "product":
-        generator.write_product_file(output_dir, compress=job.compress, progress_factory=progress_factory)
+        generator.write_product_files(output_dir, compress=job.compress, progress_factory=progress_factory)
     elif job.job_type == "compass":
         generator.write_compass_files(output_dir, compress=job.compress, progress_factory=progress_factory)
     elif job.job_type == "agency":
@@ -166,7 +166,8 @@ class CsvGenerator:
         self.seed = seed
         self.counts = counts
         self.values = ValueFactory(seed)
-        self.campaign_diff_change_size = self._campaign_diff_change_size()
+        self.campaign_diff_change_size = self._full_refresh_diff_change_size("campaign", "campaign_diff")
+        self.product_diff_change_size = self._full_refresh_diff_change_size("product", "product_diff")
         self.agency_diff_sample_size = counts["agency_diff"]
         self.compass_diff_sample_size = counts["compass_diff"]
 
@@ -247,9 +248,9 @@ class CsvGenerator:
             ),
         )
 
-    def _campaign_diff_change_size(self) -> int:
-        """キャンペーンdiffで削除・追加・更新に使う件数を返す。"""
-        row_count = self.counts["campaign"]
+    def _full_refresh_diff_change_size(self, base_key: str, diff_key: str) -> int:
+        """全量更新diffで削除・追加・更新に使う件数を返す。"""
+        row_count = min(self.counts[base_key], self.counts[diff_key])
         if row_count < 3:
             return 0
         return min(max(1, row_count // 10), row_count // 3)
@@ -682,20 +683,13 @@ class CsvGenerator:
             return self.values.code("X", index + 1, 8)
         return f"VAL{index % 1000}"
 
-    def product_rows(self) -> list[list[str]]:
-        """商品CSVの全行をメモリ上で生成する。"""
-        return self._build_rows(
-            self.counts["product"],
-            lambda index: self._product_row(self._product_context(index), index),
-        )
-
-    def write_product_file(
+    def write_product_files(
         self,
         output_dir: Path,
         compress: bool = False,
         progress_factory: ProgressFactory | None = None,
     ) -> None:
-        """商品CSVを逐次書き出しする。"""
+        """商品の全量CSVと全量更新差分CSVを同時に出力する。"""
         path = build_output_path(output_dir, OUTPUT_FILES["product"], compress)
         self._write_rows(
             path,
@@ -703,6 +697,18 @@ class CsvGenerator:
             self.counts["product"],
             lambda index: self._product_row(self._product_context(index), index),
             progress_reporter=self._build_progress_reporter(progress_factory, path, self.counts["product"]),
+        )
+        diff_path = build_output_path(output_dir, OUTPUT_FILES["product_diff"], compress)
+        self._write_rows(
+            diff_path,
+            self._output_headers("product", "product_diff"),
+            self.counts["product_diff"],
+            self._product_diff_row,
+            progress_reporter=self._build_progress_reporter(
+                progress_factory,
+                diff_path,
+                self.counts["product_diff"],
+            ),
         )
 
     def compass_rows(self) -> list[list[str]]:
@@ -715,6 +721,19 @@ class CsvGenerator:
     def _product_row(self, context: dict[str, str], index: int) -> list[str]:
         """商品文脈を列順の行へ変換する。"""
         return self._resolved_row(self.specs["product"], context, index, self.resolve_product_value)
+
+    def _product_diff_row(self, index: int) -> list[str]:
+        """商品diffの1行ぶんの列値を組み立てる。"""
+        change_size = self.product_diff_change_size
+        insert_start = self.counts["product_diff"] - change_size
+        if index >= insert_start:
+            insert_index = self.counts["product"] + index - insert_start
+            return self._product_row(self._product_context(insert_index), insert_index)
+
+        base_index = index + change_size
+        if index < change_size:
+            return self._product_row(self._product_diff_context(base_index), base_index)
+        return self._product_row(self._product_context(base_index), base_index)
 
     def _agency_row(self, context: dict[str, str], index: int, diff_type: str | None = None) -> list[str]:
         """取次店文脈を列順の行へ変換する。"""
@@ -1152,6 +1171,27 @@ class CsvGenerator:
             "imsi_type": str((index % 3) + 1),
             "imsi_type_official_name": "標準IMSI",
         }
+
+    def _product_diff_context(self, index: int) -> dict[str, str]:
+        """既存商品コードを維持した更新後の商品文脈を組み立てる。"""
+        context = self._product_context(index)
+        start = BASE_DATE + timedelta(days=index % 60 + 1)
+        end = start + timedelta(days=760)
+        base_name = context["product_official_name"]
+        context.update(
+            {
+                "validity_start_date": ymd(start),
+                "validity_end_date": ymd(end),
+                "sales_start_date": ymd(start + timedelta(days=10)),
+                "sales_end_date": ymd(end - timedelta(days=20)),
+                "product_official_name": f"{base_name} 改定",
+                "product_name_in_english": f"{context['product_name_in_english']} Revised",
+                "product_abbreviation": clip(f"{context['product_abbreviation']}改", 20),
+                "sales_price": str(int(context["sales_price"]) + 5000 + (index % 5) * 1000),
+                "logistics_product_code": self.values.code("LPD", index + 1, 8),
+            }
+        )
+        return context
 
     def resolve_product_value(self, column: ColumnSpec, context: dict[str, str], index: int) -> str:
         """商品列の明示値が無い場合に、列名規則から既定値を補完する。"""
