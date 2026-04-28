@@ -1699,7 +1699,7 @@ class CsvGenerator:
             "special_agreement_period": f"{12 + (base_index % 24)}ヶ月",
             "contract_period_in_months": str(12 + (base_index % 36)),
             "period_after_automatic_renewal": f"{12 + (base_index % 24)}ヶ月",
-            "initial_rental_period": f"{12 + (base_index % 12)}ヶ月",
+            "initial_rental_period": str(12 + (base_index % 12)),
             "used_rental_start_date": ymd(rental_start_date),
             "used_rental_end_date": ymd(rental_end_date),
             "maximum_number_of_lines_applicable_to_the_special_agreement": str(99 + (base_index % 20)),

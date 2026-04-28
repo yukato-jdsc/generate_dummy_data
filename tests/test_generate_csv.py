@@ -786,6 +786,19 @@ def test_bfs_summary_files_reference_generated_bfs_entries(tmp_path: Path) -> No
         assert row[linked_summary_index] == row[accessories_summary_index]
 
 
+def test_bfs_initial_rental_period_uses_smallint_values(generated_default_dir: Path) -> None:
+    """BFSエントリの初期レンタル期間は月表記ではなく整数文字列で出力する。"""
+    all_header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
+
+    initial_rental_period_index = all_header.index("初期レンタル期間")
+
+    for row in all_rows[:20] + diff_rows[:20]:
+        value = row[initial_rental_period_index]
+        assert value.isdecimal()
+        assert "ヶ月" not in value
+
+
 def assert_diff_keys_match_diff_type(
     all_rows: list[list[str]],
     diff_rows: list[list[str]],

@@ -153,7 +153,7 @@
 | 特約期間 | `special_agreement_period` | VARCHAR | 900 | － | - |
 | 契約期間月数 | `contract_period_in_months` | VARCHAR | 6 | － | - |
 | 自動更新後の期間 | `period_after_automatic_renewal` | VARCHAR | 900 | － | - |
-| 初期レンタル期間 | `initial_rental_period` | VARCHAR | 900 | － | - |
+| 初期レンタル期間 | `initial_rental_period` | SMALLINT | - | － | - |
 | 中古レンタル開始日 | `used_rental_start_date` | VARCHAR | 60 | － | - |
 | 中古レンタル終了日 | `used_rental_end_date` | VARCHAR | 60 | － | - |
 | 特約適用上限回線数 | `maximum_number_of_lines_applicable_to_the_special_agreement` | DECIMAL | 10 | － | - |
