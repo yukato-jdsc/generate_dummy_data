@@ -526,18 +526,20 @@ def test_incremental_initial_csvs_use_diff_type_i_only(generated_default_dir: Pa
         assert {row[0] for row in rows} == {"I"}
 
 
-def test_diff_csvs_mix_all_diff_types(generated_default_dir: Path) -> None:
-    """差分CSVは各ファイルで I/U/D をすべて含む。"""
-    for file_name in (
-        "m_取次店_all_diff.csv",
-        "b_hjn_com_営業決裁_diff.csv",
-        "m_hjn_smt_統一企業情報_diff.csv",
-        "b_hjn_bfs_モバイル_エントリ情報_diff.csv",
-        "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv",
-        "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv",
-    ):
+def test_diff_csvs_use_expected_diff_types(generated_default_dir: Path) -> None:
+    """差分CSVごとに定義された diff_type だけを含む。"""
+    expected_diff_types = {
+        "m_取次店_all_diff.csv": {"I", "U", "D"},
+        "b_hjn_com_営業決裁_diff.csv": {"I", "U", "D"},
+        "m_hjn_smt_統一企業情報_diff.csv": {"I", "U"},
+        "b_hjn_bfs_モバイル_エントリ情報_diff.csv": {"I", "U", "D"},
+        "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv": {"I", "U"},
+        "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv": {"I", "U"},
+    }
+
+    for file_name, expected in expected_diff_types.items():
         _, rows = read_csv(generated_default_dir, file_name)
-        assert {row[0] for row in rows} == {"I", "U", "D"}
+        assert {row[0] for row in rows} == expected
 
 
 def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir: Path) -> None:
@@ -803,6 +805,7 @@ def assert_diff_keys_match_diff_type(
     all_rows: list[list[str]],
     diff_rows: list[list[str]],
     key_index: int,
+    expected_diff_types: set[str],
 ) -> None:
     """差分種別ごとに業務キーが初期データと整合することを確認する。"""
     all_keys = {row[key_index] for row in all_rows}
@@ -813,10 +816,13 @@ def assert_diff_keys_match_diff_type(
 
     assert insert_keys
     assert update_keys
-    assert delete_keys
     assert insert_keys.isdisjoint(all_keys)
     assert update_keys.issubset(all_keys)
-    assert delete_keys.issubset(all_keys)
+    if "D" in expected_diff_types:
+        assert delete_keys
+        assert delete_keys.issubset(all_keys)
+    else:
+        assert not delete_keys
 
 
 def assert_full_refresh_diff_replaces_rows(
@@ -851,7 +857,7 @@ def test_agency_diff_keys_follow_diff_type_semantics(generated_default_dir: Path
     header, all_rows = read_csv(generated_default_dir, "m_取次店_all.csv")
     _, diff_rows = read_csv(generated_default_dir, "m_取次店_all_diff.csv")
 
-    assert_diff_keys_match_diff_type(all_rows, diff_rows, header.index("取次店コード"))
+    assert_diff_keys_match_diff_type(all_rows, diff_rows, header.index("取次店コード"), {"I", "U", "D"})
 
 
 def test_compass_diff_keys_follow_diff_type_semantics(generated_default_dir: Path) -> None:
@@ -859,7 +865,7 @@ def test_compass_diff_keys_follow_diff_type_semantics(generated_default_dir: Pat
     header, all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
 
-    assert_diff_keys_match_diff_type(all_rows, diff_rows, header.index("決裁番号"))
+    assert_diff_keys_match_diff_type(all_rows, diff_rows, header.index("決裁番号"), {"I", "U", "D"})
 
 
 def test_corp_diff_keys_follow_diff_type_semantics(generated_default_dir: Path) -> None:
@@ -868,7 +874,7 @@ def test_corp_diff_keys_follow_diff_type_semantics(generated_default_dir: Path) 
     _, all_rows_2 = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_2.csv")
     _, diff_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
 
-    assert_diff_keys_match_diff_type(all_rows_1 + all_rows_2, diff_rows, header_1.index("統一企業コード"))
+    assert_diff_keys_match_diff_type(all_rows_1 + all_rows_2, diff_rows, header_1.index("統一企業コード"), {"I", "U"})
 
 
 def test_bfs_diff_keys_follow_diff_type_semantics(generated_default_dir: Path) -> None:
@@ -882,9 +888,14 @@ def test_bfs_diff_keys_follow_diff_type_semantics(generated_default_dir: Path) -
     )
     _, accessories_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
 
-    assert_diff_keys_match_diff_type(bfs_all_rows, bfs_diff_rows, bfs_header.index("エントリ番号"))
-    assert_diff_keys_match_diff_type(device_all_rows, device_diff_rows, device_header.index("エントリ番号"))
-    assert_diff_keys_match_diff_type(accessories_all_rows, accessories_diff_rows, accessories_header.index("商品コード"))
+    assert_diff_keys_match_diff_type(bfs_all_rows, bfs_diff_rows, bfs_header.index("エントリ番号"), {"I", "U", "D"})
+    assert_diff_keys_match_diff_type(device_all_rows, device_diff_rows, device_header.index("エントリ番号"), {"I", "U"})
+    assert_diff_keys_match_diff_type(
+        accessories_all_rows,
+        accessories_diff_rows,
+        accessories_header.index("商品コード"),
+        {"I", "U"},
+    )
 
 
 def test_bfs_accessories_diff_updates_existing_product_codes(generated_default_dir: Path) -> None:

@@ -5,6 +5,11 @@ INITIAL_DIFF_TYPE = "I"
 UPDATE_DIFF_TYPE = "U"
 DELETE_DIFF_TYPE = "D"
 DIFF_TYPE_ORDER = (INITIAL_DIFF_TYPE, UPDATE_DIFF_TYPE, DELETE_DIFF_TYPE)
+DIFF_TYPE_ORDERS_BY_OUTPUT_KEY = {
+    "corp_diff": (INITIAL_DIFF_TYPE, UPDATE_DIFF_TYPE),
+    "bfs_device_diff": (INITIAL_DIFF_TYPE, UPDATE_DIFF_TYPE),
+    "bfs_accessories_diff": (INITIAL_DIFF_TYPE, UPDATE_DIFF_TYPE),
+}
 INCREMENTAL_OUTPUT_KEYS = frozenset(
     {
         "agency_all",
@@ -58,9 +63,10 @@ def build_initial_diff_types(output_key: str, row_count: int) -> list[str | None
     return [INITIAL_DIFF_TYPE] * row_count
 
 
-def build_mixed_diff_types(row_count: int) -> list[str]:
-    """差分CSV向けに再現性のある `I/U/D` の並びを返す。"""
-    return [DIFF_TYPE_ORDER[index % len(DIFF_TYPE_ORDER)] for index in range(row_count)]
+def build_mixed_diff_types(output_key: str, row_count: int) -> list[str]:
+    """差分CSV向けに出力キーごとの `diff_type` 並びを返す。"""
+    diff_type_order = DIFF_TYPE_ORDERS_BY_OUTPUT_KEY.get(output_key, DIFF_TYPE_ORDER)
+    return [diff_type_order[index % len(diff_type_order)] for index in range(row_count)]
 
 
 def prepend_diff_type(row: list[str], diff_type: str | None) -> list[str]:

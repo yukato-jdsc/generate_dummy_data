@@ -12,6 +12,13 @@
 - 参考データ: `sample_data/bfs_service_summary_devices.csv`
 - 補足: 参考CSVは502列のため、ExcelシートのうちCSV未採用の末尾2項目は記載していません。
 
+## 差分データの考え方
+
+- `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` は `diff_type` 列を先頭に持つ。
+- `diff_type=I` は初期データに存在しない `エントリ番号` を使う。
+- `diff_type=U` は初期データに存在する `エントリ番号` を使う。
+- `diff_type=D` は出力しない。
+
 ## カラム定義
 
 | 項目名 | カラム名 | 型 | 桁 | 仮名化 | 説明 |

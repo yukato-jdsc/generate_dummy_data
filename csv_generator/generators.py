@@ -331,7 +331,7 @@ class CsvGenerator:
                 all_progress.finish()
             handle.close()
         sampled.sort(key=lambda item: item[1]["agent_code"])
-        diff_types = build_mixed_diff_types(len(sampled))
+        diff_types = build_mixed_diff_types("agency_diff", len(sampled))
         diff_rows = [
             self._agency_diff_row(context, index, diff_type=diff_types[row_index], diff_index=row_index)
             for row_index, (index, context) in enumerate(sampled)
@@ -378,7 +378,7 @@ class CsvGenerator:
                 all_progress.finish()
             handle.close()
         sampled.sort(key=lambda item: item[1]["approval_number"])
-        diff_types = build_mixed_diff_types(len(sampled))
+        diff_types = build_mixed_diff_types("compass_diff", len(sampled))
         diff_rows = [
             self._compass_diff_row(context, index, diff_type=diff_types[row_index], diff_index=row_index)
             for row_index, (index, context) in enumerate(sampled)
@@ -1281,7 +1281,7 @@ class CsvGenerator:
         row_count = self._corp_row_count(variant)
         diff_types = build_initial_diff_types(output_key, row_count)
         if variant == "diff":
-            diff_types = build_mixed_diff_types(row_count)
+            diff_types = build_mixed_diff_types(output_key, row_count)
         path = build_output_path(output_dir, OUTPUT_FILES[output_key], compress)
         self._write_rows(
             path,
@@ -1501,7 +1501,7 @@ class CsvGenerator:
         """BFSファミリーの1ファイルを仕様キー別に逐次出力する。"""
         diff_types = build_initial_diff_types(output_key, self.counts[output_key])
         if variant == "diff":
-            diff_types = build_mixed_diff_types(self.counts[output_key])
+            diff_types = build_mixed_diff_types(output_key, self.counts[output_key])
         path = build_output_path(output_dir, OUTPUT_FILES[output_key], compress)
         self._write_rows(
             path,
