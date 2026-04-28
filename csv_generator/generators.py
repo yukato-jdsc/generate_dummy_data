@@ -1766,6 +1766,7 @@ class CsvGenerator:
     def _bfs_device_summary_context(self, context: dict[str, str]) -> dict[str, str]:
         """BFSサービスサマリ端末の基本列をまとめて構築する。"""
         base_index = int(context["base_index"])
+        value_index = self._bfs_device_value_index(context)
         created_at = datetime(2025, 12, 21, 11, 0, 0) + timedelta(hours=base_index % 48)
         updated_at = created_at + timedelta(minutes=15)
         return {
@@ -1850,7 +1851,16 @@ class CsvGenerator:
             "summary_update_date_and_time": updated_at.strftime("%Y/%m/%d %H:%M:%S"),
             "minimum_number_of_lines": str(1 + (base_index % 20)),
             "provision_generation_type": ["4G", "5G"][base_index % 2],
+            "current_device_contract_period": ["12ヶ月", "24ヶ月", "36ヶ月", "48ヶ月"][value_index % 4],
+            "reflected_in_summary_unit": ["対象", "対象外"][value_index % 2],
         }
+
+    def _bfs_device_value_index(self, context: dict[str, str]) -> int:
+        """BFS端末で更新後の値生成に使う基準インデックスを返す。"""
+        base_index = int(context["base_index"])
+        if context["variant"] == "diff" and context.get("diff_type") == UPDATE_DIFF_TYPE:
+            return base_index + 1
+        return base_index
 
     def _populate_bfs_device_option_context(self, device_context: dict[str, str], base_index: int) -> None:
         """BFSサービスサマリ端末の繰り返し項目を埋める。"""
@@ -1984,8 +1994,9 @@ class CsvGenerator:
     def _bfs_device_row(self, context: dict[str, str], index: int, diff_type: str | None = None) -> list[str]:
         """BFSサービスサマリ端末の1行を生成する。"""
         device_context = dict(context)
+        device_context["diff_type"] = diff_type or ""
         base_index = int(context["base_index"])
-        device_context.update(self._bfs_device_summary_context(context))
+        device_context.update(self._bfs_device_summary_context(device_context))
         self._populate_bfs_device_option_context(device_context, base_index)
         self._populate_bfs_device_relative_context(device_context, base_index)
         self._populate_bfs_device_other_relative_context(device_context)

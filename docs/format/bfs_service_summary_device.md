@@ -525,3 +525,5 @@
 | 疑似シェア試算容量 | `estimated_pseudo_share_capacity` | VARCHAR | 15 | － | - |
 | 疑似シェア超過料 | `estimated_pseudo_share_excess_charge` | VARCHAR | 15 | － | - |
 | esim登録 | `esim_registration` | VARCHAR | 2295 | － | - |
+| 現端末契約期間 | `current_device_contract_period`  | VARCHAR | 60 | - | - |
+| サマリ単位反映 | `reflected_in_summary_unit` | VARCHAR | 60 | - | - |

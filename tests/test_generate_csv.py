@@ -645,7 +645,7 @@ def test_load_specs_includes_bfs_entry_information() -> None:
     assert "bfs_device" in specs
     assert "bfs_accessories" in specs
     assert len(specs["bfs"]) == 216
-    assert len(specs["bfs_device"]) == 502
+    assert len(specs["bfs_device"]) == 504
     assert len(specs["bfs_accessories"]) == 22
     assert [column.name for column in specs["bfs"][:4]] == ["entry_number", "subject", "creation_category", "order_type"]
     assert [column.header_label for column in specs["bfs"][:4]] == ["エントリ番号", "件名", "作成区分", "オーダ種別"]
@@ -786,6 +786,38 @@ def test_bfs_summary_files_reference_generated_bfs_entries(tmp_path: Path) -> No
         assert row[accessories_entry_index] in bfs_entry_numbers
         assert row[accessories_summary_index].startswith("SM")
         assert row[linked_summary_index] == row[accessories_summary_index]
+
+
+def test_bfs_device_headers_include_new_columns(generated_default_dir: Path) -> None:
+    """BFSサービスサマリ端末ヘッダーの末尾に新規2項目を含める。"""
+    header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
+
+    assert header[-2:] == ["現端末契約期間", "サマリ単位反映"]
+
+
+def test_bfs_device_new_columns_are_populated_and_updated(generated_default_dir: Path) -> None:
+    """BFSサービスサマリ端末の新規2項目は全量・差分で空欄にならず、更新差分で変化する。"""
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+
+    entry_number_index = header.index("エントリ番号")
+    current_device_contract_period_index = header.index("現端末契約期間")
+    reflected_in_summary_unit_index = header.index("サマリ単位反映")
+    all_by_entry_number = {row[entry_number_index]: row for row in all_rows}
+    updated_rows = [row for row in diff_rows if row[0] == "U"]
+
+    for row in all_rows[:20] + diff_rows[:20]:
+        assert row[current_device_contract_period_index] != ""
+        assert row[reflected_in_summary_unit_index] != ""
+
+    assert updated_rows
+    assert any(
+        row[current_device_contract_period_index]
+        != all_by_entry_number[row[entry_number_index]][current_device_contract_period_index]
+        or row[reflected_in_summary_unit_index]
+        != all_by_entry_number[row[entry_number_index]][reflected_in_summary_unit_index]
+        for row in updated_rows
+    )
 
 
 def test_bfs_initial_rental_period_uses_smallint_values(generated_default_dir: Path) -> None:
