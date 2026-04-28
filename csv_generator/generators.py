@@ -1942,32 +1942,43 @@ class CsvGenerator:
             device_context[f"r_relative_other_amount_{option_index}"] = str(1_500 + option_index * 200)
             device_context[f"r_relative_other_period_{option_index}"] = str(6 + option_index)
 
+    def _bfs_accessories_value_index(self, context: dict[str, str]) -> int:
+        """BFS付属品で更新後の値生成に使う基準インデックスを返す。"""
+        base_index = int(context["base_index"])
+        if context["variant"] == "diff" and context.get("diff_type") == UPDATE_DIFF_TYPE:
+            return self.counts["bfs_accessories_all"] + base_index
+        return base_index
+
     def _bfs_accessories_summary_context(self, context: dict[str, str]) -> dict[str, str]:
         """BFSサービスサマリ付属品の基本列をまとめて構築する。"""
         base_index = int(context["base_index"])
+        value_index = self._bfs_accessories_value_index(context)
         summary_number = f"{context['summary_number']}001"
+        product_code = self.values.code("ACC", base_index + 1, 3)
+        if context["variant"] == "diff" and context.get("diff_type") == INITIAL_DIFF_TYPE:
+            product_code = self.values.code("ACI", base_index + 1, 4)
         return {
             "summary_number": summary_number,
-            "serial_number_accessories": ["有", "無"][base_index % 2],
-            "product_code": self.values.code("ACC", base_index + 1, 3),
-            "manufacturer": ACCESSORY_MANUFACTURERS[base_index % len(ACCESSORY_MANUFACTURERS)],
-            "product_name": ACCESSORY_PRODUCT_NAMES[base_index % len(ACCESSORY_PRODUCT_NAMES)],
-            "color_1": COLORS[base_index % len(COLORS)][0],
-            "quantity_1": str(10 + (base_index % 4) * 5),
-            "color_2": COLORS[(base_index + 1) % len(COLORS)][0],
-            "quantity_2": str(5 + (base_index % 3) * 5),
-            "color_3": COLORS[(base_index + 2) % len(COLORS)][0],
-            "quantity_3": str(1 + (base_index % 5)),
-            "color_4": COLORS[(base_index + 3) % len(COLORS)][0],
-            "quantity_4": str(1 + ((base_index + 1) % 4)),
-            "color_5": COLORS[(base_index + 4) % len(COLORS)][0],
-            "quantity_5": str(1 + ((base_index + 2) % 3)),
-            "standard_price_of_accessories": str(2_800 + (base_index % 6) * 400),
-            "provision_fee": str(2_000 + (base_index % 6) * 300),
-            "usage_points": str((base_index % 4) * 100),
-            "cost": str(1_200 + (base_index % 6) * 200),
+            "serial_number_accessories": ["有", "無"][value_index % 2],
+            "product_code": product_code,
+            "manufacturer": ACCESSORY_MANUFACTURERS[value_index % len(ACCESSORY_MANUFACTURERS)],
+            "product_name": ACCESSORY_PRODUCT_NAMES[value_index % len(ACCESSORY_PRODUCT_NAMES)],
+            "color_1": COLORS[value_index % len(COLORS)][0],
+            "quantity_1": str(10 + (value_index % 4) * 5),
+            "color_2": COLORS[(value_index + 1) % len(COLORS)][0],
+            "quantity_2": str(5 + (value_index % 3) * 5),
+            "color_3": COLORS[(value_index + 2) % len(COLORS)][0],
+            "quantity_3": str(1 + (value_index % 5)),
+            "color_4": COLORS[(value_index + 3) % len(COLORS)][0],
+            "quantity_4": str(1 + ((value_index + 1) % 4)),
+            "color_5": COLORS[(value_index + 4) % len(COLORS)][0],
+            "quantity_5": str(1 + ((value_index + 2) % 3)),
+            "standard_price_of_accessories": str(2_800 + (value_index % 6) * 400),
+            "provision_fee": str(2_000 + (value_index % 6) * 300),
+            "usage_points": str((value_index % 4) * 100),
+            "cost": str(1_200 + (value_index % 6) * 200),
             "linked_summary_number": summary_number,
-            "cost_contingency": str(100 + (base_index % 8) * 20),
+            "cost_contingency": str(100 + (value_index % 8) * 20),
         }
 
     def _bfs_device_row(self, context: dict[str, str], index: int, diff_type: str | None = None) -> list[str]:
@@ -1987,7 +1998,8 @@ class CsvGenerator:
     def _bfs_accessories_row(self, context: dict[str, str], index: int, diff_type: str | None = None) -> list[str]:
         """BFSサービスサマリ付属品の1行を生成する。"""
         accessories_context = dict(context)
-        accessories_context.update(self._bfs_accessories_summary_context(context))
+        accessories_context["diff_type"] = diff_type or ""
+        accessories_context.update(self._bfs_accessories_summary_context(accessories_context))
         row = self._resolved_row(
             self.specs["bfs_accessories"],
             accessories_context,

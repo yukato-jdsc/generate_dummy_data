@@ -871,7 +871,33 @@ def test_bfs_diff_keys_follow_diff_type_semantics(generated_default_dir: Path) -
 
     assert_diff_keys_match_diff_type(bfs_all_rows, bfs_diff_rows, bfs_header.index("エントリ番号"))
     assert_diff_keys_match_diff_type(device_all_rows, device_diff_rows, device_header.index("エントリ番号"))
-    assert_diff_keys_match_diff_type(accessories_all_rows, accessories_diff_rows, accessories_header.index("エントリ番号"))
+    assert_diff_keys_match_diff_type(accessories_all_rows, accessories_diff_rows, accessories_header.index("商品コード"))
+
+
+def test_bfs_accessories_diff_updates_existing_product_codes(generated_default_dir: Path) -> None:
+    """BFS付属品差分の更新行は商品コードを維持しつつ主要列を変更する。"""
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
+
+    product_code_index = header.index("商品コード")
+    manufacturer_index = header.index("メーカ")
+    product_name_index = header.index("商品名")
+    quantity_1_index = header.index("台数1")
+    price_index = header.index("付属品標準価格")
+
+    all_by_product_code = {row[product_code_index]: row for row in all_rows}
+    updated_rows = [row for row in diff_rows if row[0] == "U"]
+
+    assert updated_rows
+    for row in updated_rows:
+        all_row = all_by_product_code[row[product_code_index]]
+        changed_columns = (
+            row[manufacturer_index] != all_row[manufacturer_index]
+            or row[product_name_index] != all_row[product_name_index]
+            or row[quantity_1_index] != all_row[quantity_1_index]
+            or row[price_index] != all_row[price_index]
+        )
+        assert changed_columns
 
 
 def test_campaign_diff_replaces_deleted_added_and_updated_rows(generated_default_dir: Path) -> None:
