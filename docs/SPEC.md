@@ -210,10 +210,12 @@ uv run python generate_csv.py
 - すべてのCSVで先頭列に `diff_type` を追加し、その次に `エントリ番号` を置く
 - 全量CSVの `diff_type` は全件 `I`
 - `b_hjn_bfs_モバイル_エントリ情報_diff.csv` の `diff_type` は `I` `U` `D` を混在させる
-- `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` と `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` の `diff_type` は `I` `U` を混在させる
+- `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` の `diff_type` は `I` のみを出力する
+- `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` の `diff_type` は `I` `U` を混在させる
 - `エントリ番号` は `EN`、`サマリ番号` は `SM` プレフィックスで生成する
-- `diff_type=I` は初期データに未存在の `エントリ番号` / `サマリ番号` を使う
-- `diff_type=U` は初期データに存在する `エントリ番号` / `サマリ番号` を使う
+- `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` の `diff_type=I` は初期データに未存在の `エントリ番号` / `サマリ番号` を使う
+- `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` の `diff_type=I` は初期データに未存在の `商品コード` を使う
+- `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` の `diff_type=U` は初期データに存在する `商品コード` を使う
 - `b_hjn_bfs_モバイル_エントリ情報_diff.csv` の `diff_type=D` は初期データに存在する `エントリ番号` を使う
 - `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` と `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` は `diff_type=D` を出力しない
 - サービスサマリ系は同一実行で生成したBFSエントリと参照整合する

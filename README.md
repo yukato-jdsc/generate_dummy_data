@@ -124,7 +124,8 @@ uv run python generate_csv.py --seed 7
 初期データ側のCSVは全行 `I` です。  
 差分CSVは原則 `I` `U` `D` を混在させます。  
 差分CSVでは `diff_type=I` の行は初期データに存在しない業務キー、`diff_type=U` と `diff_type=D` の行は初期データに存在する業務キーを使います。  
-ただし `m_hjn_smt_統一企業情報_diff.csv`、`b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv`、`b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` は `I` と `U` のみを出力し、`D` は出力しません。
+ただし `m_hjn_smt_統一企業情報_diff.csv`、`b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` は `I` と `U` のみを出力し、`D` は出力しません。  
+`b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` は `I` のみを出力し、業務キーも初期データに未存在の値のみを使います。  
 `m_キャンペーン.csv`、`m_キャンペーン_diff.csv`、`m_商品_all.csv`、`m_商品_all_diff.csv` は全量更新データのため `diff_type` を付与しません。
 
 ## キャンペーンdiff CSVについて
