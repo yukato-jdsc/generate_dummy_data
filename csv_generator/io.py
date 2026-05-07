@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import gzip
+from datetime import date, timedelta
 from pathlib import Path
 from typing import TextIO
 
@@ -28,6 +29,24 @@ def build_output_path(output_dir: Path, output_name: str, compress: bool) -> Pat
     if compress:
         return path.with_name(f"{path.name}.gz")
     return path
+
+
+def dated_output_name(output_name: str, base_date: date) -> str:
+    """出力CSV名に基準日または差分用の翌日をYYYYMMDD形式で付与する。"""
+    output_date = base_date
+    if Path(output_name).stem.endswith("_diff"):
+        output_date = base_date + timedelta(days=1)
+    return f"{output_date:%Y%m%d}_{output_name}"
+
+
+def build_dated_output_path(
+    output_dir: Path,
+    output_name: str,
+    compress: bool,
+    base_date: date,
+) -> Path:
+    """日付プレフィックス付きの出力ファイルパスを組み立てる。"""
+    return build_output_path(output_dir, dated_output_name(output_name, base_date), compress)
 
 
 def write_csv(

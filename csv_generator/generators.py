@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from .config import (
@@ -36,7 +36,7 @@ from .diff_type import (
     prepend_diff_type,
 )
 from .format_spec import load_specs
-from .io import build_output_path, open_csv_writer, write_csv
+from .io import build_dated_output_path, open_csv_writer, write_csv
 from .progress import NullProgressReporter, QueueProgressReporter, TqdmProgressReporter
 from .values import ValueFactory, clip, hms, ymd, ymd_dash, ymdhm, ymdhms_millis
 
@@ -99,6 +99,7 @@ class CsvWriteJob:
     seed: int
     counts: dict[str, int]
     compress: bool
+    output_date: date
     output_key: str | None = None
     spec_key: str | None = None
     variant: str | None = None
@@ -122,7 +123,7 @@ def run_csv_write_job(
     if progress_factory is None and progress_queue is not None:
         progress_factory = _build_queue_progress_factory(progress_queue)
     specs = load_specs(Path(job.format_dir))
-    generator = CsvGenerator(specs=specs, seed=job.seed, counts=job.counts)
+    generator = CsvGenerator(specs=specs, seed=job.seed, counts=job.counts, output_date=job.output_date)
     output_dir = Path(job.output_dir)
     if job.job_type == "campaign":
         generator.write_campaign_files(output_dir, compress=job.compress, progress_factory=progress_factory)
@@ -161,10 +162,17 @@ def run_csv_write_job(
 class CsvGenerator:
     """各CSVの行データを生成し、必要に応じてファイルへ出力する。"""
 
-    def __init__(self, specs: dict[str, list[ColumnSpec]], seed: int, counts: dict[str, int]) -> None:
+    def __init__(
+        self,
+        specs: dict[str, list[ColumnSpec]],
+        seed: int,
+        counts: dict[str, int],
+        output_date: date | None = None,
+    ) -> None:
         self.specs = specs
         self.seed = seed
         self.counts = counts
+        self.output_date = output_date or date.today()
         self.values = ValueFactory(seed)
         self.campaign_diff_change_size = self._full_refresh_diff_change_size("campaign", "campaign_diff")
         self.product_diff_change_size = self._full_refresh_diff_change_size("product", "product_diff")
@@ -212,6 +220,10 @@ class CsvGenerator:
             return None
         return progress_factory(path, row_count)
 
+    def _output_path(self, output_dir: Path, output_key: str, compress: bool) -> Path:
+        """出力キーから日付プレフィックス付き実ファイルパスを返す。"""
+        return build_dated_output_path(output_dir, OUTPUT_FILES[output_key], compress, self.output_date)
+
     def _is_insert_diff_type(self, diff_type: str | None) -> bool:
         """差分種別が新規追加かどうかを返す。"""
         return diff_type == INITIAL_DIFF_TYPE
@@ -227,7 +239,7 @@ class CsvGenerator:
         progress_factory: ProgressFactory | None = None,
     ) -> None:
         """キャンペーンの全量CSVと全量更新差分CSVを同時に出力する。"""
-        path = build_output_path(output_dir, OUTPUT_FILES["campaign"], compress)
+        path = self._output_path(output_dir, "campaign", compress)
         self._write_rows(
             path,
             self._output_headers("campaign", "campaign"),
@@ -235,7 +247,7 @@ class CsvGenerator:
             self._campaign_row,
             progress_reporter=self._build_progress_reporter(progress_factory, path, self.counts["campaign"]),
         )
-        diff_path = build_output_path(output_dir, OUTPUT_FILES["campaign_diff"], compress)
+        diff_path = self._output_path(output_dir, "campaign_diff", compress)
         self._write_rows(
             diff_path,
             self._output_headers("campaign", "campaign_diff"),
@@ -312,7 +324,7 @@ class CsvGenerator:
         diff_headers = self._output_headers("agency", "agency_diff")
         sampled: list[tuple[int, dict[str, str]]] = []
         sampler = random.Random(self.seed)
-        all_path = build_output_path(output_dir, OUTPUT_FILES["agency_all"], compress)
+        all_path = self._output_path(output_dir, "agency_all", compress)
         all_progress = self._build_progress_reporter(progress_factory, all_path, self.counts["agency_all"])
         all_diff_types = build_initial_diff_types("agency_all", self.counts["agency_all"])
         handle, writer = open_csv_writer(all_path)
@@ -336,7 +348,7 @@ class CsvGenerator:
             self._agency_diff_row(context, index, diff_type=diff_types[row_index], diff_index=row_index)
             for row_index, (index, context) in enumerate(sampled)
         ]
-        diff_path = build_output_path(output_dir, OUTPUT_FILES["agency_diff"], compress)
+        diff_path = self._output_path(output_dir, "agency_diff", compress)
         diff_progress = self._build_progress_reporter(progress_factory, diff_path, len(diff_rows))
         write_csv(diff_path, diff_headers, diff_rows, progress_reporter=diff_progress)
 
@@ -359,7 +371,7 @@ class CsvGenerator:
         diff_headers = self._output_headers("compass", "compass_diff")
         sampled: list[tuple[int, dict[str, str]]] = []
         sampler = random.Random(self.seed + 1)
-        all_path = build_output_path(output_dir, OUTPUT_FILES["compass_all"], compress)
+        all_path = self._output_path(output_dir, "compass_all", compress)
         all_progress = self._build_progress_reporter(progress_factory, all_path, self.counts["compass_all"])
         all_diff_types = build_initial_diff_types("compass_all", self.counts["compass_all"])
         handle, writer = open_csv_writer(all_path)
@@ -383,7 +395,7 @@ class CsvGenerator:
             self._compass_diff_row(context, index, diff_type=diff_types[row_index], diff_index=row_index)
             for row_index, (index, context) in enumerate(sampled)
         ]
-        diff_path = build_output_path(output_dir, OUTPUT_FILES["compass_diff"], compress)
+        diff_path = self._output_path(output_dir, "compass_diff", compress)
         diff_progress = self._build_progress_reporter(progress_factory, diff_path, len(diff_rows))
         write_csv(diff_path, diff_headers, diff_rows, progress_reporter=diff_progress)
 
@@ -690,7 +702,7 @@ class CsvGenerator:
         progress_factory: ProgressFactory | None = None,
     ) -> None:
         """商品の全量CSVと全量更新差分CSVを同時に出力する。"""
-        path = build_output_path(output_dir, OUTPUT_FILES["product"], compress)
+        path = self._output_path(output_dir, "product", compress)
         self._write_rows(
             path,
             self._output_headers("product", "product"),
@@ -698,7 +710,7 @@ class CsvGenerator:
             lambda index: self._product_row(self._product_context(index), index),
             progress_reporter=self._build_progress_reporter(progress_factory, path, self.counts["product"]),
         )
-        diff_path = build_output_path(output_dir, OUTPUT_FILES["product_diff"], compress)
+        diff_path = self._output_path(output_dir, "product_diff", compress)
         self._write_rows(
             diff_path,
             self._output_headers("product", "product_diff"),
@@ -1282,7 +1294,7 @@ class CsvGenerator:
         diff_types = build_initial_diff_types(output_key, row_count)
         if variant == "diff":
             diff_types = build_mixed_diff_types(output_key, row_count)
-        path = build_output_path(output_dir, OUTPUT_FILES[output_key], compress)
+        path = self._output_path(output_dir, output_key, compress)
         self._write_rows(
             path,
             self._output_headers("corp", output_key),
@@ -1502,7 +1514,7 @@ class CsvGenerator:
         diff_types = build_initial_diff_types(output_key, self.counts[output_key])
         if variant == "diff":
             diff_types = build_mixed_diff_types(output_key, self.counts[output_key])
-        path = build_output_path(output_dir, OUTPUT_FILES[output_key], compress)
+        path = self._output_path(output_dir, output_key, compress)
         self._write_rows(
             path,
             self._output_headers(spec_key, output_key),

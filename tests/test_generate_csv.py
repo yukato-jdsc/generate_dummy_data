@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 import tomllib
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
@@ -23,11 +24,17 @@ from csv_generator.cli import (
 from csv_generator.config import DEFAULT_COUNTS
 from csv_generator.format_spec import load_specs, parse_section_columns
 from csv_generator.generators import CsvGenerator
-from csv_generator.io import build_output_path
+from csv_generator.io import (
+    build_dated_output_path,
+    build_output_path,
+    dated_output_name,
+)
 from csv_generator.progress import NullProgressReporter, TqdmProgressReporter
 
 SCRIPT = ROOT / "generate_csv.py"
-DEFAULT_OUTPUT_FILES = [
+TODAY = date.today()
+TOMORROW = TODAY + timedelta(days=1)
+BASE_OUTPUT_FILES = [
     "b_hjn_bfs_モバイル_エントリ情報.csv",
     "b_hjn_bfs_モバイル_エントリ情報_diff.csv",
     "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv",
@@ -46,6 +53,7 @@ DEFAULT_OUTPUT_FILES = [
     "m_商品_all.csv",
     "m_商品_all_diff.csv",
 ]
+DEFAULT_OUTPUT_FILES = sorted(dated_output_name(name, TODAY) for name in BASE_OUTPUT_FILES)
 
 
 def test_unit_tests_do_not_use_full_option() -> None:
@@ -79,6 +87,11 @@ def run_script(
 def read_csv(directory: Path, name: str) -> tuple[list[str], list[list[str]]]:
     """CSV のヘッダーとデータ行を読み込む。"""
     path = directory / name
+    if not path.exists():
+        if name.endswith(".csv.gz"):
+            path = directory / f"{dated_output_name(name.removesuffix('.gz'), TODAY)}.gz"
+        else:
+            path = directory / dated_output_name(name, TODAY)
     if path.suffix == ".gz":
         handle = gzip.open(path, "rt", encoding="utf-8-sig", newline="")
     else:
@@ -91,6 +104,12 @@ def read_csv(directory: Path, name: str) -> tuple[list[str], list[list[str]]]:
 def generated_files(directory: Path) -> list[str]:
     """生成された CSV ファイル名をソートして返す。"""
     return sorted(path.name for path in directory.iterdir() if path.is_file())
+
+
+def expected_output_files(*names: str, compress: bool = False) -> list[str]:
+    """論理CSV名から日付付きの期待ファイル名一覧を返す。"""
+    suffix = ".gz" if compress else ""
+    return sorted(f"{dated_output_name(name, TODAY)}{suffix}" for name in names)
 
 
 def load_pyproject() -> dict[str, object]:
@@ -181,13 +200,13 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
 
 def test_targets_campaign_only_generates_campaign_files(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "campaign")
-    assert generated_files(tmp_path) == ["m_キャンペーン.csv", "m_キャンペーン_diff.csv"]
+    assert generated_files(tmp_path) == expected_output_files("m_キャンペーン.csv", "m_キャンペーン_diff.csv")
 
 
 def test_targets_product_only_generates_product_files(tmp_path: Path) -> None:
     """product 指定では商品全量と全量更新diffだけを生成する。"""
     run_script(str(tmp_path), "--targets", "product")
-    assert generated_files(tmp_path) == ["m_商品_all.csv", "m_商品_all_diff.csv"]
+    assert generated_files(tmp_path) == expected_output_files("m_商品_all.csv", "m_商品_all_diff.csv")
 
 
 def test_pyproject_includes_ruff_in_dev_dependencies() -> None:
@@ -219,29 +238,29 @@ def test_readme_mentions_ruff_check_command() -> None:
 
 def test_targets_compass_only_generates_single_file(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "compass")
-    assert generated_files(tmp_path) == ["b_hjn_com_営業決裁.csv", "b_hjn_com_営業決裁_diff.csv"]
+    assert generated_files(tmp_path) == expected_output_files("b_hjn_com_営業決裁.csv", "b_hjn_com_営業決裁_diff.csv")
 
 
 def test_targets_bfs_only_generates_two_files(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "bfs")
-    assert generated_files(tmp_path) == [
+    assert generated_files(tmp_path) == expected_output_files(
         "b_hjn_bfs_モバイル_エントリ情報.csv",
         "b_hjn_bfs_モバイル_エントリ情報_diff.csv",
         "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv",
         "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv",
         "b_hjn_bfs_モバイル_サービスサマリ_端末.csv",
         "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv",
-    ]
+    )
 
 
 def test_targets_corp_only_generates_three_files(tmp_path: Path) -> None:
     """corp 指定では統一企業情報の3ファイルだけを生成する。"""
     run_script(str(tmp_path), "--targets", "corp")
-    assert generated_files(tmp_path) == [
+    assert generated_files(tmp_path) == expected_output_files(
         "m_hjn_smt_統一企業情報_1.csv",
         "m_hjn_smt_統一企業情報_2.csv",
         "m_hjn_smt_統一企業情報_diff.csv",
-    ]
+    )
 
 
 def test_parse_targets_trims_values_and_defaults_when_empty() -> None:
@@ -299,9 +318,13 @@ def test_gzip_option_outputs_gzip_csv(tmp_path: Path) -> None:
     """gzip指定時は通常件数でも `.csv.gz` を生成する。"""
     completed = run_script(str(tmp_path), "--targets", "campaign", "--gzip")
 
-    assert generated_files(tmp_path) == ["m_キャンペーン.csv.gz", "m_キャンペーン_diff.csv.gz"]
-    assert "m_キャンペーン.csv.gz" in completed.stdout
-    assert "m_キャンペーン_diff.csv.gz" in completed.stdout
+    assert generated_files(tmp_path) == expected_output_files(
+        "m_キャンペーン.csv",
+        "m_キャンペーン_diff.csv",
+        compress=True,
+    )
+    assert f"{TODAY:%Y%m%d}_m_キャンペーン.csv.gz" in completed.stdout
+    assert f"{TOMORROW:%Y%m%d}_m_キャンペーン_diff.csv.gz" in completed.stdout
     _, rows = read_csv(tmp_path, "m_キャンペーン.csv.gz")
     _, diff_rows = read_csv(tmp_path, "m_キャンペーン_diff.csv.gz")
     assert len(rows) == 50
@@ -367,7 +390,7 @@ def test_jobs_parallel_output_generates_expected_files(tmp_path: Path) -> None:
     targets = "campaign,agency,compass,product"
     completed = run_script(str(parallel_dir), "--targets", targets, "--seed", "7", "--jobs", "2", timeout=120)
 
-    assert generated_files(parallel_dir) == [
+    assert generated_files(parallel_dir) == expected_output_files(
         "b_hjn_com_営業決裁.csv",
         "b_hjn_com_営業決裁_diff.csv",
         "m_キャンペーン.csv",
@@ -376,7 +399,7 @@ def test_jobs_parallel_output_generates_expected_files(tmp_path: Path) -> None:
         "m_取次店_all_diff.csv",
         "m_商品_all.csv",
         "m_商品_all_diff.csv",
-    ]
+    )
     assert "0%" not in completed.stdout
     assert "100%" not in completed.stdout
 
@@ -385,6 +408,22 @@ def test_output_path_adds_gzip_suffix_when_compressing(tmp_path: Path) -> None:
     """圧縮時は実ファイル名が `.csv.gz` になる。"""
     actual = build_output_path(tmp_path, "sample.csv", True)
     assert actual.name == "sample.csv.gz"
+
+
+def test_dated_output_name_uses_next_day_for_diff_files() -> None:
+    """差分CSVだけ基準日の翌日をファイル名プレフィックスに使う。"""
+    base_date = date(2026, 5, 1)
+
+    assert dated_output_name("m_キャンペーン.csv", base_date) == "20260501_m_キャンペーン.csv"
+    assert dated_output_name("m_キャンペーン_diff.csv", base_date) == "20260502_m_キャンペーン_diff.csv"
+    assert dated_output_name("m_商品_all_diff.csv", base_date) == "20260502_m_商品_all_diff.csv"
+
+
+def test_dated_output_path_keeps_csv_gzip_suffix(tmp_path: Path) -> None:
+    """日付付き出力パスでもgzip時は `.csv.gz` を末尾に付ける。"""
+    actual = build_dated_output_path(tmp_path, "m_キャンペーン_diff.csv", True, date(2026, 5, 1))
+
+    assert actual.name == "20260502_m_キャンペーン_diff.csv.gz"
 
 
 def test_write_target_csv_can_write_gzip(tmp_path: Path) -> None:

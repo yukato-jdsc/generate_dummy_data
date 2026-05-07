@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import os
 from concurrent.futures import ProcessPoolExecutor
+from datetime import date
 from multiprocessing import Manager
 from pathlib import Path
 from queue import Empty
@@ -23,7 +24,7 @@ from .generators import (
     ProgressFactory,
     run_csv_write_job,
 )
-from .io import build_output_path, write_csv
+from .io import build_dated_output_path, build_output_path, write_csv
 from .progress import (
     NullProgressReporter,
     ProgressDisplayManager,
@@ -111,6 +112,26 @@ def announce_outputs(paths: list[Path]) -> None:
         announce_output(path)
 
 
+def build_output_path_for_key(
+    output_dir: Path,
+    output_key: str,
+    compress: bool,
+    output_date: date,
+) -> Path:
+    """出力キーから日付プレフィックス付き実ファイルパスを返す。"""
+    return build_dated_output_path(output_dir, OUTPUT_FILES[output_key], compress, output_date)
+
+
+def build_output_paths_for_keys(
+    output_dir: Path,
+    output_keys: tuple[str, ...],
+    compress: bool,
+    output_date: date,
+) -> list[Path]:
+    """複数の出力キーを日付プレフィックス付き実ファイルパスへ変換する。"""
+    return [build_output_path_for_key(output_dir, output_key, compress, output_date) for output_key in output_keys]
+
+
 def build_jobs(
     targets: list[str],
     output_dir: Path,
@@ -118,6 +139,7 @@ def build_jobs(
     seed: int,
     counts: dict[str, int],
     compress: bool,
+    output_date: date,
 ) -> list[CsvWriteJob]:
     """target 指定をファイル単位の実行ジョブへ展開する。"""
     jobs: list[CsvWriteJob] = []
@@ -127,6 +149,7 @@ def build_jobs(
         "seed": seed,
         "counts": counts,
         "compress": compress,
+        "output_date": output_date,
     }
     for target in targets:
         if target == "campaign":
@@ -159,27 +182,21 @@ def job_output_paths(jobs: list[CsvWriteJob], output_dir: Path) -> list[Path]:
     paths: list[Path] = []
     for job in jobs:
         if job.job_type == "campaign":
-            paths.extend(
-                build_output_path(output_dir, OUTPUT_FILES[output_key], job.compress)
-                for output_key in CAMPAIGN_OUTPUT_KEYS
-            )
+            paths.extend(build_output_paths_for_keys(output_dir, CAMPAIGN_OUTPUT_KEYS, job.compress, job.output_date))
             continue
         if job.job_type == "agency":
-            paths.append(build_output_path(output_dir, OUTPUT_FILES["agency_all"], job.compress))
-            paths.append(build_output_path(output_dir, OUTPUT_FILES["agency_diff"], job.compress))
-            continue
-        if job.job_type == "compass":
-            paths.append(build_output_path(output_dir, OUTPUT_FILES["compass_all"], job.compress))
-            paths.append(build_output_path(output_dir, OUTPUT_FILES["compass_diff"], job.compress))
-            continue
-        if job.job_type == "product":
             paths.extend(
-                build_output_path(output_dir, OUTPUT_FILES[output_key], job.compress)
-                for output_key in PRODUCT_OUTPUT_KEYS
+                build_output_paths_for_keys(output_dir, ("agency_all", "agency_diff"), job.compress, job.output_date)
             )
             continue
+        if job.job_type == "compass":
+            paths.extend(build_output_paths_for_keys(output_dir, COMPASS_OUTPUT_KEYS, job.compress, job.output_date))
+            continue
+        if job.job_type == "product":
+            paths.extend(build_output_paths_for_keys(output_dir, PRODUCT_OUTPUT_KEYS, job.compress, job.output_date))
+            continue
         assert job.output_key is not None
-        paths.append(build_output_path(output_dir, OUTPUT_FILES[job.output_key], job.compress))
+        paths.append(build_output_path_for_key(output_dir, job.output_key, job.compress, job.output_date))
     return paths
 
 
@@ -247,9 +264,7 @@ def _write_campaign_csvs(
     compress: bool,
 ) -> None:
     """campaign 対象の全量・全量更新diff CSVを書き出す。"""
-    announce_outputs(
-        [build_output_path(output_dir, OUTPUT_FILES[output_key], compress) for output_key in CAMPAIGN_OUTPUT_KEYS]
-    )
+    announce_outputs(build_output_paths_for_keys(output_dir, CAMPAIGN_OUTPUT_KEYS, compress, generator.output_date))
     generator.write_campaign_files(output_dir, compress=compress, progress_factory=build_progress_factory())
 
 
@@ -259,28 +274,19 @@ def _write_product_csvs(
     compress: bool,
 ) -> None:
     """product 対象の全量・全量更新diff CSVを書き出す。"""
-    announce_outputs(
-        [build_output_path(output_dir, OUTPUT_FILES[output_key], compress) for output_key in PRODUCT_OUTPUT_KEYS]
-    )
+    announce_outputs(build_output_paths_for_keys(output_dir, PRODUCT_OUTPUT_KEYS, compress, generator.output_date))
     generator.write_product_files(output_dir, compress=compress, progress_factory=build_progress_factory())
 
 
 def _write_agency_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) -> None:
     """agency 対象の全量・差分CSVを書き出す。"""
-    announce_outputs(
-        [
-            build_output_path(output_dir, OUTPUT_FILES["agency_all"], compress),
-            build_output_path(output_dir, OUTPUT_FILES["agency_diff"], compress),
-        ]
-    )
+    announce_outputs(build_output_paths_for_keys(output_dir, ("agency_all", "agency_diff"), compress, generator.output_date))
     generator.write_agency_files(output_dir, compress=compress, progress_factory=build_progress_factory())
 
 
 def _write_compass_csv(output_dir: Path, generator: CsvGenerator, compress: bool) -> None:
     """compass 対象の全量・差分CSVを書き出す。"""
-    announce_outputs(
-        [build_output_path(output_dir, OUTPUT_FILES[output_key], compress) for output_key in COMPASS_OUTPUT_KEYS]
-    )
+    announce_outputs(build_output_paths_for_keys(output_dir, COMPASS_OUTPUT_KEYS, compress, generator.output_date))
     generator.write_compass_files(
         output_dir,
         compress=compress,
@@ -291,23 +297,26 @@ def _write_compass_csv(output_dir: Path, generator: CsvGenerator, compress: bool
 def _write_bfs_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) -> None:
     """bfs 対象の全量・差分CSVを書き出す。"""
     announce_outputs(
-        [
-            build_output_path(output_dir, OUTPUT_FILES["bfs_all"], compress),
-            build_output_path(output_dir, OUTPUT_FILES["bfs_diff"], compress),
-            build_output_path(output_dir, OUTPUT_FILES["bfs_device_all"], compress),
-            build_output_path(output_dir, OUTPUT_FILES["bfs_device_diff"], compress),
-            build_output_path(output_dir, OUTPUT_FILES["bfs_accessories_all"], compress),
-            build_output_path(output_dir, OUTPUT_FILES["bfs_accessories_diff"], compress),
-        ]
+        build_output_paths_for_keys(
+            output_dir,
+            (
+                "bfs_all",
+                "bfs_diff",
+                "bfs_device_all",
+                "bfs_device_diff",
+                "bfs_accessories_all",
+                "bfs_accessories_diff",
+            ),
+            compress,
+            generator.output_date,
+        )
     )
     generator.write_bfs_files(output_dir, compress=compress, progress_factory=build_progress_factory())
 
 
 def _write_corp_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) -> None:
     """corp 対象の全量・差分CSVを書き出す。"""
-    announce_outputs(
-        [build_output_path(output_dir, OUTPUT_FILES[output_key], compress) for output_key in CORP_OUTPUT_KEYS]
-    )
+    announce_outputs(build_output_paths_for_keys(output_dir, CORP_OUTPUT_KEYS, compress, generator.output_date))
     generator.write_corp_files(output_dir, compress=compress, progress_factory=build_progress_factory())
 
 
@@ -319,11 +328,12 @@ def main() -> None:
     counts = FULL_COUNTS if args.full else DEFAULT_COUNTS
     compress = args.gzip
     output_dir = Path(args.output_dir)
+    output_date = date.today()
     format_dir = Path("docs/format")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     specs = load_specs(format_dir)
-    generator = CsvGenerator(specs=specs, seed=args.seed, counts=counts)
+    generator = CsvGenerator(specs=specs, seed=args.seed, counts=counts, output_date=output_date)
     if requested_jobs == 1:
         for target in targets:
             if target == "campaign":
@@ -340,6 +350,6 @@ def main() -> None:
                 _write_bfs_csvs(output_dir, generator, compress)
         return
 
-    jobs = build_jobs(targets, output_dir, format_dir, args.seed, counts, compress)
+    jobs = build_jobs(targets, output_dir, format_dir, args.seed, counts, compress, output_date)
     announce_outputs(job_output_paths(jobs, output_dir))
     execute_jobs(jobs, resolve_job_count(requested_jobs, len(jobs), args.full))

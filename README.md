@@ -2,7 +2,7 @@
 
 `docs/format/` 配下の定義をもとに、アプリ取り込み用のテストCSVを生成します。
 
-対象は次の17ファイルです。
+対象は次の17ファイルです。実際の出力ファイル名には日付プレフィックスが付きます。
 
 - `m_キャンペーン.csv`
 - `m_キャンペーン_diff.csv`
@@ -23,6 +23,20 @@
 - `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv`
 
 `docs/format.md` は索引で、実体の定義は `docs/format/` 配下にあります。
+
+## 出力ファイル名
+
+出力ファイル名は `YYYYMMDD_<CSV名>` です。`YYYYMMDD` は実行日のローカル日付です。
+`*_diff.csv` は差分データとして扱い、実行日の翌日を `YYYYMMDD` に使います。
+
+例: 2026年5月1日に実行した場合
+
+- `20260501_m_キャンペーン.csv`
+- `20260502_m_キャンペーン_diff.csv`
+- `20260501_m_取次店_all.csv`
+- `20260502_m_取次店_all_diff.csv`
+
+`--gzip` 指定時は日付プレフィックス付きの `.csv.gz` を生成します。
 
 ## 前提
 
@@ -51,7 +65,7 @@ uv run python generate_csv.py --seed 7
 | `--output-dir` | 出力先ディレクトリ。既定値は `generated_data` |
 | `--targets` | 生成対象。`campaign,agency,compass,product,corp,bfs` をカンマ区切りで指定 |
 | `--full` | 本番想定件数で生成 |
-| `--gzip` | gzip 圧縮された `*.csv.gz` を生成 |
+| `--gzip` | gzip 圧縮された `YYYYMMDD_*.csv.gz` を生成 |
 | `--seed` | 乱数シード。既定値は `42` |
 
 ## 件数
@@ -80,23 +94,23 @@ uv run python generate_csv.py --seed 7
 
 ## Output
 
-- `campaign` を含む場合は `m_キャンペーン.csv` と `m_キャンペーン_diff.csv` を同時に生成します
-- `agency` を含む場合は `m_取次店_all.csv` と `m_取次店_all_diff.csv` を同時に生成します
+- `campaign` を含む場合は `YYYYMMDD_m_キャンペーン.csv` と `YYYYMMDD_m_キャンペーン_diff.csv` を同時に生成します
+- `agency` を含む場合は `YYYYMMDD_m_取次店_all.csv` と `YYYYMMDD_m_取次店_all_diff.csv` を同時に生成します
 - `compass` を含む場合は次の2ファイルを生成します
-  - `b_hjn_com_営業決裁.csv`
-  - `b_hjn_com_営業決裁_diff.csv`
-- `product` を含む場合は `m_商品_all.csv` と `m_商品_all_diff.csv` を同時に生成します
+  - `YYYYMMDD_b_hjn_com_営業決裁.csv`
+  - `YYYYMMDD_b_hjn_com_営業決裁_diff.csv`
+- `product` を含む場合は `YYYYMMDD_m_商品_all.csv` と `YYYYMMDD_m_商品_all_diff.csv` を同時に生成します
 - `corp` を含む場合は次の3ファイルを生成します
-  - `m_hjn_smt_統一企業情報_1.csv`
-  - `m_hjn_smt_統一企業情報_2.csv`
-  - `m_hjn_smt_統一企業情報_diff.csv`
+  - `YYYYMMDD_m_hjn_smt_統一企業情報_1.csv`
+  - `YYYYMMDD_m_hjn_smt_統一企業情報_2.csv`
+  - `YYYYMMDD_m_hjn_smt_統一企業情報_diff.csv`
 - `bfs` を含む場合は次の6ファイルを生成します
-  - `b_hjn_bfs_モバイル_エントリ情報.csv`
-  - `b_hjn_bfs_モバイル_エントリ情報_diff.csv`
-  - `b_hjn_bfs_モバイル_サービスサマリ_端末.csv`
-  - `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv`
-  - `b_hjn_bfs_モバイル_サービスサマリ_付属品.csv`
-  - `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv`
+  - `YYYYMMDD_b_hjn_bfs_モバイル_エントリ情報.csv`
+  - `YYYYMMDD_b_hjn_bfs_モバイル_エントリ情報_diff.csv`
+  - `YYYYMMDD_b_hjn_bfs_モバイル_サービスサマリ_端末.csv`
+  - `YYYYMMDD_b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv`
+  - `YYYYMMDD_b_hjn_bfs_モバイル_サービスサマリ_付属品.csv`
+  - `YYYYMMDD_b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv`
 - 各CSVは `docs/format/` の列定義どおりに出力します
 
 ## `diff_type` 列について
