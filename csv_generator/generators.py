@@ -1532,6 +1532,39 @@ class CsvGenerator:
         row = self._resolved_row(self.specs["bfs"], context, index, self.resolve_bfs_value)
         return prepend_diff_type(row, diff_type)
 
+    def _bfs_short_company_name(self, index: int) -> str:
+        """BFSエントリのサイズ削減用に短い企業名を返す。"""
+        return f"株式会社B{index % 10_000:04d}"
+
+    def _bfs_short_person_name(self, prefix: str, index: int) -> str:
+        """BFSエントリのサイズ削減用に短い担当者名を返す。"""
+        return f"{prefix}{index % 10_000:04d}"
+
+    def _bfs_short_kana_name(self, index: int) -> str:
+        """BFSエントリのサイズ削減用に短いカナ名を返す。"""
+        return f"カナ{index % 10_000:04d}"
+
+    def _is_bfs_long_text_column(self, name: str) -> bool:
+        """BFSエントリでサイズ削減対象にする長文系の列名かどうかを返す。"""
+        return any(
+            keyword in name
+            for keyword in (
+                "comment",
+                "details",
+                "description",
+                "summary",
+                "information",
+                "conditions",
+                "options",
+                "binding",
+                "history",
+            )
+        )
+
+    def _bfs_sequence_number(self, index: int) -> str:
+        """BFSエントリ番号用に桁あふれで重複しない連番文字列を返す。"""
+        return f"{index + 1:08d}"
+
     def _bfs_service_context(self, index: int, variant: str, diff_type: str | None = None) -> dict[str, str]:
         """BFSエントリとサービスサマリで共有する文脈を組み立てる。"""
         base_index = self._bfs_base_index(index, variant, diff_type)
@@ -1543,17 +1576,18 @@ class CsvGenerator:
         approval_date = application_date + timedelta(days=(base_index % 7) + 1)
         rental_start_date = activation_date
         rental_end_date = rental_start_date + timedelta(days=365)
-        company_name = self.values.company_name(base_index)
-        agency_name = self.values.company_name(base_index + 17)
+        company_name = self._bfs_short_company_name(base_index)
+        agency_name = self._bfs_short_company_name(base_index + 17)
         contractor_name = company_name
         billing_name = company_name
-        contact_person_name = self.values.person_name()
-        contact_person_kana = self.values.person_name_kana(base_index)
-        salesperson_name = self.values.person_name()
+        contact_person_name = self._bfs_short_person_name("担当", base_index)
+        contact_person_kana = self._bfs_short_kana_name(base_index)
+        salesperson_name = self._bfs_short_person_name("営業", base_index)
         salesperson_code = self.values.employee_id(base_index)
         agency_code = self.values.code("AGT", base_index + 1, 6)
-        entry_number = f"EN{BASE_DATE:%Y%m%d}{self.values.number_string(6, base_index + 1)}"
-        summary_number = f"SM{BASE_DATE:%Y%m%d}{self.values.number_string(6, base_index + 1)}"
+        sequence_number = self._bfs_sequence_number(base_index)
+        entry_number = f"EN{BASE_DATE:%Y%m%d}{sequence_number}"
+        summary_number = f"SM{BASE_DATE:%Y%m%d}{sequence_number}"
         approval_numbers = [self.values.code("LS", base_index + i + 1, 7) for i in range(5)]
         plan_names = [
             "基本プラン",
@@ -1589,7 +1623,7 @@ class CsvGenerator:
             "variant": variant,
             "entry_number": entry_number,
             "summary_number": summary_number,
-            "subject": f"{company_name}向けBFSエントリ {base_index % 500 + 1}",
+            "subject": f"BFS{base_index % 10_000:04d}",
             "creation_category": "新規" if base_index % 3 == 0 else "変更" if base_index % 3 == 1 else "追加",
             "order_type": ["新規契約", "変更契約", "追加契約"][base_index % 3],
             "application_form_linkage": "連携済" if base_index % 4 else "未連携",
@@ -1627,10 +1661,10 @@ class CsvGenerator:
             "entry_updater_id": self.values.employee_id(base_index + 200),
             "entry_update_date_and_time": ymdhm(updated_at),
             "sfa_number": self.values.code("SFA", base_index + 1, 9),
-            "sfa_project_name": f"{company_name}向けSFA案件{base_index % 300 + 1}",
+            "sfa_project_name": f"SFA{base_index % 10_000:04d}",
             "unified_company_code": self.values.code("UC", base_index + 1, 8),
             "company_name": company_name,
-            "sales_approval_subject": f"{company_name}向け営業決裁 {base_index % 80 + 1}",
+            "sales_approval_subject": f"決裁{base_index % 10_000:04d}",
             "sales_approval_number": self.values.code("LS", base_index + 1, 9),
             "distributor_code": self.values.code("DST", base_index + 1, 6),
             "consolidated_book_number": self.values.code("BK", base_index + 1, 10),
@@ -1654,28 +1688,28 @@ class CsvGenerator:
             "corporate_status_position": "前",
             "corporate_status": "株式会社",
             "contractor_name": contractor_name,
-            "contractor_name_katakana": f"カブシキガイシャ{self.values.katakana_word(base_index)}{self.values.katakana_word(base_index + 1)}",
+            "contractor_name_katakana": self._bfs_short_kana_name(base_index),
             "corporate_type": "通常法人",
             "deemed_corporate_approval_number": self.values.code("DC", base_index + 1, 10),
             "contact_person_name": contact_person_name,
             "contact_person_name_katakana": contact_person_kana,
             "contact_person_department": DEPARTMENTS[(base_index + 2) % len(DEPARTMENTS)],
             "contract_change_confirmation_check": "済" if base_index % 2 == 0 else "未",
-            "contractor_name_change_comment": "契約者名変更あり" if base_index % 4 else "契約者名変更はなし。",
+            "contractor_name_change_comment": "変更有" if base_index % 4 else "変更無",
             "billing_number": self.values.number_string(10, 4_560_000_000 + base_index),
             "corporate_entity_position_1": "前",
             "corporate_entity_1": "株式会社",
             "billing_name": billing_name,
-            "billing_name_katakana": f"カブシキガイシャ{self.values.katakana_word(base_index + 2)}{self.values.katakana_word(base_index + 3)}",
-            "billing_department_name": f"{company_name}営業部",
+            "billing_name_katakana": self._bfs_short_kana_name(base_index + 2),
+            "billing_department_name": "営業部",
             "contact_person": contact_person_name,
             "payment_method": ["金融機関窓口払込", "クレジットカード", "預金口座振替"][base_index % 3],
             "invoice_type": ["通常", "明細", "請求書"][base_index % 3],
             "invoice_delivery": ["送付", "なし", "表示"][base_index % 3],
             "last_4_digits": self.values.number_string(4, 1000 + (base_index % 9000)),
-            "billing_group_information": "標準請求グループ",
+            "billing_group_information": "標準",
             "installment_payment_allowance_number": self.values.code("IP", base_index + 1, 8),
-            "agency": "代行業者なし" if base_index % 2 == 0 else "三井住友ファクター",
+            "agency": "無" if base_index % 2 == 0 else "代行",
             "corporate_multiple_line_discount": ["無", "有"][base_index % 2],
             "discount_rate": str(5 + (base_index % 10)),
             "discount_amount": str(1_000 + (base_index % 20) * 500),
@@ -1701,16 +1735,16 @@ class CsvGenerator:
             "discount_amount_4": str(5_000 + (base_index % 20) * 700),
             "number_of_discount_months_4": str(6 + (base_index % 8)),
             "fee_type_4": str((base_index % 3) + 1),
-            "billing_address_shipping_address_category": "請求先住所",
-            "shipping_address": f"{company_name} 御中",
+            "billing_address_shipping_address_category": "請求先",
+            "shipping_address": f"{company_name}御中",
             "invoice_customization": "無" if base_index % 2 == 0 else "有",
-            "billing_address_category": "契約者住所",
-            "shipping_address_1": f"{company_name} 御中",
+            "billing_address_category": "契約者",
+            "shipping_address_1": f"{company_name}御中",
             "invoice_customization_1": "無" if base_index % 2 == 0 else "有",
             "special_agreement_start_date": ymd(approval_date),
             "special_agreement_period": f"{12 + (base_index % 24)}ヶ月",
             "contract_period_in_months": str(12 + (base_index % 36)),
-            "period_after_automatic_renewal": f"{12 + (base_index % 24)}ヶ月",
+            "period_after_automatic_renewal": str(12 + (base_index % 24)),
             "initial_rental_period": str(12 + (base_index % 12)),
             "used_rental_start_date": ymd(rental_start_date),
             "used_rental_end_date": ymd(rental_end_date),
@@ -1722,21 +1756,21 @@ class CsvGenerator:
             "replacement_type": ["新規", "追加", "変更"][base_index % 3],
             "inventory_type": "標準",
             "sales_office": ["東京営業所", "大阪営業所", "名古屋営業所", "福岡営業所"][base_index % 4],
-            "declaration_details": "導入用途、契約条件、運用体制を確認済み。",
+            "declaration_details": "確認済",
             "usim_type": ["nanoSIM", "eSIM", "microSIM"][base_index % 3],
-            "other_usim_types": "追加種別なし" if base_index % 2 == 0 else "標準",
+            "other_usim_types": "無" if base_index % 2 == 0 else "標準",
             "quantity": str(1 + (base_index % 10)),
             "wo_specific_usim": ["無", "有"][base_index % 2],
             "estimate_template_version": f"Ver{4 + (base_index % 3)}.{base_index % 10}",
             "approval_date": ymd(approval_date),
             "original_estimate_number": self.values.code("TS", base_index + 1, 10),
-            "copy_entry_number": entry_number if base_index % 5 == 0 else "コピー元なし",
+            "copy_entry_number": entry_number if base_index % 5 == 0 else "無",
             "minimum_number_of_lines": str(1 + (base_index % 10)),
             "device_binding_amount": str(10_000 + (base_index % 20) * 500),
             "device_binding_period": str(12 + (base_index % 12)),
             "international_rm_discount_specification": ["無", "有"][base_index % 2],
             "international_rm_discount_specification_discount_rate": str(5 + (base_index % 10)),
-            "additional_information": f"{company_name}向けのBFSエントリ。契約条件と請求条件を確認済み。",
+            "additional_information": "確認済",
             "channel": ["直販", "代理店"][base_index % 2],
             "estimated_status": ["承認済", "作成中", "差戻し"][base_index % 3],
             "rental_used_start_date": ymd(rental_start_date),
@@ -1746,7 +1780,7 @@ class CsvGenerator:
             context[f"approval_number_{approval_index}"] = approval_number
         for stakeholder_index in range(1, 11):
             context[f"stakeholder_{stakeholder_index}"] = (
-                f"{self.values.company_name(base_index + stakeholder_index)}／{self.values.person_name()}"
+                f"関係{stakeholder_index}:{(base_index + stakeholder_index) % 10_000:04d}"
             )
         for plan_index, plan_name in enumerate(plan_names, start=1):
             if plan_index <= 6:
@@ -2044,7 +2078,7 @@ class CsvGenerator:
         if name.endswith("_date"):
             return ymd(BASE_DATE - timedelta(days=base_index % 365))
         if "kana" in name or "katakana" in name:
-            return f"カタカナ{base_index % 100:02d}"
+            return self._bfs_short_kana_name(base_index)
         if "phone" in name or "tel" in name or "fax" in name:
             return self.values.phone("03", 20_000_000 + base_index)
         if name in {"application_form_linkage", "special_contract_separate_output", "notification_target", "activation_status"}:
@@ -2093,8 +2127,8 @@ class CsvGenerator:
             return str((base_index % 3) + 1)
         if name.endswith("_ratio") or name.endswith("_rate") or "ratio" in name or "rate" in name:
             return str(5 + (base_index % 80))
-        if "comment" in name or "details" in name or "description" in name or "summary" in name or "information" in name or "conditions" in name or "options" in name or "binding" in name or "history" in name:
-            return f"{name}に関する補足{base_index % 100:02d}"
+        if self._is_bfs_long_text_column(name):
+            return f"補{base_index % 100:02d}"
         if "number" in name or name.endswith("_id") or "code" in name or "book" in name or "sheet" in name:
             return self.values.code("BFS", base_index + 1, 10)
         if "name" in name:

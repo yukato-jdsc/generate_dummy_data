@@ -198,6 +198,26 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
     assert len(corp_diff_rows) == 100
 
 
+def test_bfs_entry_information_uncompressed_size_is_reduced(generated_default_dir: Path) -> None:
+    """BFSエントリ情報CSVの圧縮前サイズを現行想定の3/4程度に抑える。"""
+    output_path = generated_default_dir / dated_output_name("b_hjn_bfs_モバイル_エントリ情報.csv", TODAY)
+
+    assert output_path.stat().st_size <= 2_900_000
+
+
+def test_bfs_entry_numbers_do_not_wrap_after_six_digits() -> None:
+    """BFSエントリ番号は桁数の境界を超えても連番が巻き戻らない。"""
+    specs = load_specs(ROOT / "docs" / "format")
+    counts = DEFAULT_COUNTS | {"bfs_all": 1_000_001}
+    generator = CsvGenerator(specs=specs, seed=42, counts=counts)
+
+    first_context = generator._bfs_service_context(0, "all")
+    million_context = generator._bfs_service_context(1_000_000, "all")
+    large_context = generator._bfs_service_context(100_000_000, "all")
+
+    assert len({first_context["entry_number"], million_context["entry_number"], large_context["entry_number"]}) == 3
+
+
 def test_targets_campaign_only_generates_campaign_files(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "campaign")
     assert generated_files(tmp_path) == expected_output_files("m_キャンペーン.csv", "m_キャンペーン_diff.csv")
