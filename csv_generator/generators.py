@@ -1816,89 +1816,91 @@ class CsvGenerator:
         created_at = datetime(2025, 12, 21, 11, 0, 0) + timedelta(hours=base_index % 48)
         updated_at = created_at + timedelta(minutes=15)
         return {
-            "number_of_lines": str(10 + (base_index % 90)),
-            "rental_set_device": ["無", "有"][base_index % 2],
-            "mnp": ["無", "有"][(base_index // 2) % 2],
+            "number_of_lines": "1",
+            "rental_set_device": ["0", "1"][base_index % 2],
+            "mnp": ["0", "1"][(base_index // 2) % 2],
             "product_code": self.values.code("P", base_index + 1, 3),
-            "manufacturer": DEVICE_MANUFACTURERS[base_index % len(DEVICE_MANUFACTURERS)],
-            "mobile_device_classification": DEVICE_CLASSES[base_index % len(DEVICE_CLASSES)],
-            "model_name": DEVICE_MODEL_NAMES[base_index % len(DEVICE_MODEL_NAMES)],
-            "color_1": COLORS[base_index % len(COLORS)][0],
-            "quantity_1": str(10 + (base_index % 20) * 5),
-            "color_2": COLORS[(base_index + 1) % len(COLORS)][0],
-            "quantity_2": str(1 + (base_index % 10)),
-            "color_3": COLORS[(base_index + 2) % len(COLORS)][0],
-            "quantity_3": str(1 + ((base_index + 1) % 8)),
-            "color_4": COLORS[(base_index + 3) % len(COLORS)][0],
-            "quantity_4": str(1 + ((base_index + 2) % 6)),
-            "color_5": COLORS[(base_index + 4) % len(COLORS)][0],
-            "quantity_5": str(1 + ((base_index + 3) % 4)),
-            "standard_device_price": str(85_000 + (base_index % 8) * 5_000),
-            "provision_fee": str(1_000 + (base_index % 5) * 500),
-            "points_used": str((base_index % 5) * 100),
-            "rental_fee": str(2_600 + (base_index % 7) * 100),
-            "actual_rental_provision_fee": str(1_500 + (base_index % 7) * 100),
-            "campaign_1": f"端末導入キャンペーン{base_index % 10 + 1}",
-            "campaign_2": f"月額割引キャンペーン{base_index % 8 + 1}",
-            "campaign_3": f"法人特典キャンペーン{base_index % 6 + 1}",
-            "campaign_4": f"保守優待キャンペーン{base_index % 4 + 1}",
-            "campaign_5": f"更新特典キャンペーン{base_index % 3 + 1}",
-            "benefit_code_1": self.values.code("BN", base_index + 1, 4),
-            "benefit_code_2": self.values.code("BN", base_index + 2, 4),
-            "benefit_code_3": self.values.code("BN", base_index + 3, 4),
-            "benefit_code_4": self.values.code("BN", base_index + 4, 4),
-            "urgent_campaign_1": "緊急値引適用",
-            "urgent_campaign_2": "納期優先施策",
-            "urgent_campaign_3": "案件別調整",
-            "plan": DEVICE_PLANS[base_index % len(DEVICE_PLANS)],
-            "white_corporate": ["有", "無"][base_index % 2],
-            "call_discount_w_white": ["有", "無"][(base_index + 1) % 2],
-            "call_discount_l_white": ["有", "無"][base_index % 2],
-            "flat_rate_calling_24_hour": ["有", "無"][(base_index + 1) % 2],
-            "white_office": ["有", "無"][base_index % 2],
-            "continuing_discount": ["有", "無"][(base_index + 1) % 2],
-            "breaking_contract_gold_annual_contract": ["有", "無"][base_index % 2],
-            "s_basic_pack": "加入",
-            "data_communication_basic_fee_4g": "適用",
-            "basic_fee_5g": "適用",
-            "packet_discount": "適用",
-            "data_speed_​​limit_removal": "申込済",
-            "flat_rate_calls___anyone": "適用",
-            "wifi": "有",
-            "tethering": "有",
-            "flat_sp9": "無",
-            "option_pack": "標準",
-            "anshin_guarantee_pack": ["加入", "未加入"][base_index % 2],
-            "app": "法人コンシェル",
-            "global_mobile_phone": ["有", "無"][(base_index + 1) % 2],
-            "overseas_packet_discount": "有",
-            "call_billing_details": "送付",
-            "it_connection_basic_fee": "適用",
-            "share_settings": "有",
-            "share_option": "基本シェア",
-            "grp_representative_share_option": "代表回線適用",
-            "grp_representative_data_speed_​​limit": "制限解除",
-            "rnt_campaign_1": "レンタル値引1",
-            "rnt_campaign_2": "レンタル値引2",
-            "rnt_campaign_3": "レンタル値引3",
-            "campaign_code_1": self.values.code("CP", base_index + 1, 6),
-            "campaign_code_2": self.values.code("CP", base_index + 2, 6),
-            "rnt_urgent_campaign_1": "レンタル緊急1",
-            "rnt_urgent_campaign_2": "レンタル緊急2",
-            "rnt_urgent_campaign_3": "レンタル緊急3",
-            "new_service_fee_exemption": "無",
-            "model_upgrade_fee_exemption": "有" if base_index % 3 == 0 else "無",
-            "contract_change_service_fee_exemption": "無",
-            "annual_contract_penalty_exemption": "無",
-            "applicable_relative_discount_end_date": ymd(BASE_DATE + timedelta(days=(base_index % 180) + 30)),
-            "summary_creation_staff_id": self.values.code("USR", base_index + 1, 3),
-            "summary_creation_date_and_time": created_at.strftime("%Y/%m/%d %H:%M:%S"),
-            "summary_updater_id": self.values.code("USR", base_index + 1, 3),
-            "summary_update_date_and_time": updated_at.strftime("%Y/%m/%d %H:%M:%S"),
-            "minimum_number_of_lines": str(1 + (base_index % 20)),
+            "manufacturer": f"M{base_index % len(DEVICE_MANUFACTURERS) + 1}",
+            "mobile_device_classification": f"CL{base_index % len(DEVICE_CLASSES) + 1}",
+            "model_name": f"MD{base_index % len(DEVICE_MODEL_NAMES) + 1}",
+            "color_1": f"CR{base_index % len(COLORS) + 1}",
+            "quantity_1": "1",
+            "color_2": f"CR{(base_index + 1) % len(COLORS) + 1}",
+            "quantity_2": "1",
+            "color_3": f"CR{(base_index + 2) % len(COLORS) + 1}",
+            "quantity_3": "1",
+            "color_4": f"CR{(base_index + 3) % len(COLORS) + 1}",
+            "quantity_4": "1",
+            "color_5": f"CR{(base_index + 4) % len(COLORS) + 1}",
+            "quantity_5": "1",
+            "standard_device_price": "1",
+            "provision_fee": "1",
+            "points_used": "1",
+            "rental_fee": "1",
+            "actual_rental_provision_fee": "1",
+            "campaign_1": f"C{base_index % 10 + 1}",
+            "campaign_2": f"C{base_index % 8 + 1}",
+            "campaign_3": f"C{base_index % 6 + 1}",
+            "campaign_4": f"C{base_index % 4 + 1}",
+            "campaign_5": f"C{base_index % 3 + 1}",
+            "benefit_code_1": f"B{base_index % 100}",
+            "benefit_code_2": f"B{(base_index + 1) % 100}",
+            "benefit_code_3": f"B{(base_index + 2) % 100}",
+            "benefit_code_4": f"B{(base_index + 3) % 100}",
+            "urgent_campaign_1": "UC1",
+            "urgent_campaign_2": "UC2",
+            "urgent_campaign_3": "UC3",
+            "plan": f"P{base_index % len(DEVICE_PLANS) + 1}",
+            "white_corporate": ["1", "0"][base_index % 2],
+            "call_discount_w_white": ["1", "0"][(base_index + 1) % 2],
+            "call_discount_l_white": ["1", "0"][base_index % 2],
+            "flat_rate_calling_24_hour": ["1", "0"][(base_index + 1) % 2],
+            "white_office": ["1", "0"][base_index % 2],
+            "continuing_discount": ["1", "0"][(base_index + 1) % 2],
+            "breaking_contract_gold_annual_contract": ["1", "0"][base_index % 2],
+            "s_basic_pack": "有",
+            "data_communication_basic_fee_4g": "有",
+            "basic_fee_5g": "有",
+            "packet_discount": "有",
+            "data_speed_​​limit_removal": "済",
+            "flat_rate_calls___anyone": "有",
+            "wifi": "1",
+            "tethering": "1",
+            "flat_sp9": "0",
+            "option_pack": "標",
+            "anshin_guarantee_pack": ["1", "0"][base_index % 2],
+            "app": "BC",
+            "global_mobile_phone": ["1", "0"][(base_index + 1) % 2],
+            "overseas_packet_discount": "1",
+            "call_billing_details": "送",
+            "it_connection_basic_fee": "有",
+            "share_settings": "1",
+            "share_option": "SH",
+            "grp_representative_share_option": "GRP",
+            "grp_representative_data_speed_​​limit": "解除",
+            "rnt_campaign_1": "RC1",
+            "rnt_campaign_2": "RC2",
+            "rnt_campaign_3": "RC3",
+            "campaign_code_1": f"CP{base_index % 100}",
+            "campaign_code_2": f"CP{(base_index + 1) % 100}",
+            "rnt_urgent_campaign_1": "RU1",
+            "rnt_urgent_campaign_2": "RU2",
+            "rnt_urgent_campaign_3": "RU3",
+            "new_service_fee_exemption": "0",
+            "model_upgrade_fee_exemption": "1" if base_index % 3 == 0 else "0",
+            "contract_change_service_fee_exemption": "0",
+            "annual_contract_penalty_exemption": "0",
+            "applicable_relative_discount_end_date": (BASE_DATE + timedelta(days=(base_index % 180) + 30)).strftime(
+                "%Y%m%d"
+            ),
+            "summary_creation_staff_id": f"U{base_index % 100}",
+            "summary_creation_date_and_time": created_at.strftime("%Y%m%d%H%M"),
+            "summary_updater_id": f"U{base_index % 100}",
+            "summary_update_date_and_time": updated_at.strftime("%Y%m%d%H%M"),
+            "minimum_number_of_lines": "1",
             "provision_generation_type": ["4G", "5G"][base_index % 2],
-            "current_device_contract_period": ["12ヶ月", "24ヶ月", "36ヶ月", "48ヶ月"][value_index % 4],
-            "reflected_in_summary_unit": ["対象", "対象外"][value_index % 2],
+            "current_device_contract_period": ["12", "24", "36", "48"][value_index % 4],
+            "reflected_in_summary_unit": ["1", "0"][value_index % 2],
         }
 
     def _bfs_device_value_index(self, context: dict[str, str]) -> int:
@@ -1911,92 +1913,72 @@ class CsvGenerator:
     def _populate_bfs_device_option_context(self, device_context: dict[str, str], base_index: int) -> None:
         """BFSサービスサマリ端末の繰り返し項目を埋める。"""
         for option_index in range(1, 11):
-            device_context[f"option_category_{option_index}"] = DEVICE_OPTION_CATEGORIES[
-                (base_index + option_index - 1) % len(DEVICE_OPTION_CATEGORIES)
-            ]
-            device_context[f"option_service_{option_index}"] = DEVICE_OPTION_SERVICES[
-                (base_index + option_index - 1) % len(DEVICE_OPTION_SERVICES)
-            ]
-            device_context[f"optional_category_{option_index}"] = DEVICE_OPTION_CATEGORIES[
-                (base_index + option_index) % len(DEVICE_OPTION_CATEGORIES)
-            ]
-            device_context[f"optional_service_{option_index}"] = DEVICE_OPTION_SERVICES[
-                (base_index + option_index) % len(DEVICE_OPTION_SERVICES)
-            ]
-            device_context[f"rntopt_category_{option_index}"] = f"レンタルカテゴリ{option_index}"
-            device_context[f"rntopt_plan_{option_index}"] = f"レンタルプラン{option_index}"
-            device_context[f"rntoptatt_category_{option_index}"] = f"レンタル付帯カテゴリ{option_index}"
-            device_context[f"rntoptatt_plan_{option_index}"] = f"レンタル付帯プラン{option_index}"
+            device_context[f"option_category_{option_index}"] = f"OC{option_index}"
+            device_context[f"option_service_{option_index}"] = f"OS{option_index}"
+            device_context[f"optional_category_{option_index}"] = f"OC{option_index + 1}"
+            device_context[f"optional_service_{option_index}"] = f"OS{option_index + 1}"
+            device_context[f"rntopt_category_{option_index}"] = f"RC{option_index}"
+            device_context[f"rntopt_plan_{option_index}"] = f"RP{option_index}"
+            device_context[f"rntoptatt_category_{option_index}"] = f"RAC{option_index}"
+            device_context[f"rntoptatt_plan_{option_index}"] = f"RAP{option_index}"
 
     def _populate_bfs_device_relative_context(self, device_context: dict[str, str], base_index: int) -> None:
         """BFSサービスサマリ端末の相対割引系の繰り返し項目を埋める。"""
         for option_index in range(1, 10):
-            device_context[f"relative_pd_category_{option_index}"] = DEVICE_RELATIVE_CATEGORIES[
-                (base_index + option_index - 1) % len(DEVICE_RELATIVE_CATEGORIES)
-            ]
-            device_context[f"relative_pd_name_{option_index}"] = DEVICE_RELATIVE_NAMES[
-                (base_index + option_index - 1) % len(DEVICE_RELATIVE_NAMES)
-            ]
-            device_context[f"relative_discount_method_{option_index}"] = DISCOUNT_METHODS[
-                (base_index + option_index - 1) % len(DISCOUNT_METHODS)
-            ]
+            device_context[f"relative_pd_category_{option_index}"] = f"PC{option_index}"
+            device_context[f"relative_pd_name_{option_index}"] = f"PN{option_index}"
+            device_context[f"relative_discount_method_{option_index}"] = f"D{option_index % 3}"
             device_context[f"relative_effective_start_date_{option_index}"] = ymd(
                 BASE_DATE - timedelta(days=(base_index + option_index) % 120)
-            )
+            ).replace("/", "")
             device_context[f"relative_effective_end_date_{option_index}"] = ymd(
                 BASE_DATE + timedelta(days=(base_index + option_index) % 120)
-            )
-            device_context[f"relative_invoice_amount_{option_index}"] = str(4_000 + option_index * 500)
-            device_context[f"relative_billing_amount_{option_index}"] = str(4_000 + option_index * 500)
-            device_context[f"relative_discount_amount_{option_index}"] = str(500 + option_index * 100)
-            device_context[f"relative_discount_rate_{option_index}"] = str(5 + option_index)
+            ).replace("/", "")
+            device_context[f"relative_invoice_amount_{option_index}"] = "1"
+            device_context[f"relative_billing_amount_{option_index}"] = "1"
+            device_context[f"relative_discount_amount_{option_index}"] = "1"
+            device_context[f"relative_discount_rate_{option_index}"] = "1"
             device_context[f"relative_discount_start_month_{option_index}"] = f"2025{option_index:02d}"
-            device_context[f"relative_period_{option_index}"] = str(12 + option_index)
+            device_context[f"relative_period_{option_index}"] = "1"
 
     def _populate_bfs_device_other_relative_context(self, device_context: dict[str, str]) -> None:
         """BFSサービスサマリ端末のその他相対割引系の繰り返し項目を埋める。"""
         for option_index in range(1, 6):
-            device_context[f"relative_other_pd_category_{option_index}"] = f"相対他カテゴリ{option_index}"
-            device_context[f"relative_other_pd_name_{option_index}"] = f"相対他名称{option_index}"
-            device_context[f"relative_other_discount_method_{option_index}"] = DISCOUNT_METHODS[
-                (option_index - 1) % len(DISCOUNT_METHODS)
-            ]
+            device_context[f"relative_other_pd_category_{option_index}"] = f"OPC{option_index}"
+            device_context[f"relative_other_pd_name_{option_index}"] = f"OPN{option_index}"
+            device_context[f"relative_other_discount_method_{option_index}"] = f"D{option_index % 3}"
             device_context[f"relative_other_effective_start_date_{option_index}"] = ymd(
                 BASE_DATE - timedelta(days=option_index * 3)
-            )
+            ).replace("/", "")
             device_context[f"relative_other_effective_end_date_{option_index}"] = ymd(
                 BASE_DATE + timedelta(days=option_index * 30)
-            )
-            device_context[f"relative_other_invoice_amount_{option_index}"] = str(3_000 + option_index * 400)
-            device_context[f"relative_other_discount_amount_{option_index}"] = str(300 + option_index * 50)
-            device_context[f"relative_other_discount_rate_{option_index}"] = str(3 + option_index)
+            ).replace("/", "")
+            device_context[f"relative_other_invoice_amount_{option_index}"] = "1"
+            device_context[f"relative_other_discount_amount_{option_index}"] = "1"
+            device_context[f"relative_other_discount_rate_{option_index}"] = "1"
             device_context[f"relative_other_discount_start_month_{option_index}"] = f"2025{option_index:02d}"
-            device_context[f"relative_other_period_{option_index}"] = str(6 + option_index)
-            device_context[f"r_relative_op_{option_index}"] = f"r相対op{option_index}"
-            device_context[f"r_relative_plan_{option_index}"] = f"r相対プラン{option_index}"
-            device_context[f"r_relative_discount_method_{option_index}"] = DISCOUNT_METHODS[
-                (option_index - 1) % len(DISCOUNT_METHODS)
-            ]
+            device_context[f"relative_other_period_{option_index}"] = "1"
+            device_context[f"r_relative_op_{option_index}"] = f"RO{option_index}"
+            device_context[f"r_relative_plan_{option_index}"] = f"RP{option_index}"
+            device_context[f"r_relative_discount_method_{option_index}"] = f"D{option_index % 3}"
             device_context[f"r_relative_effective_start_date_{option_index}"] = ymd(
                 BASE_DATE - timedelta(days=option_index * 5)
-            )
+            ).replace("/", "")
             device_context[f"r_relative_effective_end_date_{option_index}"] = ymd(
                 BASE_DATE + timedelta(days=option_index * 40)
-            )
-            device_context[f"r_relative_amount_{option_index}"] = str(2_000 + option_index * 300)
-            device_context[f"r_relative_period_{option_index}"] = str(12 + option_index)
-            device_context[f"r_relative_other_pd_name_{option_index}"] = f"r相対他名称{option_index}"
-            device_context[f"r_relative_other_discount_method_{option_index}"] = DISCOUNT_METHODS[
-                (option_index - 1) % len(DISCOUNT_METHODS)
-            ]
+            ).replace("/", "")
+            device_context[f"r_relative_amount_{option_index}"] = "1"
+            device_context[f"r_relative_period_{option_index}"] = "1"
+            device_context[f"r_relative_other_pd_name_{option_index}"] = f"RON{option_index}"
+            device_context[f"r_relative_other_discount_method_{option_index}"] = f"D{option_index % 3}"
             device_context[f"r_relative_other_effective_start_date_{option_index}"] = ymd(
                 BASE_DATE - timedelta(days=option_index * 4)
-            )
+            ).replace("/", "")
             device_context[f"r_relative_other_effective_end_date_{option_index}"] = ymd(
                 BASE_DATE + timedelta(days=option_index * 25)
-            )
-            device_context[f"r_relative_other_amount_{option_index}"] = str(1_500 + option_index * 200)
-            device_context[f"r_relative_other_period_{option_index}"] = str(6 + option_index)
+            ).replace("/", "")
+            device_context[f"r_relative_other_amount_{option_index}"] = "1"
+            device_context[f"r_relative_other_period_{option_index}"] = "1"
 
     def _bfs_accessories_value_index(self, context: dict[str, str]) -> int:
         """BFS付属品で更新後の値生成に使う基準インデックスを返す。"""
@@ -2047,8 +2029,8 @@ class CsvGenerator:
         self._populate_bfs_device_relative_context(device_context, base_index)
         self._populate_bfs_device_other_relative_context(device_context)
         for scope_index in range(1, 10):
-            device_context[f"plan_change_permission_range_{scope_index}"] = f"範囲{scope_index}"
-            device_context[f"consultation_regarding_relative_{scope_index}"] = f"相対相談{scope_index}"
+            device_context[f"plan_change_permission_range_{scope_index}"] = f"R{scope_index}"
+            device_context[f"consultation_regarding_relative_{scope_index}"] = f"S{scope_index}"
         row = self._resolved_row(self.specs["bfs_device"], device_context, index, self.resolve_bfs_device_value)
         return prepend_diff_type(row, diff_type)
 
@@ -2142,31 +2124,31 @@ class CsvGenerator:
         name = column.name
         base_index = int(context["base_index"])
         if column.data_type.startswith("DECIMAL"):
-            return str(1 + (base_index % 99))
+            return "1"
         if "date_and_time" in name:
             base = datetime(2025, 12, 21, 9, 0, 0) + timedelta(hours=base_index % 72)
-            return base.strftime("%Y/%m/%d %H:%M:%S")
+            return base.strftime("%Y%m%d%H%M")
         if name.endswith("_date"):
-            return ymd(BASE_DATE + timedelta(days=base_index % 180))
+            return (BASE_DATE + timedelta(days=base_index % 180)).strftime("%Y%m%d")
         if "month" in name:
-            return f"2025/{(base_index % 12) + 1:02d}"
+            return f"2025{(base_index % 12) + 1:02d}"
         if "rate" in name or "ratio" in name:
-            return str(5 + (base_index % 20))
+            return "1"
         if "amount" in name or "price" in name or "cost" in name or "fee" in name or "capex" in name or "discount" in name:
-            return str(1_000 + (base_index % 20) * 100)
+            return "1"
         if "code" in name or name.endswith("_id") or "number" in name:
-            return self.values.code("DV", base_index + 1, 6)
+            return f"D{base_index % 100}"
         if "category" in name:
-            return f"カテゴリ{(base_index % 5) + 1}"
+            return f"C{(base_index % 5) + 1}"
         if "plan" in name:
-            return f"プラン{(base_index % 10) + 1}"
+            return f"P{(base_index % 10) + 1}"
         if "campaign" in name:
-            return f"キャンペーン{(base_index % 10) + 1}"
+            return f"K{(base_index % 10) + 1}"
         if "service" in name:
-            return f"サービス{(base_index % 10) + 1}"
+            return f"S{(base_index % 10) + 1}"
         if "name" in name:
-            return f"名称{(base_index % 20) + 1}"
-        return f"VAL{base_index % 1000}"
+            return f"N{(base_index % 20) + 1}"
+        return f"V{base_index % 1000}"
 
     def resolve_bfs_accessories_value(self, column: ColumnSpec, context: dict[str, str], index: int) -> str:
         """BFSサービスサマリ付属品の未指定列を列名規則で補完する。"""

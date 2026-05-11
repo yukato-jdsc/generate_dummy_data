@@ -205,6 +205,13 @@ def test_bfs_entry_information_uncompressed_size_is_reduced(generated_default_di
     assert output_path.stat().st_size <= 2_900_000
 
 
+def test_bfs_device_summary_uncompressed_size_is_reduced(generated_default_dir: Path) -> None:
+    """BFSサービスサマリ端末CSVの圧縮前サイズを現行の1/2程度に抑える。"""
+    output_path = generated_default_dir / dated_output_name("b_hjn_bfs_モバイル_サービスサマリ_端末.csv", TODAY)
+
+    assert output_path.stat().st_size <= 3_000_000
+
+
 def test_bfs_entry_numbers_do_not_wrap_after_six_digits() -> None:
     """BFSエントリ番号は桁数の境界を超えても連番が巻き戻らない。"""
     specs = load_specs(ROOT / "docs" / "format")
