@@ -27,7 +27,6 @@ from .config import (
     ColumnSpec,
 )
 from .diff_type import (
-    DELETE_DIFF_TYPE,
     INITIAL_DIFF_TYPE,
     UPDATE_DIFF_TYPE,
     build_initial_diff_types,
@@ -230,7 +229,7 @@ class CsvGenerator:
 
     def _is_existing_diff_type(self, diff_type: str | None) -> bool:
         """差分種別が既存レコード向けかどうかを返す。"""
-        return diff_type in {UPDATE_DIFF_TYPE, DELETE_DIFF_TYPE}
+        return diff_type == UPDATE_DIFF_TYPE
 
     def write_campaign_files(
         self,

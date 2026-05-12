@@ -386,15 +386,17 @@ def test_headers_only_campaign_outputs_headers_without_rows(
     assert diff_rows == []
 
 
-def test_headers_only_keeps_diff_type_headers(tmp_path: Path) -> None:
-    """headers-only指定でも差分管理CSVの diff_type ヘッダーを維持する。"""
+def test_headers_only_omits_diff_type_headers(tmp_path: Path) -> None:
+    """headers-only指定でも差分更新CSVに diff_type ヘッダーを出力しない。"""
     run_script(str(tmp_path), "--targets", "agency", "--headers-only")
 
     header, rows = read_csv(tmp_path, "m_取次店_all.csv")
     diff_header, diff_rows = read_csv(tmp_path, "m_取次店_all_diff.csv")
 
-    assert header[:2] == ["diff_type", "取次店コード"]
-    assert diff_header[:2] == ["diff_type", "取次店コード"]
+    assert header[0] == "取次店コード"
+    assert diff_header[0] == "取次店コード"
+    assert "diff_type" not in header
+    assert "diff_type" not in diff_header
     assert rows == []
     assert diff_rows == []
 
@@ -554,34 +556,21 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
 
     assert campaign_header[0] == "キャンペーンid"
     assert campaign_diff_header[0] == "キャンペーンid"
-    assert agency_header[0] == "diff_type"
-    assert agency_header[1] == "取次店コード"
-    assert diff_header[0] == "diff_type"
-    assert diff_header[1] == "取次店コード"
-    assert compass_all_header[0] == "diff_type"
-    assert compass_all_header[1] == "決裁番号"
-    assert compass_diff_header[0] == "diff_type"
-    assert compass_diff_header[1] == "決裁番号"
+    assert agency_header[0] == "取次店コード"
+    assert diff_header[0] == "取次店コード"
+    assert compass_all_header[0] == "決裁番号"
+    assert compass_diff_header[0] == "決裁番号"
     assert product_header[0] == "商品コード"
     assert product_diff_header[0] == "商品コード"
-    assert bfs_all_header[0] == "diff_type"
-    assert bfs_all_header[1] == "エントリ番号"
-    assert bfs_diff_header[0] == "diff_type"
-    assert bfs_diff_header[1] == "エントリ番号"
-    assert bfs_device_all_header[0] == "diff_type"
-    assert bfs_device_all_header[1] == "エントリ番号"
-    assert bfs_device_diff_header[0] == "diff_type"
-    assert bfs_device_diff_header[1] == "エントリ番号"
-    assert bfs_accessories_all_header[0] == "diff_type"
-    assert bfs_accessories_all_header[1] == "エントリ番号"
-    assert bfs_accessories_diff_header[0] == "diff_type"
-    assert bfs_accessories_diff_header[1] == "エントリ番号"
-    assert corp_all_1_header[0] == "diff_type"
-    assert corp_all_1_header[1] == "統一企業コード"
-    assert corp_all_2_header[0] == "diff_type"
-    assert corp_all_2_header[1] == "統一企業コード"
-    assert corp_diff_header[0] == "diff_type"
-    assert corp_diff_header[1] == "統一企業コード"
+    assert bfs_all_header[0] == "エントリ番号"
+    assert bfs_diff_header[0] == "エントリ番号"
+    assert bfs_device_all_header[0] == "エントリ番号"
+    assert bfs_device_diff_header[0] == "エントリ番号"
+    assert bfs_accessories_all_header[0] == "エントリ番号"
+    assert bfs_accessories_diff_header[0] == "エントリ番号"
+    assert corp_all_1_header[0] == "統一企業コード"
+    assert corp_all_2_header[0] == "統一企業コード"
+    assert corp_diff_header[0] == "統一企業コード"
     for header in (
         campaign_header,
         campaign_diff_header,
@@ -603,9 +592,9 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
         assert "id" not in header
 
 
-def test_diff_type_header_is_added_only_to_incremental_csvs(generated_default_dir: Path) -> None:
-    """初期データ・差分データを持つCSVだけ先頭に diff_type を付ける。"""
-    incremental_files = (
+def test_diff_type_header_is_not_output_to_any_csv(generated_default_dir: Path) -> None:
+    """すべてのCSVに diff_type ヘッダーを出力しない。"""
+    output_files = (
         "m_取次店_all.csv",
         "m_取次店_all_diff.csv",
         "b_hjn_com_営業決裁.csv",
@@ -619,53 +608,15 @@ def test_diff_type_header_is_added_only_to_incremental_csvs(generated_default_di
         "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv",
         "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv",
         "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv",
-    )
-    full_refresh_files = (
         "m_キャンペーン.csv",
         "m_キャンペーン_diff.csv",
         "m_商品_all.csv",
         "m_商品_all_diff.csv",
     )
 
-    for file_name in incremental_files:
+    for file_name in output_files:
         header, _ = read_csv(generated_default_dir, file_name)
-        assert header[0] == "diff_type"
-
-    for file_name in full_refresh_files:
-        header, _ = read_csv(generated_default_dir, file_name)
-        assert header[0] != "diff_type"
         assert "diff_type" not in header
-
-
-def test_incremental_initial_csvs_use_diff_type_i_only(generated_default_dir: Path) -> None:
-    """初期データCSVの diff_type は全件 I に固定する。"""
-    for file_name in (
-        "m_取次店_all.csv",
-        "b_hjn_com_営業決裁.csv",
-        "m_hjn_smt_統一企業情報_1.csv",
-        "m_hjn_smt_統一企業情報_2.csv",
-        "b_hjn_bfs_モバイル_エントリ情報.csv",
-        "b_hjn_bfs_モバイル_サービスサマリ_端末.csv",
-        "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv",
-    ):
-        _, rows = read_csv(generated_default_dir, file_name)
-        assert {row[0] for row in rows} == {"I"}
-
-
-def test_diff_csvs_use_expected_diff_types(generated_default_dir: Path) -> None:
-    """差分CSVごとに定義された diff_type だけを含む。"""
-    expected_diff_types = {
-        "m_取次店_all_diff.csv": {"I", "U", "D"},
-        "b_hjn_com_営業決裁_diff.csv": {"I", "U", "D"},
-        "m_hjn_smt_統一企業情報_diff.csv": {"I", "U"},
-        "b_hjn_bfs_モバイル_エントリ情報_diff.csv": {"I", "U", "D"},
-        "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv": {"I"},
-        "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv": {"I", "U"},
-    }
-
-    for file_name, expected in expected_diff_types.items():
-        _, rows = read_csv(generated_default_dir, file_name)
-        assert {row[0] for row in rows} == expected
 
 
 def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir: Path) -> None:
@@ -701,20 +652,20 @@ def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir:
     assert campaign_header[:4] == expected_headers["campaign"]
     assert campaign_diff_header[:4] == expected_headers["campaign"]
     assert campaign_header == campaign_diff_header
-    assert agency_header[1:5] == expected_headers["agency"]
-    assert compass_all_header[1:5] == expected_headers["compass"]
+    assert agency_header[:4] == expected_headers["agency"]
+    assert compass_all_header[:4] == expected_headers["compass"]
     assert compass_all_header == compass_diff_header
     assert product_header[:4] == expected_headers["product"]
     assert product_diff_header[:4] == expected_headers["product"]
     assert product_header == product_diff_header
     assert agency_header == diff_header
-    assert bfs_all_header[1:5] == expected_headers["bfs"]
+    assert bfs_all_header[:4] == expected_headers["bfs"]
     assert bfs_all_header == bfs_diff_header
-    assert bfs_device_all_header[1:5] == expected_headers["bfs_device"]
+    assert bfs_device_all_header[:4] == expected_headers["bfs_device"]
     assert bfs_device_all_header == bfs_device_diff_header
-    assert bfs_accessories_all_header[1:5] == expected_headers["bfs_accessories"]
+    assert bfs_accessories_all_header[:4] == expected_headers["bfs_accessories"]
     assert bfs_accessories_all_header == bfs_accessories_diff_header
-    assert corp_all_1_header[1:5] == expected_headers["corp"]
+    assert corp_all_1_header[:4] == expected_headers["corp"]
     assert corp_all_1_header == corp_all_2_header
     assert corp_all_1_header == corp_diff_header
 
@@ -860,33 +811,33 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
     for row in campaign_diff_rows[:2]:
         assert row[0].startswith(expected_prefixes["campaign"])
     for row in agency_rows[:2]:
-        assert row[1].startswith(expected_prefixes["agency"])
+        assert row[0].startswith(expected_prefixes["agency"])
     for row in product_rows[:2]:
         assert row[0].startswith(expected_prefixes["product"])
     for row in product_diff_rows[:2]:
         assert row[0].startswith(expected_prefixes["product"])
     for row in compass_all_rows[:2]:
-        assert row[1].startswith(expected_prefixes["compass"])
+        assert row[0].startswith(expected_prefixes["compass"])
     for row in compass_diff_rows[:2]:
-        assert row[1].startswith(expected_prefixes["compass"])
+        assert row[0].startswith(expected_prefixes["compass"])
     for row in bfs_all_rows[:2]:
-        assert row[1].startswith(expected_prefixes["bfs_all"])
+        assert row[0].startswith(expected_prefixes["bfs_all"])
     for row in bfs_diff_rows[:2]:
-        assert row[1].startswith(expected_prefixes["bfs_diff"])
+        assert row[0].startswith(expected_prefixes["bfs_diff"])
     for row in bfs_device_all_rows[:2]:
-        assert row[1].startswith(expected_prefixes["bfs_device_all"])
+        assert row[0].startswith(expected_prefixes["bfs_device_all"])
     for row in bfs_device_diff_rows[:2]:
-        assert row[1].startswith(expected_prefixes["bfs_device_diff"])
+        assert row[0].startswith(expected_prefixes["bfs_device_diff"])
     for row in bfs_accessories_all_rows[:2]:
-        assert row[1].startswith(expected_prefixes["bfs_accessories_all"])
+        assert row[0].startswith(expected_prefixes["bfs_accessories_all"])
     for row in bfs_accessories_diff_rows[:2]:
-        assert row[1].startswith(expected_prefixes["bfs_accessories_diff"])
+        assert row[0].startswith(expected_prefixes["bfs_accessories_diff"])
     for row in corp_all_1_rows[:2]:
-        assert len(row[1]) > 0
+        assert len(row[0]) > 0
     for row in corp_all_2_rows[:2]:
-        assert len(row[1]) > 0
+        assert len(row[0]) > 0
     for row in corp_diff_rows[:2]:
-        assert len(row[1]) > 0
+        assert len(row[0]) > 0
 
 
 def test_bfs_summary_files_reference_generated_bfs_entries(tmp_path: Path) -> None:
@@ -947,31 +898,26 @@ def test_bfs_initial_rental_period_uses_smallint_values(generated_default_dir: P
         assert "ヶ月" not in value
 
 
-def assert_diff_keys_match_diff_type(
+def assert_diff_keys_partition_initial_and_existing(
     all_rows: list[list[str]],
     diff_rows: list[list[str]],
     key_index: int,
-    expected_diff_types: set[str],
+    *,
+    expect_existing: bool,
 ) -> None:
-    """差分種別ごとに業務キーが初期データと整合することを確認する。"""
+    """差分CSVの業務キーが新規追加分と既存更新分に分かれることを確認する。"""
     all_keys = {row[key_index] for row in all_rows}
 
-    insert_keys = {row[key_index] for row in diff_rows if row[0] == "I"}
-    update_keys = {row[key_index] for row in diff_rows if row[0] == "U"}
-    delete_keys = {row[key_index] for row in diff_rows if row[0] == "D"}
+    insert_keys = {row[key_index] for row in diff_rows if row[key_index] not in all_keys}
+    existing_keys = {row[key_index] for row in diff_rows if row[key_index] in all_keys}
 
     assert insert_keys
     assert insert_keys.isdisjoint(all_keys)
-    if "U" in expected_diff_types:
-        assert update_keys
-        assert update_keys.issubset(all_keys)
+    if expect_existing:
+        assert existing_keys
+        assert existing_keys.issubset(all_keys)
     else:
-        assert not update_keys
-    if "D" in expected_diff_types:
-        assert delete_keys
-        assert delete_keys.issubset(all_keys)
-    else:
-        assert not delete_keys
+        assert not existing_keys
 
 
 def assert_full_refresh_diff_replaces_rows(
@@ -1001,33 +947,43 @@ def assert_full_refresh_diff_replaces_rows(
     assert updated_keys
 
 
-def test_agency_diff_keys_follow_diff_type_semantics(generated_default_dir: Path) -> None:
-    """取次店差分の業務キーは diff_type ごとの意味に合わせる。"""
+def test_agency_diff_keys_include_insert_and_existing_updates(generated_default_dir: Path) -> None:
+    """取次店差分の業務キーは新規追加分と既存更新分を含む。"""
     header, all_rows = read_csv(generated_default_dir, "m_取次店_all.csv")
     _, diff_rows = read_csv(generated_default_dir, "m_取次店_all_diff.csv")
 
-    assert_diff_keys_match_diff_type(all_rows, diff_rows, header.index("取次店コード"), {"I", "U", "D"})
+    assert_diff_keys_partition_initial_and_existing(
+        all_rows,
+        diff_rows,
+        header.index("取次店コード"),
+        expect_existing=True,
+    )
 
 
-def test_compass_diff_keys_follow_diff_type_semantics(generated_default_dir: Path) -> None:
-    """COMPASS差分の業務キーは diff_type ごとの意味に合わせる。"""
+def test_compass_diff_keys_include_insert_and_existing_updates(generated_default_dir: Path) -> None:
+    """COMPASS差分の業務キーは新規追加分と既存更新分を含む。"""
     header, all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
 
-    assert_diff_keys_match_diff_type(all_rows, diff_rows, header.index("決裁番号"), {"I", "U", "D"})
+    assert_diff_keys_partition_initial_and_existing(all_rows, diff_rows, header.index("決裁番号"), expect_existing=True)
 
 
-def test_corp_diff_keys_follow_diff_type_semantics(generated_default_dir: Path) -> None:
-    """統一企業情報差分の業務キーは diff_type ごとの意味に合わせる。"""
+def test_corp_diff_keys_include_insert_and_existing_updates(generated_default_dir: Path) -> None:
+    """統一企業情報差分の業務キーは新規追加分と既存更新分を含む。"""
     header_1, all_rows_1 = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_1.csv")
     _, all_rows_2 = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_2.csv")
     _, diff_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
 
-    assert_diff_keys_match_diff_type(all_rows_1 + all_rows_2, diff_rows, header_1.index("統一企業コード"), {"I", "U"})
+    assert_diff_keys_partition_initial_and_existing(
+        all_rows_1 + all_rows_2,
+        diff_rows,
+        header_1.index("統一企業コード"),
+        expect_existing=True,
+    )
 
 
-def test_bfs_diff_keys_follow_diff_type_semantics(generated_default_dir: Path) -> None:
-    """BFS差分3ファイルの業務キーは diff_type ごとの意味に合わせる。"""
+def test_bfs_diff_keys_include_expected_insert_and_existing_updates(generated_default_dir: Path) -> None:
+    """BFS差分3ファイルの業務キーは新規追加分と既存更新分に分かれる。"""
     bfs_header, bfs_all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
     _, bfs_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
     device_header, device_all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
@@ -1037,13 +993,23 @@ def test_bfs_diff_keys_follow_diff_type_semantics(generated_default_dir: Path) -
     )
     _, accessories_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
 
-    assert_diff_keys_match_diff_type(bfs_all_rows, bfs_diff_rows, bfs_header.index("エントリ番号"), {"I", "U", "D"})
-    assert_diff_keys_match_diff_type(device_all_rows, device_diff_rows, device_header.index("エントリ番号"), {"I"})
-    assert_diff_keys_match_diff_type(
+    assert_diff_keys_partition_initial_and_existing(
+        bfs_all_rows,
+        bfs_diff_rows,
+        bfs_header.index("エントリ番号"),
+        expect_existing=True,
+    )
+    assert_diff_keys_partition_initial_and_existing(
+        device_all_rows,
+        device_diff_rows,
+        device_header.index("エントリ番号"),
+        expect_existing=False,
+    )
+    assert_diff_keys_partition_initial_and_existing(
         accessories_all_rows,
         accessories_diff_rows,
         accessories_header.index("商品コード"),
-        {"I", "U"},
+        expect_existing=True,
     )
 
 
@@ -1059,7 +1025,7 @@ def test_bfs_accessories_diff_updates_existing_product_codes(generated_default_d
     price_index = header.index("付属品標準価格")
 
     all_by_product_code = {row[product_code_index]: row for row in all_rows}
-    updated_rows = [row for row in diff_rows if row[0] == "U"]
+    updated_rows = [row for row in diff_rows if row[product_code_index] in all_by_product_code]
 
     assert updated_rows
     for row in updated_rows:
@@ -1090,7 +1056,7 @@ def test_product_diff_replaces_deleted_added_and_updated_rows(generated_default_
 
 
 def test_agency_diff_existing_keys_are_subset_of_agency_all(generated_agency_seed11_dir: Path) -> None:
-    """取次店差分の U/D は全量に存在し、I は未存在キーになる。"""
+    """取次店差分は既存キー更新分と未存在キー追加分を生成する。"""
     agency_header, agency_rows = read_csv(generated_agency_seed11_dir, "m_取次店_all.csv")
     diff_header, diff_rows = read_csv(generated_agency_seed11_dir, "m_取次店_all_diff.csv")
     assert agency_header == diff_header
@@ -1099,8 +1065,8 @@ def test_agency_diff_existing_keys_are_subset_of_agency_all(generated_agency_see
     code_index = agency_header.index("取次店コード")
     agency_codes = {row[code_index] for row in agency_rows}
     diff_codes = [row[code_index] for row in diff_rows]
-    existing_diff_codes = {row[code_index] for row in diff_rows if row[0] in {"U", "D"}}
-    insert_codes = {row[code_index] for row in diff_rows if row[0] == "I"}
+    existing_diff_codes = {row[code_index] for row in diff_rows if row[code_index] in agency_codes}
+    insert_codes = {row[code_index] for row in diff_rows if row[code_index] not in agency_codes}
 
     assert len(diff_codes) == len(set(diff_codes))
     assert existing_diff_codes.issubset(agency_codes)
@@ -1108,7 +1074,7 @@ def test_agency_diff_existing_keys_are_subset_of_agency_all(generated_agency_see
 
 
 def test_compass_diff_updates_subset_of_compass_all(generated_compass_seed11_dir: Path) -> None:
-    """営業決裁差分の U/D は既存キーを共有し、I は新規キーとして生成する。"""
+    """営業決裁差分は既存キー更新分と未存在キー追加分を生成する。"""
     all_header, all_rows = read_csv(generated_compass_seed11_dir, "b_hjn_com_営業決裁.csv")
     diff_header, diff_rows = read_csv(generated_compass_seed11_dir, "b_hjn_com_営業決裁_diff.csv")
     assert all_header == diff_header
@@ -1123,8 +1089,10 @@ def test_compass_diff_updates_subset_of_compass_all(generated_compass_seed11_dir
 
     all_by_approval_number = {row[approval_number_index]: row for row in all_rows}
     diff_approval_numbers = [row[approval_number_index] for row in diff_rows]
-    existing_diff_rows = [row for row in diff_rows if row[0] in {"U", "D"}]
-    insert_approval_numbers = {row[approval_number_index] for row in diff_rows if row[0] == "I"}
+    existing_diff_rows = [row for row in diff_rows if row[approval_number_index] in all_by_approval_number]
+    insert_approval_numbers = {
+        row[approval_number_index] for row in diff_rows if row[approval_number_index] not in all_by_approval_number
+    }
     existing_diff_numbers = [row[approval_number_index] for row in existing_diff_rows]
 
     assert len(diff_rows) == 20

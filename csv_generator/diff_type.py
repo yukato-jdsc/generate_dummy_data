@@ -1,66 +1,23 @@
 from __future__ import annotations
 
-DIFF_TYPE_HEADER = "diff_type"
 INITIAL_DIFF_TYPE = "I"
 UPDATE_DIFF_TYPE = "U"
-DELETE_DIFF_TYPE = "D"
-DIFF_TYPE_ORDER = (INITIAL_DIFF_TYPE, UPDATE_DIFF_TYPE, DELETE_DIFF_TYPE)
+DIFF_TYPE_ORDER = (INITIAL_DIFF_TYPE, UPDATE_DIFF_TYPE)
 DIFF_TYPE_ORDERS_BY_OUTPUT_KEY = {
     "corp_diff": (INITIAL_DIFF_TYPE, UPDATE_DIFF_TYPE),
     "bfs_device_diff": (INITIAL_DIFF_TYPE,),
     "bfs_accessories_diff": (INITIAL_DIFF_TYPE, UPDATE_DIFF_TYPE),
 }
-INCREMENTAL_OUTPUT_KEYS = frozenset(
-    {
-        "agency_all",
-        "agency_diff",
-        "compass_all",
-        "compass_diff",
-        "corp_all_1",
-        "corp_all_2",
-        "corp_diff",
-        "bfs_all",
-        "bfs_diff",
-        "bfs_device_all",
-        "bfs_device_diff",
-        "bfs_accessories_all",
-        "bfs_accessories_diff",
-    }
-)
-DIFF_OUTPUT_KEYS = frozenset(
-    {
-        "agency_diff",
-        "compass_diff",
-        "corp_diff",
-        "bfs_diff",
-        "bfs_device_diff",
-        "bfs_accessories_diff",
-    }
-)
 
 
-def output_uses_diff_type(output_key: str) -> bool:
-    """指定した出力CSVが `diff_type` 列を持つ対象かどうかを返す。"""
-    return output_key in INCREMENTAL_OUTPUT_KEYS
+def build_output_headers(base_headers: list[str], _output_key: str) -> list[str]:
+    """出力キーに関わらず仕様定義どおりのヘッダーを返す。"""
+    return list(base_headers)
 
 
-def output_is_diff_file(output_key: str) -> bool:
-    """指定した出力CSVが差分データ用ファイルかどうかを返す。"""
-    return output_key in DIFF_OUTPUT_KEYS
-
-
-def build_output_headers(base_headers: list[str], output_key: str) -> list[str]:
-    """出力キーに応じて `diff_type` を先頭付与したヘッダーを返す。"""
-    if not output_uses_diff_type(output_key):
-        return list(base_headers)
-    return [DIFF_TYPE_HEADER, *base_headers]
-
-
-def build_initial_diff_types(output_key: str, row_count: int) -> list[str | None]:
-    """初期データCSV向けの `diff_type` 一覧を返す。"""
-    if not output_uses_diff_type(output_key):
-        return [None] * row_count
-    return [INITIAL_DIFF_TYPE] * row_count
+def build_initial_diff_types(_output_key: str, row_count: int) -> list[str | None]:
+    """初期データCSV向けに、出力しない内部差分種別の一覧を返す。"""
+    return [None] * row_count
 
 
 def build_mixed_diff_types(output_key: str, row_count: int) -> list[str]:
@@ -69,8 +26,6 @@ def build_mixed_diff_types(output_key: str, row_count: int) -> list[str]:
     return [diff_type_order[index % len(diff_type_order)] for index in range(row_count)]
 
 
-def prepend_diff_type(row: list[str], diff_type: str | None) -> list[str]:
-    """必要な場合だけ `diff_type` を先頭付与した行を返す。"""
-    if diff_type is None:
-        return row
-    return [diff_type, *row]
+def prepend_diff_type(row: list[str], _diff_type: str | None) -> list[str]:
+    """内部用の差分種別をCSV行へ出力せず、元の行を返す。"""
+    return row

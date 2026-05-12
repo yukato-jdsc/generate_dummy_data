@@ -115,34 +115,12 @@ uv run python generate_csv.py --headers-only
   - `YYYYMMDD_b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv`
 - 各CSVは `docs/format/` の列定義どおりに出力します
 
-## `diff_type` 列について
+## 差分更新CSVについて
 
-- `m_取次店_all.csv`
-- `m_取次店_all_diff.csv`
-- `b_hjn_com_営業決裁.csv`
-- `b_hjn_com_営業決裁_diff.csv`
-- `m_hjn_smt_統一企業情報_1.csv`
-- `m_hjn_smt_統一企業情報_2.csv`
-- `m_hjn_smt_統一企業情報_diff.csv`
-- `b_hjn_bfs_モバイル_エントリ情報.csv`
-- `b_hjn_bfs_モバイル_エントリ情報_diff.csv`
-- `b_hjn_bfs_モバイル_サービスサマリ_端末.csv`
-- `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv`
-- `b_hjn_bfs_モバイル_サービスサマリ_付属品.csv`
-- `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv`
-
-上記のCSVでは、出力時に先頭列として `diff_type` を追加します。
-
-- `I`: 新規
-- `U`: 更新
-- `D`: 削除
-
-初期データ側のCSVは全行 `I` です。  
-差分CSVは原則 `I` `U` `D` を混在させます。  
-差分CSVでは `diff_type=I` の行は初期データに存在しない業務キー、`diff_type=U` と `diff_type=D` の行は初期データに存在する業務キーを使います。  
-ただし `m_hjn_smt_統一企業情報_diff.csv`、`b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` は `I` と `U` のみを出力し、`D` は出力しません。  
-`b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` は `I` のみを出力し、業務キーも初期データに未存在の値のみを使います。  
-`m_キャンペーン.csv`、`m_キャンペーン_diff.csv`、`m_商品_all.csv`、`m_商品_all_diff.csv` は全量更新データのため `diff_type` を付与しません。
+すべてのCSVは `docs/format/` の列定義どおりに出力し、`diff_type` 列は付与しません。
+差分更新CSVは削除行を出力せず、新規追加行と既存更新行を含みます。
+新規追加行は初期データに存在しない業務キー、既存更新行は初期データに存在する業務キーを使います。
+`b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` は新規追加行のみを出力します。
 
 ## キャンペーンdiff CSVについて
 
@@ -157,13 +135,13 @@ uv run python generate_csv.py --headers-only
 ## 取次店差分CSVについて
 
 `m_取次店_all_diff.csv` は同じ実行で作られた `m_取次店_all.csv` とキー整合を持つように生成します。
-`diff_type=I` の `取次店コード` は `m_取次店_all.csv` に未存在、`diff_type=U` と `diff_type=D` の `取次店コード` は `m_取次店_all.csv` に存在する値です。
+新規追加行の `取次店コード` は `m_取次店_all.csv` に未存在、既存更新行の `取次店コード` は `m_取次店_all.csv` に存在する値です。
 
 ## COMPASS差分CSVについて
 
 `b_hjn_com_営業決裁_diff.csv` は同じ実行で作られた `b_hjn_com_営業決裁.csv` とキー整合を持つように生成します。
-`diff_type=I` の `決裁番号` は `b_hjn_com_営業決裁.csv` に未存在、`diff_type=U` と `diff_type=D` の `決裁番号` は `b_hjn_com_営業決裁.csv` に存在する値です。
-`U` と `D` の行では件名、日時、売上・利益系、備考などの主要業務列も更新されます。
+新規追加行の `決裁番号` は `b_hjn_com_営業決裁.csv` に未存在、既存更新行の `決裁番号` は `b_hjn_com_営業決裁.csv` に存在する値です。
+既存更新行では件名、日時、売上・利益系、備考などの主要業務列も更新されます。
 
 ## 生成ルール
 
