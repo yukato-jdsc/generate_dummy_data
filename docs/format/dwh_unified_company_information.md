@@ -67,13 +67,13 @@
 | 備考5 | `備考5` | NVARCHAR | 576 | － | 未使用 |
 | 有効無効フラグ | `有効無効フラグ` | NVARCHAR | 9 | － | 1:無効 |
 | 無効理由 | `無効理由` | NVARCHAR | 18 | － | 「無効」の時必須入力とする。 10:合併 20:破産・倒産・清算 30:分割消滅 40:クリーニング |
-| 登録日 | `登録日` | NVARCHAR | 69 | － | 新情報の登録日・時刻 |
-| 更新日 | `更新日` | NVARCHAR | 69 | － | 新情報の更新日・時刻 |
+| 登録日 | `登録日` | NVARCHAR | 69 | － | 新情報の登録日・時刻 YYYY-MM-DD HH24:MI:SS.000 |
+| 更新日 | `更新日` | NVARCHAR | 69 | － | 新情報の更新日・時刻 YYYY-MM-DD HH24:MI:SS.000 |
 | 登録者 | `登録者` | NVARCHAR | 63 | － | 新情報の登録者 |
 | 更新者 | `更新者` | NVARCHAR | 63 | － | 新情報の更新者 |
 | 削除フラグ | `削除フラグ` | NVARCHAR | 9 | － | 1:削除、企業一覧で表示不可 |
-| 登録日時 | `登録日時` | NVARCHAR | 69 | － | SUMMITの登録日・時刻 |
-| 更新日時 | `更新日時` | NVARCHAR | 69 | － | SUMMITの更新日・時刻 |
+| 登録日時 | `登録日時` | NVARCHAR | 69 | － | SUMMITの登録日・時刻 YYYY-MM-DD HH24:MI:SS.000 |
+| 更新日時 | `更新日時` | NVARCHAR | 69 | － | SUMMITの更新日・時刻 YYYY-MM-DD HH24:MI:SS.000 |
 | 登録者名 | `登録者名` | NVARCHAR | 576 | － | SUMMITの登録者(ログ用) |
 | 更新者名 | `更新者名` | NVARCHAR | 576 | － | SUMMITの更新者(ログ用) |
 | data_universal_number | `data_universal_number` | NVARCHAR | 81 | － | - |

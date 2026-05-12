@@ -1173,14 +1173,14 @@ class CsvGenerator:
             "plastic_packaging_material_weight": str(10 + (index % 5)),
             "product_weight": str(120 + (index % 80)),
             "number_of_pallets": str((index % 3) + 1),
-            "packaging_specifications_etc": "標準梱包",
+            "packaging_specifications_etc": str((index % 4) + 1),
             "mrp_administrator_code": self.values.code("MR", (index % 20) + 1, 6),
             "conversion_representative_flag": str(index % 2),
             "product_type_for_inspection_cd": str((index % 4) + 1),
             "product_type_for_inspection_nm": "通常検品",
             "model_id": str(index + 1),
             "imsi_type": str((index % 3) + 1),
-            "imsi_type_official_name": "標準IMSI",
+            "imsi_type_official_name": "標準ISMI",
         }
 
     def _product_diff_context(self, index: int) -> dict[str, str]:
@@ -1331,8 +1331,8 @@ class CsvGenerator:
         parent_flag = "1" if base_index % 5 == 0 else "0"
         registered_at = datetime(2020, 1, 1, 9, 0) + timedelta(days=base_index % 1200, minutes=base_index % 60)
         updated_at = registered_at + timedelta(days=(base_index % 30) + 1, minutes=15)
-        registered_at_text = registered_at.strftime("%Y/%m/%d %H:%M")
-        updated_at_text = updated_at.strftime("%Y/%m/%d %H:%M")
+        registered_at_text = registered_at.strftime("%Y-%m-%d %H:%M:%S.000")
+        updated_at_text = updated_at.strftime("%Y-%m-%d %H:%M:%S.000")
         primary_code = str(300 + (base_index % 600))
         secondary_code = str(600 + (base_index % 300))
         primary_name = CORP_PRIMARY_INDUSTRY_NAMES[base_index % len(CORP_PRIMARY_INDUSTRY_NAMES)]

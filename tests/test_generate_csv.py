@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import gzip
 import os
+import re
 import subprocess
 import sys
 import tomllib
@@ -670,6 +671,53 @@ def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir:
     assert corp_all_1_header == corp_diff_header
 
 
+def test_product_headers_reflect_updated_format_labels(generated_default_dir: Path) -> None:
+    """商品CSVヘッダーは更新後フォーマットの表示名を反映する。"""
+    header, _ = read_csv(generated_default_dir, "m_商品_all.csv")
+
+    assert "商品細分類ID" in header
+    assert "商品小分類ID" in header
+    assert "商品中分類ID" in header
+    assert "商品大分類ID" in header
+    assert "メーカーID" in header
+    assert "ブランドID" in header
+    assert "MVNO識別ID" in header
+    assert "個装箱サイズ_縦(mm)" in header
+    assert "梱包財_紙重量(g)" in header
+    assert "MRP管理者コード" in header
+    assert "MODEL_ID" in header
+    assert "ISMIタイプ名称" in header
+
+
+def test_product_decimal_values_fit_updated_format_lengths(generated_default_dir: Path) -> None:
+    """商品CSVの更新対象DECIMAL列は数値で新しい整数桁数に収まる。"""
+    header, all_rows = read_csv(generated_default_dir, "m_商品_all.csv")
+    _, diff_rows = read_csv(generated_default_dir, "m_商品_all_diff.csv")
+    decimal_columns = {
+        "MVNO識別ID": 3,
+        "チャージ額": 6,
+        "ユニバーサル使用料": 4,
+        "利用有効期間": 5,
+        "標準入数": 10,
+        "出荷時入数": 6,
+        "個装箱サイズ_縦(mm)": 4,
+        "個装箱サイズ_横(mm)": 4,
+        "個装箱サイズ_高さ(mm)": 4,
+        "梱包財_紙重量(g)": 7,
+        "梱包財_プラ重量(g)": 7,
+        "商品重量(g)": 7,
+        "パレット積み付け数": 8,
+        "梱包仕様等": 4,
+    }
+
+    for row in all_rows[:20] + diff_rows[:20]:
+        for label, max_integer_digits in decimal_columns.items():
+            value = row[header.index(label)]
+            integer_part = value.split(".", maxsplit=1)[0]
+            assert integer_part.isdecimal()
+            assert len(integer_part) <= max_integer_digits
+
+
 def test_load_specs_can_read_a_directory_of_markdown_files(tmp_path: Path) -> None:
     """仕様読み込みは Markdown ディレクトリを直接受け取れる。"""
     format_dir = tmp_path / "format"
@@ -883,6 +931,18 @@ def test_bfs_device_new_columns_are_populated_in_all_and_diff(generated_default_
     for row in all_rows[:20] + diff_rows[:20]:
         assert row[current_device_contract_period_index] != ""
         assert row[reflected_in_summary_unit_index] != ""
+
+
+def test_bfs_device_contract_period_uses_two_digit_decimal_values(generated_default_dir: Path) -> None:
+    """BFSサービスサマリ端末の現端末契約期間は2桁以内の数値文字列で出力する。"""
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+    current_device_contract_period_index = header.index("現端末契約期間")
+
+    for row in all_rows[:20] + diff_rows[:20]:
+        value = row[current_device_contract_period_index]
+        assert value.isdecimal()
+        assert len(value) <= 2
 
 
 def test_bfs_initial_rental_period_uses_smallint_values(generated_default_dir: Path) -> None:
@@ -1183,6 +1243,23 @@ def test_corp_parent_and_invalidity_fields_are_consistent(generated_seed7_dir: P
             assert merged_company != ""
 
         assert row[registered_at_index] <= row[updated_at_index]
+
+
+def test_corp_datetime_columns_use_millisecond_timestamp_format(generated_seed7_dir: Path) -> None:
+    """corp の日時4項目は YYYY-MM-DD HH:MI:SS.000 形式で出力する。"""
+    timestamp_pattern = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.000$")
+
+    for file_name in (
+        "m_hjn_smt_統一企業情報_1.csv",
+        "m_hjn_smt_統一企業情報_2.csv",
+        "m_hjn_smt_統一企業情報_diff.csv",
+    ):
+        header, rows = read_csv(generated_seed7_dir, file_name)
+        datetime_indexes = [header.index(label) for label in ("登録日", "更新日", "登録日時", "更新日時")]
+
+        for row in rows[:20]:
+            for index in datetime_indexes:
+                assert timestamp_pattern.match(row[index])
 
 
 def test_campaign_old_flag_is_always_filled(tmp_path: Path) -> None:
