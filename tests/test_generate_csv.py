@@ -263,6 +263,12 @@ def test_readme_mentions_ruff_check_command() -> None:
     assert "uv run ruff check ." in readme
 
 
+def test_readme_mentions_headers_only_option() -> None:
+    """README に headers-only 実行手順を載せる。"""
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "--headers-only" in readme
+
+
 def test_targets_compass_only_generates_single_file(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "compass")
     assert generated_files(tmp_path) == expected_output_files("b_hjn_com_営業決裁.csv", "b_hjn_com_営業決裁_diff.csv")
@@ -356,6 +362,60 @@ def test_gzip_option_outputs_gzip_csv(tmp_path: Path) -> None:
     _, diff_rows = read_csv(tmp_path, "m_キャンペーン_diff.csv.gz")
     assert len(rows) == 50
     assert len(diff_rows) == 50
+
+
+def test_headers_only_campaign_outputs_headers_without_rows(
+    tmp_path: Path,
+    generated_default_dir: Path,
+) -> None:
+    """headers-only指定時は対象CSVをヘッダー行だけで生成する。"""
+    completed = run_script(str(tmp_path), "--targets", "campaign", "--headers-only")
+
+    assert generated_files(tmp_path) == expected_output_files("m_キャンペーン.csv", "m_キャンペーン_diff.csv")
+    assert "m_キャンペーン.csv" in completed.stdout
+    assert "m_キャンペーン_diff.csv" in completed.stdout
+
+    normal_header, _ = read_csv(generated_default_dir, "m_キャンペーン.csv")
+    normal_diff_header, _ = read_csv(generated_default_dir, "m_キャンペーン_diff.csv")
+    header, rows = read_csv(tmp_path, "m_キャンペーン.csv")
+    diff_header, diff_rows = read_csv(tmp_path, "m_キャンペーン_diff.csv")
+
+    assert header == normal_header
+    assert diff_header == normal_diff_header
+    assert rows == []
+    assert diff_rows == []
+
+
+def test_headers_only_keeps_diff_type_headers(tmp_path: Path) -> None:
+    """headers-only指定でも差分管理CSVの diff_type ヘッダーを維持する。"""
+    run_script(str(tmp_path), "--targets", "agency", "--headers-only")
+
+    header, rows = read_csv(tmp_path, "m_取次店_all.csv")
+    diff_header, diff_rows = read_csv(tmp_path, "m_取次店_all_diff.csv")
+
+    assert header[:2] == ["diff_type", "取次店コード"]
+    assert diff_header[:2] == ["diff_type", "取次店コード"]
+    assert rows == []
+    assert diff_rows == []
+
+
+def test_headers_only_can_write_gzip_csv(tmp_path: Path) -> None:
+    """headers-only指定はgzip出力でもヘッダー行だけを書き出す。"""
+    completed = run_script(str(tmp_path), "--targets", "campaign", "--headers-only", "--gzip")
+
+    assert generated_files(tmp_path) == expected_output_files(
+        "m_キャンペーン.csv",
+        "m_キャンペーン_diff.csv",
+        compress=True,
+    )
+    assert f"{TODAY:%Y%m%d}_m_キャンペーン.csv.gz" in completed.stdout
+    assert f"{TOMORROW:%Y%m%d}_m_キャンペーン_diff.csv.gz" in completed.stdout
+
+    _, rows = read_csv(tmp_path, "m_キャンペーン.csv.gz")
+    _, diff_rows = read_csv(tmp_path, "m_キャンペーン_diff.csv.gz")
+
+    assert rows == []
+    assert diff_rows == []
 
 
 def test_null_progress_reporter_emits_nothing(capsys: pytest.CaptureFixture[str]) -> None:

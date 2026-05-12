@@ -56,6 +56,7 @@ uv run python generate_csv.py --targets corp
 uv run python generate_csv.py --targets bfs
 uv run python generate_csv.py --full --gzip --output-dir generated_data/full
 uv run python generate_csv.py --seed 7
+uv run python generate_csv.py --headers-only
 ```
 
 ## オプション
@@ -66,6 +67,7 @@ uv run python generate_csv.py --seed 7
 | `--targets` | 生成対象。`campaign,agency,compass,product,corp,bfs` をカンマ区切りで指定 |
 | `--full` | 本番想定件数で生成 |
 | `--gzip` | gzip 圧縮された `YYYYMMDD_*.csv.gz` を生成 |
+| `--headers-only` | ヘッダー行のみのCSVを生成 |
 | `--seed` | 乱数シード。既定値は `42` |
 
 ## 件数

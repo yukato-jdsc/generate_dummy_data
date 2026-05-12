@@ -14,7 +14,9 @@ from .config import (
     FULL_COUNTS,
     OUTPUT_FILES,
     VALID_TARGETS,
+    ColumnSpec,
 )
+from .diff_type import build_output_headers
 from .format_spec import load_specs
 from .generators import (
     BFS_FAMILY_FILES,
@@ -37,6 +39,21 @@ CORP_OUTPUT_KEYS = tuple(output_key for output_key, _ in CORP_FAMILY_FILES)
 CAMPAIGN_OUTPUT_KEYS = ("campaign", "campaign_diff")
 COMPASS_OUTPUT_KEYS = ("compass_all", "compass_diff")
 PRODUCT_OUTPUT_KEYS = ("product", "product_diff")
+HEADER_OUTPUT_DEFINITIONS_BY_TARGET = {
+    "campaign": (("campaign", "campaign"), ("campaign", "campaign_diff")),
+    "agency": (("agency", "agency_all"), ("agency", "agency_diff")),
+    "compass": (("compass", "compass_all"), ("compass", "compass_diff")),
+    "product": (("product", "product"), ("product", "product_diff")),
+    "corp": (("corp", "corp_all_1"), ("corp", "corp_all_2"), ("corp", "corp_diff")),
+    "bfs": (
+        ("bfs", "bfs_all"),
+        ("bfs", "bfs_diff"),
+        ("bfs_device", "bfs_device_all"),
+        ("bfs_device", "bfs_device_diff"),
+        ("bfs_accessories", "bfs_accessories_all"),
+        ("bfs_accessories", "bfs_accessories_diff"),
+    ),
+}
 
 
 def announce_output(path: Path) -> None:
@@ -67,6 +84,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--targets", default="campaign,agency,compass,product,corp,bfs")
     parser.add_argument("--full", action="store_true")
     parser.add_argument("--gzip", action="store_true")
+    parser.add_argument("--headers-only", action="store_true")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--jobs", default="auto")
     return parser.parse_args()
@@ -130,6 +148,30 @@ def build_output_paths_for_keys(
 ) -> list[Path]:
     """複数の出力キーを日付プレフィックス付き実ファイルパスへ変換する。"""
     return [build_output_path_for_key(output_dir, output_key, compress, output_date) for output_key in output_keys]
+
+
+def build_headers_only_outputs(targets: list[str]) -> list[tuple[str, str]]:
+    """target 指定をヘッダーのみ出力用の仕様キーと出力キーへ展開する。"""
+    outputs: list[tuple[str, str]] = []
+    for target in targets:
+        outputs.extend(HEADER_OUTPUT_DEFINITIONS_BY_TARGET[target])
+    return outputs
+
+
+def write_headers_only_csvs(
+    output_dir: Path,
+    specs: dict[str, list[ColumnSpec]],
+    targets: list[str],
+    compress: bool,
+    output_date: date,
+) -> None:
+    """指定targetの各CSVをヘッダー行のみで書き出す。"""
+    for spec_key, output_key in build_headers_only_outputs(targets):
+        path = build_output_path_for_key(output_dir, output_key, compress, output_date)
+        base_headers = [column.header_label for column in specs[spec_key]]
+        headers = build_output_headers(base_headers, output_key)
+        announce_output(path)
+        write_csv(path, headers, [])
 
 
 def build_jobs(
@@ -333,6 +375,10 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     specs = load_specs(format_dir)
+    if args.headers_only:
+        write_headers_only_csvs(output_dir, specs, targets, compress, output_date)
+        return
+
     generator = CsvGenerator(specs=specs, seed=args.seed, counts=counts, output_date=output_date)
     if requested_jobs == 1:
         for target in targets:
