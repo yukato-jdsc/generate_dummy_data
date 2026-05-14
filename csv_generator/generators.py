@@ -37,7 +37,7 @@ from .diff_type import (
 from .format_spec import load_specs
 from .io import build_dated_output_path, open_csv_writer, write_csv
 from .progress import NullProgressReporter, QueueProgressReporter, TqdmProgressReporter
-from .values import ValueFactory, clip, hms, ymd, ymd_dash, ymdhm, ymdhms_millis
+from .values import ValueFactory, clip, hms, ymd, ymd_dash, ymdhms_millis
 
 BFS_FAMILY_FILES = (
     ("bfs", "bfs_all", "all"),
@@ -75,6 +75,94 @@ DEVICE_OPTION_SERVICES = [
 DEVICE_RELATIVE_CATEGORIES = ["通信", "音声", "保守", "クラウド", "国際"]
 DEVICE_RELATIVE_NAMES = ["高速データ", "通話定額", "保守パック", "クラウド連携", "国際ローミング"]
 DISCOUNT_METHODS = ["定額", "定率", "従量"]
+COMPASS_BOOLEAN_COLUMNS = {
+    "mobile_type",
+    "voice_type",
+    "voice_otoku_hikari_type",
+    "id_data_type",
+    "is_ni_product_type",
+    "phs_type",
+    "common_discounts_etc",
+    "common_corporate_consolidated_billing",
+    "common_test_lines",
+    "mobile_approval_pattern_a",
+    "mobile_approval_pattern_c",
+    "mobile_approval_pattern_e",
+    "mobile_incentive_adjustment_increase",
+    "mobile_resale_or_rental_companies",
+    "mobile_deposits_joint_guarantees_credit_relaxation",
+    "common_qa_review_cases",
+    "special_debt_collection",
+    "construction_industry_law",
+    "agency_code_change",
+    "refund_fee_reduction",
+    "agency_contract",
+    "odn_consumer_specifications",
+    "reseller_contract",
+    "id_data_charging_table_settings",
+    "rate_incentive_settings",
+    "fee_adjustment_for_damage_compensation",
+    "special_approval_measures_mobile_profit",
+    "contract_conclusion_after_proposal_approval",
+    "deemed_corporation",
+    "under_3_million_yen_profit",
+    "data_resale_commission_type",
+    "common_special_discounts_special_tariffs_individual_tariffs",
+    "id_data_resale_id",
+    "is_ni_product_sales_resale_is",
+    "pre_order",
+    "reseller_contract_data",
+    "contract_conclusion_single",
+    "external_document_submission",
+    "nda_agreement",
+    "other_type",
+    "comprehensive_approval",
+    "group_comprehensive_approval",
+    "used_in_other_projects",
+    "agency_information_manual_input_flag",
+    "create_sub_approval_from_flow_flag",
+    "private_flag",
+    "valid_flg",
+    "deleted_flg",
+    "summit_data_migration_flag",
+    "credit_review_request_name_compass_presence_absence",
+}
+COMPASS_DIFF_REQUIRED_OPTIONAL_COLUMNS = {
+    "approval_date",
+    "last_updated_date",
+    "contract_start_date",
+    "expiration_date",
+    "sales_yen",
+    "notes",
+    "additions_changes",
+    "approval_history",
+}
+BFS_ENTRY_REQUIRED_OPTIONAL_COLUMNS = {
+    "activation_date",
+    "expected_delivery_date",
+    "application_date",
+    "period_after_automatic_renewal",
+    "initial_rental_period",
+}
+BFS_ACCESSORIES_REQUIRED_OPTIONAL_COLUMNS = {
+    "linked_summary_number",
+}
+BFS_DEVICE_PLANS = ["基本プラン（音声）", "基本プラン（データ）", "通話定額基本料（ケータイ）", "ホワイト特別相対S", "ホワイト特別相対L"]
+BFS_DEVICE_CALL_DISCOUNTS = ["通話料割引Wホワイト", "通話料割引Wホワイトライト"]
+BFS_DEVICE_ANNUAL_CONTRACTS = ["相対2年契約10000", "相対5年契約15000"]
+BFS_DEVICE_S_BASIC_PACKS = ["ウェブ使用料（無料）", "ウェブ使用料（i）", "ウェブ使用料なし", "ウェブ使用料（スマ放題/通話基本プラン）"]
+BFS_DEVICE_4G_FEES = ["4Gデータ通信基本料(i)", "4Gデータ通信基本料(F)", "4Gデータ通信基本料(S)"]
+BFS_DEVICE_5G_FEES = ["5Gサービス利用料", "5G基本料（内包用）"]
+BFS_DEVICE_PACKET_DISCOUNTS = ["データプラン7GB（法人）", "パケットし放題フラット"]
+BFS_DEVICE_OPTION_PACKS = ["セレクトパック", "iPhone法人基本パック", "スマートフォン法人基本パック"]
+BFS_DEVICE_GUARANTEE_PACKS = ["(端末)安心保証パックB", "あんしん保証パックプラス"]
+BFS_DEVICE_CAMPAIGNS = ["端末割", "乗換割", "レンタル割", "回線特典", "長期優待"]
+BFS_DEVICE_OPTION_CATEGORY_NAMES = ["VoLTE", "安心", "グル通", "割込", "データ", "国際"]
+BFS_DEVICE_OPTION_SERVICE_NAMES = ["VoLTE(YM)", "フィルタ(i)", "グル通", "割込", "データシェア"]
+BFS_DEVICE_RNTOPT_CATEGORIES = ["保守(i)", "保守(s)", "補償", "サポート"]
+BFS_DEVICE_RNTOPT_PLANS = ["基本", "中古", "P1000", "P2000N"]
+BFS_DEVICE_RELATIVE_PD_CATEGORIES = ["プラン", "パケ割", "保証", "OP", "通割"]
+BFS_DEVICE_RELATIVE_PD_NAMES = ["基本音声", "5G法人", "安心B", "セレクト"]
 ACCESSORY_MANUFACTURERS = ["Apple", "Samsung", "Anker", "ELECOM", "SoftBank SELECTION"]
 ACCESSORY_PRODUCT_NAMES = [
     "USB-C充電ケーブル(1m)",
@@ -766,8 +854,28 @@ class CsvGenerator:
 
     def _compass_row(self, context: dict[str, str], index: int, diff_type: str | None = None) -> list[str]:
         """営業決裁文脈を列順の行へ変換する。"""
-        row = self._resolved_row(self.specs["compass"], context, index, self.resolve_compass_value)
+        row = self._resolved_compass_row(context, index)
         return prepend_diff_type(row, diff_type)
+
+    def _resolved_compass_row(self, context: dict[str, str], index: int) -> list[str]:
+        """営業決裁の必須列と任意列の空欄方針を反映して行を生成する。"""
+        columns = self.specs["compass"]
+        return [
+            ""
+            if self._should_blank_compass_column(column, index, column_index)
+            else clip(self.resolve_compass_value(column, context, index), column.max_length)
+            for column_index, column in enumerate(columns)
+        ]
+
+    def _should_blank_compass_column(self, column: ColumnSpec, index: int, column_index: int) -> bool:
+        """営業決裁の任意列を決定的に空欄にするかどうかを返す。"""
+        if column.required or column.name in COMPASS_DIFF_REQUIRED_OPTIONAL_COLUMNS:
+            return False
+        return (index + column_index) % 4 == 0
+
+    def _compass_bool(self, index: int, true_every: int = 2) -> str:
+        """COMPASS仕様の真偽値文字列を返す。"""
+        return "TRUE" if index % true_every == 0 else "FALSE"
 
     def _compass_diff_row(
         self,
@@ -809,34 +917,35 @@ class CsvGenerator:
             f"提案条件: 法人向け標準プランをベースに個別調整を実施"
         )
         return {
+            "id": self.values.code("CMP", index + 1, 16),
             "approval_number": approval_number,
             "approval_subject": f"{company_name}向け営業決裁 {index % 30 + 1}",
             "status": "承認",
             "date_and_time_of_application": ymdhms_millis(created_at),
             "approval_type": COMPASS_APPROVAL_TYPES[index % len(COMPASS_APPROVAL_TYPES)],
-            "mobile_type": self.values.bool_flag(index, 2),
-            "voice_type": self.values.bool_flag(index + 1, 5),
-            "voice_otoku_hikari_type": self.values.bool_flag(index + 2, 9),
-            "id_data_type": self.values.bool_flag(index + 3, 4),
-            "is_ni_product_type": self.values.bool_flag(index + 4, 6),
-            "phs_type": "f",
-            "common_discounts_etc": self.values.bool_flag(index + 5, 3),
-            "common_corporate_consolidated_billing": self.values.bool_flag(index + 6, 4),
-            "common_test_lines": self.values.bool_flag(index + 7, 8),
-            "mobile_approval_pattern_a": self.values.bool_flag(index + 8, 2),
-            "mobile_approval_pattern_c": self.values.bool_flag(index + 9, 5),
-            "mobile_approval_pattern_e": self.values.bool_flag(index + 10, 7),
-            "mobile_incentive_adjustment_increase": self.values.bool_flag(index + 11, 6),
-            "mobile_resale_or_rental_companies": self.values.bool_flag(index + 12, 4),
-            "mobile_deposits_joint_guarantees_credit_relaxation": self.values.bool_flag(index + 13, 9),
-            "common_qa_review_cases": self.values.bool_flag(index + 14, 5),
-            "special_debt_collection": self.values.bool_flag(index + 15, 11),
-            "construction_industry_law": self.values.bool_flag(index + 16, 13),
-            "agency_code_change": self.values.bool_flag(index + 17, 10),
-            "refund_fee_reduction": self.values.bool_flag(index + 18, 6),
-            "agency_contract": self.values.bool_flag(index + 19, 4),
-            "reseller_contract": self.values.bool_flag(index + 20, 7),
-            "other_type": self.values.bool_flag(index + 21, 15),
+            "mobile_type": self._compass_bool(index, 2),
+            "voice_type": self._compass_bool(index + 1, 5),
+            "voice_otoku_hikari_type": self._compass_bool(index + 2, 9),
+            "id_data_type": self._compass_bool(index + 3, 4),
+            "is_ni_product_type": self._compass_bool(index + 4, 6),
+            "phs_type": "FALSE",
+            "common_discounts_etc": self._compass_bool(index + 5, 3),
+            "common_corporate_consolidated_billing": self._compass_bool(index + 6, 4),
+            "common_test_lines": self._compass_bool(index + 7, 8),
+            "mobile_approval_pattern_a": self._compass_bool(index + 8, 2),
+            "mobile_approval_pattern_c": self._compass_bool(index + 9, 5),
+            "mobile_approval_pattern_e": self._compass_bool(index + 10, 7),
+            "mobile_incentive_adjustment_increase": self._compass_bool(index + 11, 6),
+            "mobile_resale_or_rental_companies": self._compass_bool(index + 12, 4),
+            "mobile_deposits_joint_guarantees_credit_relaxation": self._compass_bool(index + 13, 9),
+            "common_qa_review_cases": self._compass_bool(index + 14, 5),
+            "special_debt_collection": self._compass_bool(index + 15, 11),
+            "construction_industry_law": self._compass_bool(index + 16, 13),
+            "agency_code_change": self._compass_bool(index + 17, 10),
+            "refund_fee_reduction": self._compass_bool(index + 18, 6),
+            "agency_contract": self._compass_bool(index + 19, 4),
+            "reseller_contract": self._compass_bool(index + 20, 7),
+            "other_type": self._compass_bool(index + 21, 15),
             "originators_name": person_name,
             "originators_phone_number": self.values.phone("03", 10_000_000 + index),
             "affiliated_org_address_list": f"{DEPARTMENTS[index % len(DEPARTMENTS)]}/法人営業統括/営業1課",
@@ -865,9 +974,9 @@ class CsvGenerator:
             "orgl_route_proposers_duties": "本務",
             "orgl_route_sales_duties": "本務",
             "sales_representatives_list": f"{DEPARTMENTS[index % len(DEPARTMENTS)]}/法人営業第{index % 5 + 1}部",
-            "comprehensive_approval": self.values.bool_flag(index + 22, 8),
-            "group_comprehensive_approval": self.values.bool_flag(index + 23, 11),
-            "used_in_other_projects": self.values.bool_flag(index + 24, 9),
+            "comprehensive_approval": self._compass_bool(index + 22, 8),
+            "group_comprehensive_approval": self._compass_bool(index + 23, 11),
+            "used_in_other_projects": self._compass_bool(index + 24, 9),
             "contact_name": contact_name,
             "contact_phone_number": self.values.phone("070", 12_000_000 + index),
             "pre_confirmation": "有" if index % 4 == 0 else "無",
@@ -881,7 +990,7 @@ class CsvGenerator:
             "contract_period_months": str(12 + (index % 24)),
             "contract_start_date": ymd_dash(execution_date),
             "number_of_lines_attended_opening": str(index % 10),
-            "activation_installation_fee": "無料" if index % 3 == 0 else "有料",
+            "activation_installation_fee": "有" if index % 3 == 0 else "無",
             "free_installation_and_additional_service_fee": "無料" if index % 4 == 0 else "有料",
             "free_installation_fee": "開通工事費支援",
             "banner_installation_fee_additional_services": str(3_000 + (index % 10) * 500),
@@ -916,7 +1025,7 @@ class CsvGenerator:
             "is_ni_product_sales_approval_base_profit_margin_percent": str(2),
             "mobile_sales_contribution_margin_yen": str(int(sales_amount * 0.14)),
             "mobile_sales_contribution_margin_margin_percent": str(14),
-            "agency_information_manual_input_flag": self.values.bool_flag(index + 25, 6),
+            "agency_information_manual_input_flag": self._compass_bool(index + 25, 6),
             "agency_name_reference": self.values.company_name(index + 20),
             "agency_name_estimate": self.values.company_name(index + 30),
             "agency_code": agency_code,
@@ -950,8 +1059,8 @@ class CsvGenerator:
             "input_date": ymdhms_millis(created_at),
             "contractual_condition_1": "開始希望日までに契約条件確認が完了していること",
             "contractual_condition_2": "与信確認結果に重大懸念がないこと",
-            "create_sub_approval_from_flow_flag": self.values.bool_flag(index + 26, 9),
-            "private_flag": "f",
+            "create_sub_approval_from_flow_flag": self._compass_bool(index + 26, 9),
+            "private_flag": "FALSE",
             "approval_date": ymdhms_millis(approval_at),
             "business_category": "モバイル",
             "expiration_date": ymd_dash(expiration_date),
@@ -959,12 +1068,12 @@ class CsvGenerator:
             "based_proposal_approval": f"PR{index:06d}" if index % 5 == 0 else "起点提案なし",
             "approval_content": "【共通】値引きなど",
             "approval_route_criteria": "営業担当者情報から申請者・同意者・承認者をセット",
-            "supplier_credit": "f",
-            "valid_flg": "t",
+            "supplier_credit": "FALSE",
+            "valid_flg": "TRUE",
             "record_id_formula": self.values.code("a1IJ2", index + 1, 10),
             "creator_id": self.values.code("0057F", index + 1, 10),
             "creation_date": ymdhms_millis(created_at - timedelta(days=2)),
-            "deleted_flg": "f",
+            "deleted_flg": "FALSE",
             "last_updated_by_id": self.values.code("0057F", index + 5, 10),
             "last_updated_date": ymdhms_millis(approval_at + timedelta(days=1)),
             "last_reference_date": ymdhms_millis(approval_at + timedelta(days=2)),
@@ -973,8 +1082,8 @@ class CsvGenerator:
             "record_type_id": self.values.code("012J2", index + 1, 10),
             "systemmodstamp": ymdhms_millis(approval_at + timedelta(days=1, hours=2)),
             "estimate_sheet_number": f"SN{created_at:%Y%m%d}{index % 100000:05d}",
-            "summit_data_migration_flag": self.values.bool_flag(index + 27, 20),
-            "credit_review_request_name_compass_presence_absence": "t" if index % 5 == 0 else "f",
+            "summit_data_migration_flag": self._compass_bool(index + 27, 20),
+            "credit_review_request_name_compass_presence_absence": "TRUE" if index % 5 == 0 else "FALSE",
             "estimate_sheet_presence_absence": "有" if index % 2 == 0 else "無",
             "product_pre_consultation": "有" if index % 4 == 0 else "無",
             "mobile_p2p_consultation_approval_conditions": "粗利率、契約期間、回線数の条件を満たすこと",
@@ -1231,8 +1340,8 @@ class CsvGenerator:
         name = column.name
         if column.data_type.startswith("DECIMAL"):
             return str(1 + (index % 50))
-        if name.endswith("_flag") or name.endswith("_flg") or name.endswith("_type"):
-            return self.values.bool_flag(index)
+        if name in COMPASS_BOOLEAN_COLUMNS or name.endswith("_flag") or name.endswith("_flg") or name.endswith("_type"):
+            return self._compass_bool(index)
         if "unixtime" in name:
             return str(1_700_000_000 + index)
         if "date_and_time" in name or name.endswith("_date") and column.max_length == 23:
@@ -1528,8 +1637,25 @@ class CsvGenerator:
 
     def _bfs_row(self, context: dict[str, str], index: int, diff_type: str | None = None) -> list[str]:
         """BFS文脈を列順の行へ変換する。"""
-        row = self._resolved_row(self.specs["bfs"], context, index, self.resolve_bfs_value)
+        row = self._resolved_bfs_entry_row(context, index)
         return prepend_diff_type(row, diff_type)
+
+    def _resolved_bfs_entry_row(self, context: dict[str, str], index: int) -> list[str]:
+        """BFSエントリ情報の必須・任意列方針を反映して行を生成する。"""
+        base_index = int(context["base_index"])
+        columns = self.specs["bfs"]
+        return [
+            ""
+            if self._should_blank_bfs_entry_column(column, base_index, column_index)
+            else clip(self.resolve_bfs_value(column, context, index), column.max_length)
+            for column_index, column in enumerate(columns)
+        ]
+
+    def _should_blank_bfs_entry_column(self, column: ColumnSpec, base_index: int, column_index: int) -> bool:
+        """BFSエントリ情報の任意列を決定的な比率で空欄にする。"""
+        if column.required or column.name in BFS_ENTRY_REQUIRED_OPTIONAL_COLUMNS:
+            return False
+        return (base_index + column_index) % 3 == 0
 
     def _bfs_short_company_name(self, index: int) -> str:
         """BFSエントリのサイズ削減用に短い企業名を返す。"""
@@ -1623,13 +1749,13 @@ class CsvGenerator:
             "entry_number": entry_number,
             "summary_number": summary_number,
             "subject": f"BFS{base_index % 10_000:04d}",
-            "creation_category": "新規" if base_index % 3 == 0 else "変更" if base_index % 3 == 1 else "追加",
-            "order_type": ["新規契約", "変更契約", "追加契約"][base_index % 3],
-            "application_form_linkage": "連携済" if base_index % 4 else "未連携",
+            "creation_category": ["エントリ作成", "試算作成", "申込書作成"][base_index % 3],
+            "order_type": "追加新規",
+            "application_form_linkage": "有" if base_index % 4 else "無",
             "special_contract_separate_output": "無" if base_index % 2 == 0 else "有",
-            "notification_target": "対象" if base_index % 5 else "対象外",
-            "activation_status": "開通済" if base_index % 2 == 0 else "未開通",
-            "activation_date": ymd(activation_date),
+            "notification_target": "有" if base_index % 5 else "無",
+            "activation_status": "有" if base_index % 2 == 0 else "無",
+            "activation_date": f"{activation_date.year}/{activation_date.month}/{activation_date.day} 0:00",
             "incomplete_request_type": ["新規", "変更", "追加"][base_index % 3],
             "source_entry_type": "コピー元" if base_index % 4 == 0 else "試算",
             "salesperson_code": salesperson_code,
@@ -1639,9 +1765,9 @@ class CsvGenerator:
             "carrier_type": ["SoftBank", "Y!mobile", "LINEMO"][base_index % 3],
             "business_operator_category": "法人",
             "application_form_number": self.values.code("AP", base_index + 1, 10),
-            "contract_type": ["レンタル", "売切", "リース"][base_index % 3],
-            "expected_delivery_date": ymd(delivery_date),
-            "application_date": ymd(application_date),
+            "contract_type": ["相対", "約款"][base_index % 2],
+            "expected_delivery_date": f"{delivery_date:%Y/%m/%d} 0:00:00",
+            "application_date": f"{application_date:%Y/%m/%d} 0:00:00",
             "ipad_customer_type": ["法人", "一般", "教育"][base_index % 3],
             "billing_method": ["請求書", "口座振替", "クレジットカード"][base_index % 3],
             "number_of_payments": ["一括", "12回", "24回"][base_index % 3],
@@ -1656,9 +1782,9 @@ class CsvGenerator:
             "web_order_number": self.values.code("WO", base_index + 1, 10),
             "billing_discount_change": ["無", "有"][base_index % 2],
             "entry_creator_id": self.values.employee_id(base_index + 100),
-            "entry_creation_date_and_time": ymdhm(created_at),
+            "entry_creation_date_and_time": f"{created_at:%Y/%m/%d %H:%M:%S}",
             "entry_updater_id": self.values.employee_id(base_index + 200),
-            "entry_update_date_and_time": ymdhm(updated_at),
+            "entry_update_date_and_time": f"{updated_at:%Y/%m/%d %H:%M:%S}",
             "sfa_number": self.values.code("SFA", base_index + 1, 9),
             "sfa_project_name": f"SFA{base_index % 10_000:04d}",
             "unified_company_code": self.values.code("UC", base_index + 1, 8),
@@ -1743,8 +1869,8 @@ class CsvGenerator:
             "special_agreement_start_date": ymd(approval_date),
             "special_agreement_period": f"{12 + (base_index % 24)}ヶ月",
             "contract_period_in_months": str(12 + (base_index % 36)),
-            "period_after_automatic_renewal": str(12 + (base_index % 24)),
-            "initial_rental_period": str(12 + (base_index % 12)),
+            "period_after_automatic_renewal": f"{12 + (base_index % 24)}ヶ月",
+            "initial_rental_period": f"{12 + (base_index % 12)}ヶ月",
             "used_rental_start_date": ymd(rental_start_date),
             "used_rental_end_date": ymd(rental_end_date),
             "maximum_number_of_lines_applicable_to_the_special_agreement": str(99 + (base_index % 20)),
@@ -1816,32 +1942,32 @@ class CsvGenerator:
         updated_at = created_at + timedelta(minutes=15)
         return {
             "number_of_lines": "1",
-            "rental_set_device": ["0", "1"][base_index % 2],
-            "mnp": ["0", "1"][(base_index // 2) % 2],
+            "rental_set_device": ["有", "無"][base_index % 2],
+            "mnp": ["有", "無"][(base_index // 2) % 2],
             "product_code": self.values.code("P", base_index + 1, 3),
-            "manufacturer": f"M{base_index % len(DEVICE_MANUFACTURERS) + 1}",
-            "mobile_device_classification": f"CL{base_index % len(DEVICE_CLASSES) + 1}",
-            "model_name": f"MD{base_index % len(DEVICE_MODEL_NAMES) + 1}",
-            "color_1": f"CR{base_index % len(COLORS) + 1}",
+            "manufacturer": DEVICE_MANUFACTURERS[base_index % len(DEVICE_MANUFACTURERS)],
+            "mobile_device_classification": DEVICE_CLASSES[base_index % len(DEVICE_CLASSES)],
+            "model_name": DEVICE_MODEL_NAMES[base_index % len(DEVICE_MODEL_NAMES)],
+            "color_1": COLORS[base_index % len(COLORS)][0],
             "quantity_1": "1",
-            "color_2": f"CR{(base_index + 1) % len(COLORS) + 1}",
+            "color_2": COLORS[(base_index + 1) % len(COLORS)][0],
             "quantity_2": "1",
-            "color_3": f"CR{(base_index + 2) % len(COLORS) + 1}",
+            "color_3": COLORS[(base_index + 2) % len(COLORS)][0],
             "quantity_3": "1",
-            "color_4": f"CR{(base_index + 3) % len(COLORS) + 1}",
+            "color_4": COLORS[(base_index + 3) % len(COLORS)][0],
             "quantity_4": "1",
-            "color_5": f"CR{(base_index + 4) % len(COLORS) + 1}",
+            "color_5": COLORS[(base_index + 4) % len(COLORS)][0],
             "quantity_5": "1",
-            "standard_device_price": "1",
-            "provision_fee": "1",
-            "points_used": "1",
-            "rental_fee": "1",
-            "actual_rental_provision_fee": "1",
-            "campaign_1": f"C{base_index % 10 + 1}",
-            "campaign_2": f"C{base_index % 8 + 1}",
-            "campaign_3": f"C{base_index % 6 + 1}",
-            "campaign_4": f"C{base_index % 4 + 1}",
-            "campaign_5": f"C{base_index % 3 + 1}",
+            "standard_device_price": str(48_000 + (base_index % 8) * 5_000),
+            "provision_fee": str(36_000 + (base_index % 8) * 4_000),
+            "points_used": str((base_index % 6) * 500),
+            "rental_fee": str(1_500 + (base_index % 5) * 300),
+            "actual_rental_provision_fee": str(1_000 + (base_index % 5) * 250),
+            "campaign_1": BFS_DEVICE_CAMPAIGNS[base_index % len(BFS_DEVICE_CAMPAIGNS)],
+            "campaign_2": BFS_DEVICE_CAMPAIGNS[(base_index + 1) % len(BFS_DEVICE_CAMPAIGNS)],
+            "campaign_3": BFS_DEVICE_CAMPAIGNS[(base_index + 2) % len(BFS_DEVICE_CAMPAIGNS)],
+            "campaign_4": BFS_DEVICE_CAMPAIGNS[(base_index + 3) % len(BFS_DEVICE_CAMPAIGNS)],
+            "campaign_5": BFS_DEVICE_CAMPAIGNS[(base_index + 4) % len(BFS_DEVICE_CAMPAIGNS)],
             "benefit_code_1": f"B{base_index % 100}",
             "benefit_code_2": f"B{(base_index + 1) % 100}",
             "benefit_code_3": f"B{(base_index + 2) % 100}",
@@ -1849,25 +1975,27 @@ class CsvGenerator:
             "urgent_campaign_1": "UC1",
             "urgent_campaign_2": "UC2",
             "urgent_campaign_3": "UC3",
-            "plan": f"P{base_index % len(DEVICE_PLANS) + 1}",
+            "plan": BFS_DEVICE_PLANS[base_index % 2],
             "white_corporate": ["1", "0"][base_index % 2],
-            "call_discount_w_white": ["1", "0"][(base_index + 1) % 2],
+            "call_discount_w_white": BFS_DEVICE_CALL_DISCOUNTS[0],
             "call_discount_l_white": ["1", "0"][base_index % 2],
             "flat_rate_calling_24_hour": ["1", "0"][(base_index + 1) % 2],
             "white_office": ["1", "0"][base_index % 2],
             "continuing_discount": ["1", "0"][(base_index + 1) % 2],
-            "breaking_contract_gold_annual_contract": ["1", "0"][base_index % 2],
-            "s_basic_pack": "有",
-            "data_communication_basic_fee_4g": "有",
-            "basic_fee_5g": "有",
-            "packet_discount": "有",
-            "data_speed_​​limit_removal": "済",
+            "breaking_contract_gold_annual_contract": BFS_DEVICE_ANNUAL_CONTRACTS[
+                base_index % len(BFS_DEVICE_ANNUAL_CONTRACTS)
+            ],
+            "s_basic_pack": BFS_DEVICE_S_BASIC_PACKS[(base_index + 1) % 3],
+            "data_communication_basic_fee_4g": BFS_DEVICE_4G_FEES[base_index % len(BFS_DEVICE_4G_FEES)],
+            "basic_fee_5g": BFS_DEVICE_5G_FEES[base_index % len(BFS_DEVICE_5G_FEES)],
+            "packet_discount": BFS_DEVICE_PACKET_DISCOUNTS[1],
+            "data_speed_​​limit_removal": "解除",
             "flat_rate_calls___anyone": "有",
             "wifi": "1",
             "tethering": "1",
             "flat_sp9": "0",
-            "option_pack": "標",
-            "anshin_guarantee_pack": ["1", "0"][base_index % 2],
+            "option_pack": BFS_DEVICE_OPTION_PACKS[base_index % 2],
+            "anshin_guarantee_pack": BFS_DEVICE_GUARANTEE_PACKS[0],
             "app": "BC",
             "global_mobile_phone": ["1", "0"][(base_index + 1) % 2],
             "overseas_packet_discount": "1",
@@ -1885,10 +2013,10 @@ class CsvGenerator:
             "rnt_urgent_campaign_1": "RU1",
             "rnt_urgent_campaign_2": "RU2",
             "rnt_urgent_campaign_3": "RU3",
-            "new_service_fee_exemption": "0",
-            "model_upgrade_fee_exemption": "1" if base_index % 3 == 0 else "0",
-            "contract_change_service_fee_exemption": "0",
-            "annual_contract_penalty_exemption": "0",
+            "new_service_fee_exemption": "無",
+            "model_upgrade_fee_exemption": "有" if base_index % 3 == 0 else "無",
+            "contract_change_service_fee_exemption": "無",
+            "annual_contract_penalty_exemption": "無",
             "applicable_relative_discount_end_date": (BASE_DATE + timedelta(days=(base_index % 180) + 30)).strftime(
                 "%Y%m%d"
             ),
@@ -1912,21 +2040,38 @@ class CsvGenerator:
     def _populate_bfs_device_option_context(self, device_context: dict[str, str], base_index: int) -> None:
         """BFSサービスサマリ端末の繰り返し項目を埋める。"""
         for option_index in range(1, 11):
-            device_context[f"option_category_{option_index}"] = f"OC{option_index}"
-            device_context[f"option_service_{option_index}"] = f"OS{option_index}"
-            device_context[f"optional_category_{option_index}"] = f"OC{option_index + 1}"
-            device_context[f"optional_service_{option_index}"] = f"OS{option_index + 1}"
-            device_context[f"rntopt_category_{option_index}"] = f"RC{option_index}"
-            device_context[f"rntopt_plan_{option_index}"] = f"RP{option_index}"
-            device_context[f"rntoptatt_category_{option_index}"] = f"RAC{option_index}"
-            device_context[f"rntoptatt_plan_{option_index}"] = f"RAP{option_index}"
+            category = BFS_DEVICE_OPTION_CATEGORY_NAMES[
+                (base_index + option_index) % len(BFS_DEVICE_OPTION_CATEGORY_NAMES)
+            ]
+            service = BFS_DEVICE_OPTION_SERVICE_NAMES[
+                (base_index + option_index) % len(BFS_DEVICE_OPTION_SERVICE_NAMES)
+            ]
+            rntopt_category = BFS_DEVICE_RNTOPT_CATEGORIES[
+                (base_index + option_index) % len(BFS_DEVICE_RNTOPT_CATEGORIES)
+            ]
+            rntopt_plan = BFS_DEVICE_RNTOPT_PLANS[(base_index + option_index) % len(BFS_DEVICE_RNTOPT_PLANS)]
+            device_context[f"option_category_{option_index}"] = category
+            device_context[f"option_service_{option_index}"] = service
+            device_context[f"optional_category_{option_index}"] = category
+            device_context[f"optional_service_{option_index}"] = service
+            device_context[f"rntopt_category_{option_index}"] = rntopt_category
+            device_context[f"rntopt_plan_{option_index}"] = rntopt_plan
+            device_context[f"rntoptatt_category_{option_index}"] = rntopt_category
+            device_context[f"rntoptatt_plan_{option_index}"] = rntopt_plan
 
     def _populate_bfs_device_relative_context(self, device_context: dict[str, str], base_index: int) -> None:
         """BFSサービスサマリ端末の相対割引系の繰り返し項目を埋める。"""
-        for option_index in range(1, 10):
-            device_context[f"relative_pd_category_{option_index}"] = f"PC{option_index}"
-            device_context[f"relative_pd_name_{option_index}"] = f"PN{option_index}"
-            device_context[f"relative_discount_method_{option_index}"] = f"D{option_index % 3}"
+        for option_index in range(1, 11):
+            relative_index = base_index + option_index
+            device_context[f"relative_pd_category_{option_index}"] = BFS_DEVICE_RELATIVE_PD_CATEGORIES[
+                relative_index % len(BFS_DEVICE_RELATIVE_PD_CATEGORIES)
+            ]
+            device_context[f"relative_pd_name_{option_index}"] = BFS_DEVICE_RELATIVE_PD_NAMES[
+                relative_index % len(BFS_DEVICE_RELATIVE_PD_NAMES)
+            ]
+            device_context[f"relative_discount_method_{option_index}"] = DISCOUNT_METHODS[
+                relative_index % len(DISCOUNT_METHODS)
+            ]
             device_context[f"relative_effective_start_date_{option_index}"] = ymd(
                 BASE_DATE - timedelta(days=(base_index + option_index) % 120)
             ).replace("/", "")
@@ -1943,9 +2088,15 @@ class CsvGenerator:
     def _populate_bfs_device_other_relative_context(self, device_context: dict[str, str]) -> None:
         """BFSサービスサマリ端末のその他相対割引系の繰り返し項目を埋める。"""
         for option_index in range(1, 6):
-            device_context[f"relative_other_pd_category_{option_index}"] = f"OPC{option_index}"
-            device_context[f"relative_other_pd_name_{option_index}"] = f"OPN{option_index}"
-            device_context[f"relative_other_discount_method_{option_index}"] = f"D{option_index % 3}"
+            device_context[f"relative_other_pd_category_{option_index}"] = BFS_DEVICE_RELATIVE_PD_CATEGORIES[
+                option_index % len(BFS_DEVICE_RELATIVE_PD_CATEGORIES)
+            ]
+            device_context[f"relative_other_pd_name_{option_index}"] = BFS_DEVICE_RELATIVE_PD_NAMES[
+                option_index % len(BFS_DEVICE_RELATIVE_PD_NAMES)
+            ]
+            device_context[f"relative_other_discount_method_{option_index}"] = DISCOUNT_METHODS[
+                option_index % len(DISCOUNT_METHODS)
+            ]
             device_context[f"relative_other_effective_start_date_{option_index}"] = ymd(
                 BASE_DATE - timedelta(days=option_index * 3)
             ).replace("/", "")
@@ -1996,7 +2147,7 @@ class CsvGenerator:
             product_code = self.values.code("ACI", base_index + 1, 4)
         return {
             "summary_number": summary_number,
-            "serial_number_accessories": ["有", "無"][value_index % 2],
+            "serial_number_accessories": "シリアルなし",
             "product_code": product_code,
             "manufacturer": ACCESSORY_MANUFACTURERS[value_index % len(ACCESSORY_MANUFACTURERS)],
             "product_name": ACCESSORY_PRODUCT_NAMES[value_index % len(ACCESSORY_PRODUCT_NAMES)],
@@ -2030,21 +2181,96 @@ class CsvGenerator:
         for scope_index in range(1, 10):
             device_context[f"plan_change_permission_range_{scope_index}"] = f"R{scope_index}"
             device_context[f"consultation_regarding_relative_{scope_index}"] = f"S{scope_index}"
-        row = self._resolved_row(self.specs["bfs_device"], device_context, index, self.resolve_bfs_device_value)
+        row = self._resolved_bfs_device_row(device_context, index)
         return prepend_diff_type(row, diff_type)
+
+    def _resolved_bfs_device_row(self, context: dict[str, str], index: int) -> list[str]:
+        """BFSサービスサマリ端末の必須・任意列方針を反映して行を生成する。"""
+        base_index = int(context["base_index"])
+        columns = self.specs["bfs_device"]
+        return [
+            ""
+            if self._should_blank_bfs_device_column(column, base_index, column_index)
+            else clip(self.resolve_bfs_device_value(column, context, index), column.max_length)
+            for column_index, column in enumerate(columns)
+        ]
+
+    def _should_blank_bfs_device_column(self, column: ColumnSpec, base_index: int, column_index: int) -> bool:
+        """BFSサービスサマリ端末の任意列を決定的な比率で空欄にする。"""
+        if column.required:
+            return False
+        repeat_slot = self._bfs_device_repeat_slot(column.name)
+        if repeat_slot is not None:
+            group_name, slot, group_size = repeat_slot
+            return slot > self._bfs_device_active_count(base_index, group_name, group_size)
+        return (base_index + column_index) % 3 == 0
+
+    def _bfs_device_repeat_slot(self, name: str) -> tuple[str, int, int] | None:
+        """BFSサービスサマリ端末の連番グループ名・番号・最大数を返す。"""
+        numbered_groups = (
+            ("option", 10, ("option_category_", "option_service_", "optional_category_", "optional_service_")),
+            ("rntopt", 10, ("rntopt_category_", "rntopt_plan_")),
+            ("rntoptatt", 10, ("rntoptatt_category_", "rntoptatt_plan_", "rntopta_tt_category_")),
+            ("relative", 10, ("relative_pd_", "relative_discount_", "relative_effective_", "relative_invoice_")),
+            ("relative", 10, ("relative_billing_", "relative_period_")),
+            ("relative_other", 5, ("relative_other_",)),
+            ("rrelative", 5, ("rrelative_", "r_relative_")),
+            ("color", 5, ("color_", "quantity_")),
+            ("campaign", 5, ("campaign_",)),
+            ("benefit", 4, ("benefit_code_",)),
+            ("urgent_campaign", 3, ("urgent_campaign_",)),
+            ("rnt_campaign", 3, ("rnt_campaign_",)),
+            ("campaign_code", 2, ("campaign_code_",)),
+            ("rnt_urgent_campaign", 3, ("rnt_urgent_campaign_",)),
+            ("plan_change", 9, ("plan_change_permission_range_",)),
+            ("consultation", 10, ("private_consultation_", "consultation_")),
+            ("applicable_op", 5, ("applicable_op_",)),
+        )
+        for group_name, group_size, prefixes in numbered_groups:
+            if name.startswith(prefixes):
+                slot = self._trailing_number(name)
+                if slot is not None and 1 <= slot <= group_size:
+                    return group_name, slot, group_size
+        return None
+
+    def _bfs_device_active_count(self, base_index: int, group_name: str, group_size: int) -> int:
+        """連番グループで先頭から何番目まで入力するかを返す。"""
+        if group_size <= 2:
+            return group_size - ((base_index + len(group_name)) % 2)
+        blank_count = (base_index + len(group_name)) % min(7, group_size)
+        return max(1, group_size - blank_count)
+
+    def _trailing_number(self, name: str) -> int | None:
+        """末尾のアンダースコア付き番号を整数として返す。"""
+        parts = name.rsplit("_", 1)
+        if len(parts) != 2 or not parts[1].isdecimal():
+            return None
+        return int(parts[1])
 
     def _bfs_accessories_row(self, context: dict[str, str], index: int, diff_type: str | None = None) -> list[str]:
         """BFSサービスサマリ付属品の1行を生成する。"""
         accessories_context = dict(context)
         accessories_context["diff_type"] = diff_type or ""
         accessories_context.update(self._bfs_accessories_summary_context(accessories_context))
-        row = self._resolved_row(
-            self.specs["bfs_accessories"],
-            accessories_context,
-            index,
-            self.resolve_bfs_accessories_value,
-        )
+        row = self._resolved_bfs_accessories_row(accessories_context, index)
         return prepend_diff_type(row, diff_type)
+
+    def _resolved_bfs_accessories_row(self, context: dict[str, str], index: int) -> list[str]:
+        """BFSサービスサマリ付属品の必須・任意列方針を反映して行を生成する。"""
+        base_index = int(context["base_index"])
+        columns = self.specs["bfs_accessories"]
+        return [
+            ""
+            if self._should_blank_bfs_accessories_column(column, base_index, column_index)
+            else clip(self.resolve_bfs_accessories_value(column, context, index), column.max_length)
+            for column_index, column in enumerate(columns)
+        ]
+
+    def _should_blank_bfs_accessories_column(self, column: ColumnSpec, base_index: int, column_index: int) -> bool:
+        """BFSサービスサマリ付属品の任意列を決定的な比率で空欄にする。"""
+        if column.required or column.name in BFS_ACCESSORIES_REQUIRED_OPTIONAL_COLUMNS:
+            return False
+        return (base_index + column_index) % 3 == 0
 
     def resolve_bfs_value(self, column: ColumnSpec, context: dict[str, str], index: int) -> str:
         """BFS列の明示値が無い場合に、列名規則から既定値を補完する。"""
@@ -2055,7 +2281,7 @@ class CsvGenerator:
         if column.data_type.startswith("DECIMAL"):
             return str(1 + (base_index % 99))
         if "date_and_time" in name:
-            return ymdhm(datetime(2025, 12, 1, 9, 0) + timedelta(hours=base_index % 240))
+            return f"{datetime(2025, 12, 1, 9, 0) + timedelta(hours=base_index % 240):%Y/%m/%d %H:%M:%S}"
         if name.endswith("_date"):
             return ymd(BASE_DATE - timedelta(days=base_index % 365))
         if "kana" in name or "katakana" in name:
@@ -2063,8 +2289,12 @@ class CsvGenerator:
         if "phone" in name or "tel" in name or "fax" in name:
             return self.values.phone("03", 20_000_000 + base_index)
         if name in {"application_form_linkage", "special_contract_separate_output", "notification_target", "activation_status"}:
-            return ["連携済", "無", "対象", "開通済"][base_index % 4]
+            return ["有", "無"][base_index % 2]
         if name in {"creation_category", "order_type", "incomplete_request_type", "change_target", "replacement_type"}:
+            if name == "creation_category":
+                return ["エントリ作成", "試算作成", "申込書作成"][base_index % 3]
+            if name == "order_type":
+                return "追加新規"
             return ["新規", "変更", "追加"][base_index % 3]
         if name in {"carrier_type"}:
             return ["SoftBank", "Y!mobile", "LINEMO"][base_index % 3]
@@ -2077,7 +2307,7 @@ class CsvGenerator:
         if name in {"call_charge_combined_type", "accessory_fee_combined_type"}:
             return ["なし", "あり"][base_index % 2]
         if name in {"contract_type"}:
-            return ["レンタル", "売切", "リース"][base_index % 3]
+            return ["相対", "約款"][base_index % 2]
         if name in {"ipad_customer_type"}:
             return ["法人", "一般", "教育"][base_index % 3]
         if name in {"invoice_type", "invoice_delivery"}:

@@ -40,19 +40,20 @@ def parse_section_columns(lines: list[str]) -> list[ColumnSpec]:
         parsed = _parse_column_row(line)
         if parsed is None:
             continue
-        item_label, name, data_type, max_length_text = parsed
+        item_label, name, data_type, max_length_text, required_text = parsed
         columns.append(
             ColumnSpec(
                 name=name,
                 header_label=item_label,
                 data_type=data_type,
                 max_length=parse_max_length(max_length_text),
+                required=is_required_marker(required_text),
             )
         )
     return columns
 
 
-def _parse_column_row(line: str) -> tuple[str, str, str, str] | None:
+def _parse_column_row(line: str) -> tuple[str, str, str, str, str] | None:
     """列定義のMarkdown行を、表示名・列名・型・桁に分解する。"""
     if not line.startswith("|") or "`" not in line:
         return None
@@ -65,6 +66,7 @@ def _parse_column_row(line: str) -> tuple[str, str, str, str] | None:
         parts[column_name_index].strip("`"),
         parts[column_name_index + 1],
         parts[column_name_index + 2],
+        parts[column_name_index + 3] if column_name_index + 3 < len(parts) else "",
     )
 
 
@@ -80,3 +82,8 @@ def parse_max_length(length_text: str) -> int | None:
     """桁数定義の先頭数値を取り出し、最大長として返す。"""
     match = re.match(r"(\d+)", length_text)
     return int(match.group(1)) if match else None
+
+
+def is_required_marker(required_text: str) -> bool:
+    """列定義の必須セルが必須マークを含むかどうかを返す。"""
+    return "⚪" in required_text or "○" in required_text

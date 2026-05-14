@@ -77,6 +77,7 @@ class ColumnSpec:
     header_label: str
     data_type: str
     max_length: int | None
+    required: bool = False
 
 
 PREFECTURES = [

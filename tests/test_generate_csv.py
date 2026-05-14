@@ -134,6 +134,13 @@ def assert_all_cells_filled(header: list[str], rows: list[list[str]], name: str)
             assert value != "", f"{name}: row={row_index}, column={header[column_index]}"
 
 
+def bfs_device_column_index(header: list[str], column_name: str) -> int:
+    """BFSサービスサマリ端末の英字カラム名からCSV列位置を返す。"""
+    specs = load_specs(ROOT / "docs/format")
+    labels = {column.name: column.header_label for column in specs["bfs_device"]}
+    return header.index(labels[column_name])
+
+
 @pytest.fixture(scope="module")
 def generated_default_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """デフォルト実行結果をモジュール内で使い回す。"""
@@ -559,8 +566,8 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
     assert campaign_diff_header[0] == "キャンペーンid"
     assert agency_header[0] == "取次店コード"
     assert diff_header[0] == "取次店コード"
-    assert compass_all_header[0] == "決裁番号"
-    assert compass_diff_header[0] == "決裁番号"
+    assert compass_all_header[0] == "ID"
+    assert compass_diff_header[0] == "ID"
     assert product_header[0] == "商品コード"
     assert product_diff_header[0] == "商品コード"
     assert bfs_all_header[0] == "エントリ番号"
@@ -590,7 +597,10 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
         corp_all_2_header,
         corp_diff_header,
     ):
-        assert "id" not in header
+        if header == compass_all_header or header == compass_diff_header:
+            assert "ID" in header
+        else:
+            assert "id" not in header
 
 
 def test_diff_type_header_is_not_output_to_any_csv(generated_default_dir: Path) -> None:
@@ -642,7 +652,7 @@ def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir:
     expected_headers = {
         "campaign": ["キャンペーンid", "キャンペーン名称", "説明", "有効開始日"],
         "agency": ["取次店コード", "有効開始日", "有効終了日", "共通店舗コード"],
-        "compass": ["決裁番号", "決裁件名", "ステータス", "申請日時"],
+        "compass": ["ID", "決裁番号", "決裁件名", "ステータス"],
         "product": ["商品コード", "有効開始日", "有効開始時間", "有効終了日"],
         "bfs": ["エントリ番号", "件名", "作成区分", "オーダ種別"],
         "bfs_device": ["エントリ番号", "サマリ番号", "回線数", "レンタルセット端末"],
@@ -760,6 +770,20 @@ def test_parse_section_columns_supports_multiple_markdown_row_formats() -> None:
     assert [column.header_label for column in columns] == ["キャンペーンid", "取次店コード", "決裁番号"]
     assert [column.name for column in columns] == ["campaign_id", "agent_code", "approval_number"]
     assert [column.max_length for column in columns] == [40, 10, 20]
+    assert [column.required for column in columns] == [False, False, False]
+
+
+def test_parse_section_columns_detects_required_marker() -> None:
+    """列定義の必須マークを ColumnSpec に保持する。"""
+    columns = parse_section_columns(
+        [
+            "| 項目名 | カラム名 | 型 | 桁 | 必須 | 説明 |",
+            "| エントリ番号 | `entry_number` | VARCHAR | 18 | ⚪︎ | - |",
+            "| 回線数 | `number_of_lines` | DECIMAL | 10 | － | - |",
+        ]
+    )
+
+    assert [column.required for column in columns] == [True, False]
 
 
 def test_load_specs_includes_bfs_entry_information() -> None:
@@ -842,6 +866,7 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
         "campaign": "CP",
         "agency": "AG",
         "product": "PRD",
+        "compass_id": "CMP",
         "compass": "LS",
         "bfs_all": "EN",
         "bfs_diff": "EN",
@@ -865,9 +890,11 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
     for row in product_diff_rows[:2]:
         assert row[0].startswith(expected_prefixes["product"])
     for row in compass_all_rows[:2]:
-        assert row[0].startswith(expected_prefixes["compass"])
+        assert row[0].startswith(expected_prefixes["compass_id"])
+        assert row[1].startswith(expected_prefixes["compass"])
     for row in compass_diff_rows[:2]:
-        assert row[0].startswith(expected_prefixes["compass"])
+        assert row[0].startswith(expected_prefixes["compass_id"])
+        assert row[1].startswith(expected_prefixes["compass"])
     for row in bfs_all_rows[:2]:
         assert row[0].startswith(expected_prefixes["bfs_all"])
     for row in bfs_diff_rows[:2]:
@@ -920,17 +947,25 @@ def test_bfs_device_headers_include_new_columns(generated_default_dir: Path) -> 
     assert header[-2:] == ["現端末契約期間", "サマリ単位反映"]
 
 
-def test_bfs_device_new_columns_are_populated_in_all_and_diff(generated_default_dir: Path) -> None:
-    """BFSサービスサマリ端末の新規2項目は全量・差分のどちらでも空欄にしない。"""
+def test_bfs_device_optional_new_columns_use_valid_values_when_populated(generated_default_dir: Path) -> None:
+    """BFSサービスサマリ端末の任意新規2項目は入力時に仕様内の値にする。"""
     header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
 
     current_device_contract_period_index = header.index("現端末契約期間")
     reflected_in_summary_unit_index = header.index("サマリ単位反映")
 
+    current_device_contract_period_values = []
+    reflected_in_summary_unit_values = []
     for row in all_rows[:20] + diff_rows[:20]:
-        assert row[current_device_contract_period_index] != ""
-        assert row[reflected_in_summary_unit_index] != ""
+        if row[current_device_contract_period_index] != "":
+            current_device_contract_period_values.append(row[current_device_contract_period_index])
+        if row[reflected_in_summary_unit_index] != "":
+            reflected_in_summary_unit_values.append(row[reflected_in_summary_unit_index])
+
+    assert current_device_contract_period_values
+    assert reflected_in_summary_unit_values
+    assert set(reflected_in_summary_unit_values).issubset({"0", "1"})
 
 
 def test_bfs_device_contract_period_uses_two_digit_decimal_values(generated_default_dir: Path) -> None:
@@ -941,21 +976,235 @@ def test_bfs_device_contract_period_uses_two_digit_decimal_values(generated_defa
 
     for row in all_rows[:20] + diff_rows[:20]:
         value = row[current_device_contract_period_index]
+        if value == "":
+            continue
         assert value.isdecimal()
         assert len(value) <= 2
 
 
-def test_bfs_initial_rental_period_uses_smallint_values(generated_default_dir: Path) -> None:
-    """BFSエントリの初期レンタル期間は月表記ではなく整数文字列で出力する。"""
+def test_bfs_device_required_columns_are_populated_in_all_and_diff(generated_default_dir: Path) -> None:
+    """BFSサービスサマリ端末の必須列は全量・差分とも空欄にしない。"""
+    specs = load_specs(ROOT / "docs/format")
+    required_labels = [column.header_label for column in specs["bfs_device"] if column.required]
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+
+    assert required_labels == ["エントリ番号", "サマリ番号", "商品コード", "メーカ", "移動機分類", "機種名", "プラン"]
+    required_indexes = [header.index(label) for label in required_labels]
+    for row in all_rows + diff_rows:
+        assert all(row[index] != "" for index in required_indexes)
+
+
+def test_bfs_device_optional_columns_have_moderate_blanks(generated_default_dir: Path) -> None:
+    """BFSサービスサマリ端末の任意列には20-35%程度の空欄を含める。"""
+    specs = load_specs(ROOT / "docs/format")
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+
+    optional_indexes = [header.index(column.header_label) for column in specs["bfs_device"] if not column.required]
+    values = [row[index] for row in all_rows + diff_rows for index in optional_indexes]
+    blank_rate = values.count("") / len(values)
+
+    assert 0.20 <= blank_rate <= 0.35
+
+
+def test_bfs_device_repeating_pairs_are_contiguous_and_complete(generated_default_dir: Path) -> None:
+    """BFSサービスサマリ端末の連番ペア列は途中飛びや片側入力を作らない。"""
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+    paired_groups = [
+        [(f"option_category_{index}", f"option_service_{index}") for index in range(1, 8)]
+        + [("option_category_8", "optional_service_8")]
+        + [(f"optional_category_{index}", f"optional_service_{index}") for index in range(9, 11)],
+        [(f"rntopt_category_{index}", f"rntopt_plan_{index}") for index in range(1, 11)],
+        [(f"rntoptatt_category_{index}", f"rntoptatt_plan_{index}") for index in range(1, 9)]
+        + [("rntopta_tt_category_9", "rntoptatt_plan_9")]
+        + [("rntoptatt_category_10", "rntoptatt_plan_10")],
+        [(f"relative_pd_category_{index}", f"relative_pd_name_{index}") for index in range(1, 11)],
+        [(f"relative_other_pd_category_{index}", f"relative_other_pd_name_{index}") for index in range(1, 6)],
+    ]
+
+    for row in all_rows[:50] + diff_rows[:50]:
+        for group in paired_groups:
+            seen_blank = False
+            for left_name, right_name in group:
+                left = row[bfs_device_column_index(header, left_name)]
+                right = row[bfs_device_column_index(header, right_name)]
+                assert (left == "") == (right == "")
+                if left == "":
+                    seen_blank = True
+                else:
+                    assert not seen_blank
+
+
+def test_bfs_device_values_follow_updated_spec_examples(generated_default_dir: Path) -> None:
+    """BFSサービスサマリ端末の主要列は短縮コードではなく仕様例に沿う値を使う。"""
+    header, rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
+    checks = {
+        "rental_set_device": {"有", "無"},
+        "mnp": {"有", "無"},
+        "plan": {"基本プラン（音声）", "基本プラン（データ）", "通話定額基本料（ケータイ）", "ホワイト特別相対S", "ホワイト特別相対L"},
+        "call_discount_w_white": {"通話料割引Wホワイト", "通話料割引Wホワイトライト"},
+        "breaking_contract_gold_annual_contract": {"相対2年契約10000", "相対5年契約15000"},
+        "s_basic_pack": {"ウェブ使用料（無料）", "ウェブ使用料（i）", "ウェブ使用料なし", "ウェブ使用料（スマ放題/通話基本プラン）"},
+        "data_communication_basic_fee_4g": {"4Gデータ通信基本料(i)", "4Gデータ通信基本料(F)", "4Gデータ通信基本料(S)"},
+        "basic_fee_5g": {"5Gサービス利用料", "5G基本料（内包用）"},
+        "packet_discount": {"データプラン7GB（法人）", "パケットし放題フラット"},
+        "option_pack": {"セレクトパック", "iPhone法人基本パック", "スマートフォン法人基本パック"},
+        "anshin_guarantee_pack": {"(端末)安心保証パックB", "あんしん保証パックプラス"},
+    }
+
+    for column_name, expected_values in checks.items():
+        index = bfs_device_column_index(header, column_name)
+        values = {row[index] for row in rows if row[index] != ""}
+        assert values
+        assert values.issubset(expected_values)
+
+
+def test_bfs_entry_required_columns_are_populated_in_all_and_diff(generated_default_dir: Path) -> None:
+    """BFSエントリ情報の必須列は全量・差分とも空欄にしない。"""
+    specs = load_specs(ROOT / "docs/format")
+    required_labels = [column.header_label for column in specs["bfs"] if column.required]
     all_header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
 
+    assert required_labels == [
+        "エントリ番号",
+        "作成区分",
+        "オーダ種別",
+        "申込書連携",
+        "特約分離出力有無",
+        "通知書対象",
+        "開通済有無",
+        "取次店コード",
+        "所属代理店",
+        "キャリア種別",
+        "事業者区分",
+        "申込書番号",
+        "契約種別",
+        "エントリ作成者id",
+        "エントリ作成日時",
+        "エントリ更新担当者id",
+        "エントリ更新日時",
+    ]
+    required_indexes = [all_header.index(label) for label in required_labels]
+    for row in all_rows + diff_rows:
+        assert all(row[index] != "" for index in required_indexes)
+
+
+def test_bfs_entry_optional_columns_have_moderate_blanks(generated_default_dir: Path) -> None:
+    """BFSエントリ情報の任意列には20-35%程度の空欄を含める。"""
+    specs = load_specs(ROOT / "docs/format")
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
+
+    optional_indexes = [header.index(column.header_label) for column in specs["bfs"] if not column.required]
+    values = [row[index] for row in all_rows + diff_rows for index in optional_indexes]
+    blank_rate = values.count("") / len(values)
+
+    assert 0.20 <= blank_rate <= 0.35
+
+
+def test_bfs_entry_values_follow_updated_spec_examples(generated_default_dir: Path) -> None:
+    """BFSエントリ情報の主要列は更新後の仕様例に沿う値を使う。"""
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
+    rows = all_rows + diff_rows
+    checks = {
+        "作成区分": {"エントリ作成", "試算作成", "申込書作成"},
+        "オーダ種別": {"追加新規"},
+        "申込書連携": {"有", "無"},
+        "特約分離出力有無": {"有", "無"},
+        "通知書対象": {"有", "無"},
+        "開通済有無": {"有", "無"},
+        "契約種別": {"相対", "約款"},
+        "付属品購入": {"有", "無"},
+    }
+
+    for label, expected_values in checks.items():
+        index = header.index(label)
+        values = {row[index] for row in rows if row[index] != ""}
+        assert values
+        assert values.issubset(expected_values)
+
+
+def test_bfs_entry_dates_follow_updated_formats(generated_default_dir: Path) -> None:
+    """BFSエントリ情報の日付・日時列は更新後の仕様形式で出力する。"""
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
+    rows = all_rows[:20] + diff_rows[:20]
+
+    activation_date_index = header.index("開通日")
+    entry_creation_index = header.index("エントリ作成日時")
+    entry_update_index = header.index("エントリ更新日時")
+    activation_date_pattern = re.compile(r"^\d{4}/\d{1,2}/\d{1,2} \d{1,2}:\d{2}$")
+    date_time_pattern = re.compile(r"^\d{4}/\d{2}/\d{2} \d{1,2}:\d{2}:\d{2}$")
+
+    for row in rows:
+        if row[activation_date_index] != "":
+            assert activation_date_pattern.match(row[activation_date_index])
+        assert date_time_pattern.match(row[entry_creation_index])
+        assert date_time_pattern.match(row[entry_update_index])
+
+
+def test_bfs_entry_rental_periods_use_month_labels(generated_default_dir: Path) -> None:
+    """BFSエントリ情報の期間列は仕様説明どおり月表記で出力する。"""
+    all_header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
+
+    period_after_renewal_index = all_header.index("自動更新後の期間")
     initial_rental_period_index = all_header.index("初期レンタル期間")
 
     for row in all_rows[:20] + diff_rows[:20]:
-        value = row[initial_rental_period_index]
-        assert value.isdecimal()
-        assert "ヶ月" not in value
+        for index in (period_after_renewal_index, initial_rental_period_index):
+            value = row[index]
+            if value == "":
+                continue
+            assert re.match(r"^\d+ヶ月$", value)
+
+
+def test_bfs_accessories_required_columns_are_populated_in_all_and_diff(generated_default_dir: Path) -> None:
+    """BFSサービスサマリ付属品の必須列は全量・差分とも空欄にしない。"""
+    specs = load_specs(ROOT / "docs/format")
+    required_labels = [column.header_label for column in specs["bfs_accessories"] if column.required]
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
+
+    assert required_labels == [
+        "エントリ番号",
+        "サマリ番号",
+        "シリアル付付属品",
+        "商品コード",
+        "メーカ",
+        "商品名",
+        "台数1",
+        "付属品標準価格",
+    ]
+    required_indexes = [header.index(label) for label in required_labels]
+    for row in all_rows + diff_rows:
+        assert all(row[index] != "" for index in required_indexes)
+
+
+def test_bfs_accessories_optional_columns_have_moderate_blanks(generated_default_dir: Path) -> None:
+    """BFSサービスサマリ付属品の任意列には20-35%程度の空欄を含める。"""
+    specs = load_specs(ROOT / "docs/format")
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
+
+    optional_indexes = [header.index(column.header_label) for column in specs["bfs_accessories"] if not column.required]
+    values = [row[index] for row in all_rows + diff_rows for index in optional_indexes]
+    blank_rate = values.count("") / len(values)
+
+    assert 0.20 <= blank_rate <= 0.35
+
+
+def test_bfs_accessories_serial_number_accessories_is_fixed_text(generated_default_dir: Path) -> None:
+    """BFSサービスサマリ付属品のシリアル付付属品は仕様説明どおり固定文言で出力する。"""
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
+    serial_index = header.index("シリアル付付属品")
+
+    assert {row[serial_index] for row in all_rows + diff_rows} == {"シリアルなし"}
 
 
 def assert_diff_keys_partition_initial_and_existing(
@@ -1026,6 +1275,83 @@ def test_compass_diff_keys_include_insert_and_existing_updates(generated_default
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
 
     assert_diff_keys_partition_initial_and_existing(all_rows, diff_rows, header.index("決裁番号"), expect_existing=True)
+
+
+def test_compass_required_columns_are_populated_in_all_and_diff(generated_default_dir: Path) -> None:
+    """COMPASS営業決裁の必須列は全量・差分とも空欄にしない。"""
+    specs = load_specs(ROOT / "docs/format")
+    required_labels = [column.header_label for column in specs["compass"] if column.required]
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
+
+    assert required_labels[:6] == ["ID", "決裁番号", "決裁件名", "ステータス", "申請日時", "決裁種別"]
+    required_indexes = [header.index(label) for label in required_labels]
+    for row in all_rows + diff_rows:
+        assert all(row[index] != "" for index in required_indexes)
+
+
+def test_compass_optional_columns_include_blanks(generated_default_dir: Path) -> None:
+    """COMPASS営業決裁の任意列には空欄を含める。"""
+    specs = load_specs(ROOT / "docs/format")
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
+
+    optional_indexes = [header.index(column.header_label) for column in specs["compass"] if not column.required]
+    values = [row[index] for row in all_rows + diff_rows for index in optional_indexes]
+
+    assert "" in values
+
+
+def test_compass_boolean_columns_use_true_false(generated_default_dir: Path) -> None:
+    """COMPASS営業決裁の真偽値列はTRUE/FALSEで出力する。"""
+    boolean_labels = [
+        "モバイル",
+        "音声",
+        "音声(おとく光電話)",
+        "ID(データ)",
+        "IS(NI・物販)",
+        "PHS",
+        "包括決裁",
+        "グループ包括決裁",
+        "他案件で利用",
+        "代理店情報手入力フラグ",
+        "フローから子決裁作成フラグ",
+        "非公開フラグ",
+        "有効",
+        "削除",
+        "SUMMITデータ移行フラグ",
+        "与信審査依頼名（COMPASS）有無判定",
+    ]
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
+
+    for label in boolean_labels:
+        index = header.index(label)
+        values = {row[index] for row in all_rows + diff_rows if row[index] != ""}
+        assert values
+        assert values.issubset({"TRUE", "FALSE"})
+
+
+def test_compass_yes_no_columns_use_japanese_values(generated_default_dir: Path) -> None:
+    """COMPASS営業決裁の有無列は有/無または空欄で出力する。"""
+    yes_no_labels = [
+        "与信アラート",
+        "与信審査実施有無",
+        "法務事前審査実施有無",
+        "再決裁・起案フラグ",
+        "事前相談有無",
+        "開通工事費無料",
+        "減免有無",
+        "自動更新有無",
+        "試算シート有無",
+    ]
+    header, all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
+    _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
+
+    for label in yes_no_labels:
+        index = header.index(label)
+        values = {row[index] for row in all_rows + diff_rows}
+        assert values <= {"", "有", "無"}
 
 
 def test_corp_diff_keys_include_insert_and_existing_updates(generated_default_dir: Path) -> None:
@@ -1171,8 +1497,15 @@ def test_compass_diff_updates_subset_of_compass_all(generated_compass_seed11_dir
 
 
 def test_default_run_fills_every_cell_in_all_csvs(generated_seed7_dir: Path) -> None:
-    """デフォルト実行では全CSVの全セルが非空欄になる。"""
+    """デフォルト実行では任意空欄許容CSV以外の全セルが非空欄になる。"""
     for name in generated_files(generated_seed7_dir):
+        if (
+            "エントリ情報" in name
+            or "サービスサマリ_端末" in name
+            or "サービスサマリ_付属品" in name
+            or "営業決裁" in name
+        ):
+            continue
         header, rows = read_csv(generated_seed7_dir, name)
         assert_all_cells_filled(header, rows, name)
 

@@ -13,35 +13,35 @@
 
 ## カラム定義
 
-| 項目名 | カラム名 | 型 | 桁 | 仮名化 | 説明 |
+| 項目名 | カラム名 | 型 | 桁 | 必須 | 説明 |
 | --- | --- | --- | --- | --- | --- |
-| エントリ番号 | `entry_number` | VARCHAR | 54 | － | - |
-| 件名 | `subject` | VARCHAR | 2304 | － | - |
-| 作成区分 | `creation_category` | VARCHAR | 900 | － | - |
-| オーダ種別 | `order_type` | VARCHAR | 900 | － | - |
-| 申込書連携 | `application_form_linkage` | VARCHAR | 900 | － | - |
-| 特約分離出力有無 | `special_contract_separate_output` | VARCHAR | 900 | － | - |
-| 通知書対象 | `notification_target` | VARCHAR | 900 | － | - |
-| 開通済有無 | `activation_status` | VARCHAR | 900 | － | - |
-| 開通日 | `activation_date` | VARCHAR | 60 | － | - |
-| 非完結依頼種別 | `incomplete_request_type` | VARCHAR | 900 | － | - |
+| エントリ番号 | `entry_number` | VARCHAR | 54 | ⚪︎ | - |
+| 件名 | `subject` | VARCHAR | 2304 | - | - |
+| 作成区分 | `creation_category` | VARCHAR | 900 | ⚪︎ | いずれか（エントリ作成、試算作成、申込書作成） |
+| オーダ種別 | `order_type` | VARCHAR | 900 | ⚪︎ | 追加新規 で固定 |
+| 申込書連携 | `application_form_linkage` | VARCHAR | 900 | ⚪︎ | 有 / 無 |
+| 特約分離出力有無 | `special_contract_separate_output` | VARCHAR | 900 | ⚪︎ | 有 / 無 |
+| 通知書対象 | `notification_target` | VARCHAR | 900 | ⚪︎ | 有 / 無 |
+| 開通済有無 | `activation_status` | VARCHAR | 900 | ⚪︎ | 有 / 無 |
+| 開通日 | `activation_date` | VARCHAR | 60 | - | yyyy/M/d H:mm |
+| 非完結依頼種別 | `incomplete_request_type` | VARCHAR | 900 | - | - |
 | コピー元エントリ種別 | `source_entry_type` | VARCHAR | 900 | － | - |
 | 営業担当者コード | `salesperson_code` | VARCHAR | 21 | － | - |
 | 営業担当者 | `salesperson` | VARCHAR | 2295 | － | - |
-| 取次店コード | `agency_code` | VARCHAR | 27 | － | - |
-| 所属代理店 | `affiliated_agency` | VARCHAR | 900 | － | - |
-| キャリア種別 | `carrier_type` | VARCHAR | 2295 | － | - |
-| 事業者区分 | `business_operator_category` | VARCHAR | 2295 | － | - |
-| 申込書番号 | `application_form_number` | VARCHAR | 54 | － | - |
-| 契約種別 | `contract_type` | VARCHAR | 900 | － | - |
-| 納品予定日 | `expected_delivery_date` | VARCHAR | 60 | － | - |
-| 申込日 | `application_date` | VARCHAR | 60 | － | - |
+| 取次店コード | `agency_code` | VARCHAR | 27 | ⚪︎ | - |
+| 所属代理店 | `affiliated_agency` | VARCHAR | 900 | ⚪︎ | - |
+| キャリア種別 | `carrier_type` | VARCHAR | 2295 | ⚪︎ | - |
+| 事業者区分 | `business_operator_category` | VARCHAR | 2295 | ⚪︎ | - |
+| 申込書番号 | `application_form_number` | VARCHAR | 54 | ⚪︎ | - |
+| 契約種別 | `contract_type` | VARCHAR | 900 | ⚪︎ | 相対 または 約款 |
+| 納品予定日 | `expected_delivery_date` | VARCHAR | 60 | － | yyyy/MM/dd 0:00:00 |
+| 申込日 | `application_date` | VARCHAR | 60 | － | yyyy/MM/dd 0:00:00 |
 | ipad顧客種別 | `ipad_customer_type` | VARCHAR | 900 | － | - |
 | 請求方法 | `billing_method` | VARCHAR | 900 | － | - |
 | 支払回数 | `number_of_payments` | VARCHAR | 90 | － | - |
 | 請求区分 | `billing_category` | VARCHAR | 900 | － | - |
 | 通話料合算種別 | `call_charge_combined_type` | VARCHAR | 900 | － | - |
-| 付属品購入 | `accessory_purchase` | VARCHAR | 2295 | － | - |
+| 付属品購入 | `accessory_purchase` | VARCHAR | 2295 | － | 有 / 無 |
 | 付属品代金支払い方法 | `accessory_fee_payment_method` | VARCHAR | 900 | － | - |
 | 付属品代金請求区分 | `accessory_fee_billing_category` | VARCHAR | 900 | － | - |
 | 付属品通話料合算種別 | `accessory_fee_combined_type` | VARCHAR | 900 | － | - |
@@ -49,10 +49,10 @@
 | 受付区分 | `reception_category` | VARCHAR | 900 | － | - |
 | webオーダ番号 | `web_order_number` | VARCHAR | 33 | － | - |
 | 請求先割引変更 | `billing_discount_change` | VARCHAR | 2295 | － | - |
-| エントリ作成者id | `entry_creator_id` | VARCHAR | 60 | － | - |
-| エントリ作成日時 | `entry_creation_date_and_time` | VARCHAR | 78 | － | - |
-| エントリ更新担当者id | `entry_updater_id` | VARCHAR | 60 | － | - |
-| エントリ更新日時 | `entry_update_date_and_time` | VARCHAR | 78 | － | - |
+| エントリ作成者id | `entry_creator_id` | VARCHAR | 60 | ⚪︎ | - |
+| エントリ作成日時 | `entry_creation_date_and_time` | VARCHAR | 78 | ⚪︎ | yyyy/MM/dd H:mm:ss  |
+| エントリ更新担当者id | `entry_updater_id` | VARCHAR | 60 | ⚪︎ | - |
+| エントリ更新日時 | `entry_update_date_and_time` | VARCHAR | 78 | ⚪︎ | yyyy/MM/dd H:mm:ss |
 | 関係者1 | `stakeholder_1` | VARCHAR | 2295 | － | - |
 | 関係者2 | `stakeholder_2` | VARCHAR | 2295 | － | - |
 | 関係者3 | `stakeholder_3` | VARCHAR | 2295 | － | - |
@@ -152,8 +152,8 @@
 | 特約開始年月日 | `special_agreement_start_date` | VARCHAR | 60 | － | - |
 | 特約期間 | `special_agreement_period` | VARCHAR | 900 | － | - |
 | 契約期間月数 | `contract_period_in_months` | VARCHAR | 6 | － | - |
-| 自動更新後の期間 | `period_after_automatic_renewal` | VARCHAR | 900 | － | - |
-| 初期レンタル期間 | `initial_rental_period` | SMALLINT | - | － | - |
+| 自動更新後の期間 | `period_after_automatic_renewal` | VARCHAR | 900 | － | XXヶ月 |
+| 初期レンタル期間 | `initial_rental_period` | SMALLINT | - | － | XXヶ月 |
 | 中古レンタル開始日 | `used_rental_start_date` | VARCHAR | 60 | － | - |
 | 中古レンタル終了日 | `used_rental_end_date` | VARCHAR | 60 | － | - |
 | 特約適用上限回線数 | `maximum_number_of_lines_applicable_to_the_special_agreement` | DECIMAL | 10 | － | - |
