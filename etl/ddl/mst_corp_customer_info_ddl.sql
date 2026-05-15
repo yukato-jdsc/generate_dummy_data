@@ -1,0 +1,22 @@
+CREATE TABLE mst_corp_customer_info (
+	company_id varchar(10) NOT NULL,
+	billing_number_main varchar(12) NOT NULL,
+	contractor_number_main varchar(12) NOT NULL,
+	company_name varchar(100) NOT NULL,
+	company_name_kana varchar(200) NOT NULL,
+	company_url text NOT NULL,
+	corporate_structure_code varchar(2) NOT NULL,
+	postal_code_contract varchar(7) NOT NULL,
+	address_prefecture_contract varchar(100) NULL,
+	address_city_contract varchar(100) NULL,
+	address_line1_contract varchar(100) NULL,
+	address_line2_contract varchar(100) NULL,
+	address_building_contract varchar(100) NULL,
+	ceo_name varchar(100) NOT NULL,
+	ceo_name_kana varchar(200) NOT NULL,
+	phone_number_main varchar(11) NULL,
+	domain_name varchar(100) NOT NULL,
+	created_at timestamp(6) NOT NULL,
+	updated_at timestamp(6) NOT NULL,
+	CONSTRAINT pk_company_id PRIMARY KEY (company_id)
+);

@@ -1,0 +1,42 @@
+[
+  {
+    "tableName": "bfs_entry_informations",
+    "sftpPrefix": "b_hjn_bfs_mobile_entry",
+    "ddlSp": "sp_init_tmp_bfs_entry_informations"
+  },
+  {
+    "tableName": "bfs_service_summary_devices",
+    "sftpPrefix": "b_hjn_bfs_mobile_service_summary_device",
+    "ddlSp": "sp_init_tmp_bfs_service_summary_devices"
+  },
+  {
+    "tableName": "bfs_service_summary_accessories",
+    "sftpPrefix": "b_hjn_bfs_mobile_service_summary_accessory",
+    "ddlSp": "sp_init_tmp_bfs_service_summary_accessories"
+  },
+  {
+    "tableName": "corp_customer_info",
+    "sftpPrefix": "m_hjn_smt_unified_company",
+    "ddlSp": "sp_init_tmp_corp_customer_info"
+  },
+  {
+    "tableName": "compass_sales_approval",
+    "sftpPrefix": "b_hjn_com_sales_approval",
+    "ddlSp": "sp_init_tmp_compass_sales_approval"
+  },
+  {
+    "tableName": "mars_agency_store",
+    "sftpPrefix": "m_agency_all",
+    "ddlSp": "sp_init_tmp_mars_agency"
+  },
+  {
+    "tableName": "mars_campaign",
+    "sftpPrefix": "m_campaign",
+    "ddlSp": "sp_init_tmp_mars_campaign"
+  },
+  {
+    "tableName": "mars_product",
+    "sftpPrefix": "m_product_all",
+    "ddlSp": "sp_init_tmp_mars_product"
+  }
+]
