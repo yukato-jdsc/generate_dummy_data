@@ -36,23 +36,23 @@ SCRIPT = ROOT / "generate_csv.py"
 TODAY = date.today()
 TOMORROW = TODAY + timedelta(days=1)
 BASE_OUTPUT_FILES = [
-    "b_hjn_bfs_モバイル_エントリ情報.csv",
-    "b_hjn_bfs_モバイル_エントリ情報_diff.csv",
-    "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv",
-    "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv",
-    "b_hjn_bfs_モバイル_サービスサマリ_端末.csv",
-    "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv",
-    "b_hjn_com_営業決裁.csv",
-    "b_hjn_com_営業決裁_diff.csv",
-    "m_hjn_smt_統一企業情報_1.csv",
-    "m_hjn_smt_統一企業情報_2.csv",
-    "m_hjn_smt_統一企業情報_diff.csv",
-    "m_キャンペーン.csv",
-    "m_キャンペーン_diff.csv",
-    "m_取次店_all.csv",
-    "m_取次店_all_diff.csv",
-    "m_商品_all.csv",
-    "m_商品_all_diff.csv",
+    "DLV_OAI_BFS_BFS_ENTRY_INFO.csv",
+    "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv",
+    "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv",
+    "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv",
+    "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv",
+    "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv",
+    "DLV_OAI_COM_EIG_KESSAI.csv",
+    "DLV_OAI_COM_EIG_KESSAI_diff.csv",
+    "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv",
+    "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv",
+    "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv",
+    "DLV_OAI_MRS_CMPGN.csv",
+    "DLV_OAI_MRS_CMPGN_diff.csv",
+    "DLV_OAI_CST_ORDCSTM.csv",
+    "DLV_OAI_CST_ORDCSTM_diff.csv",
+    "DLV_OAI_MRS_ITEM.csv",
+    "DLV_OAI_MRS_ITEM_diff.csv",
 ]
 DEFAULT_OUTPUT_FILES = sorted(dated_output_name(name, TODAY) for name in BASE_OUTPUT_FILES)
 
@@ -181,23 +181,23 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
     files = generated_files(generated_default_dir)
     assert files == DEFAULT_OUTPUT_FILES
 
-    _, campaign_rows = read_csv(generated_default_dir, "m_キャンペーン.csv")
-    _, agency_rows = read_csv(generated_default_dir, "m_取次店_all.csv")
-    _, agency_diff_rows = read_csv(generated_default_dir, "m_取次店_all_diff.csv")
-    _, compass_all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
-    _, compass_diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
-    _, product_rows = read_csv(generated_default_dir, "m_商品_all.csv")
-    _, product_diff_rows = read_csv(generated_default_dir, "m_商品_all_diff.csv")
-    _, bfs_all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
-    _, bfs_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
-    _, bfs_device_all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
-    _, bfs_device_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
-    _, bfs_accessories_all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
-    _, bfs_accessories_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
-    _, corp_all_1_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_1.csv")
-    _, corp_all_2_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_2.csv")
-    _, corp_diff_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
-    _, campaign_diff_rows = read_csv(generated_default_dir, "m_キャンペーン_diff.csv")
+    _, campaign_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_CMPGN.csv")
+    _, agency_rows = read_csv(generated_default_dir, "DLV_OAI_CST_ORDCSTM.csv")
+    _, agency_diff_rows = read_csv(generated_default_dir, "DLV_OAI_CST_ORDCSTM_diff.csv")
+    _, compass_all_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI.csv")
+    _, compass_diff_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI_diff.csv")
+    _, product_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM.csv")
+    _, product_diff_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM_diff.csv")
+    _, bfs_all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO.csv")
+    _, bfs_diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv")
+    _, bfs_device_all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
+    _, bfs_device_diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
+    _, bfs_accessories_all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
+    _, bfs_accessories_diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
+    _, corp_all_1_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
+    _, corp_all_2_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv")
+    _, corp_diff_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
+    _, campaign_diff_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_CMPGN_diff.csv")
 
     assert len(campaign_rows) == 50
     assert len(campaign_diff_rows) == 50
@@ -220,14 +220,14 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
 
 def test_bfs_entry_information_uncompressed_size_is_reduced(generated_default_dir: Path) -> None:
     """BFSエントリ情報CSVの圧縮前サイズを現行想定の3/4程度に抑える。"""
-    output_path = generated_default_dir / dated_output_name("b_hjn_bfs_モバイル_エントリ情報.csv", TODAY)
+    output_path = generated_default_dir / dated_output_name("DLV_OAI_BFS_BFS_ENTRY_INFO.csv", TODAY)
 
     assert output_path.stat().st_size <= 2_900_000
 
 
 def test_bfs_device_summary_uncompressed_size_is_reduced(generated_default_dir: Path) -> None:
     """BFSサービスサマリ端末CSVの圧縮前サイズを現行の1/2程度に抑える。"""
-    output_path = generated_default_dir / dated_output_name("b_hjn_bfs_モバイル_サービスサマリ_端末.csv", TODAY)
+    output_path = generated_default_dir / dated_output_name("DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv", TODAY)
 
     assert output_path.stat().st_size <= 3_000_000
 
@@ -247,13 +247,13 @@ def test_bfs_entry_numbers_do_not_wrap_after_six_digits() -> None:
 
 def test_targets_campaign_only_generates_campaign_files(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "campaign")
-    assert generated_files(tmp_path) == expected_output_files("m_キャンペーン.csv", "m_キャンペーン_diff.csv")
+    assert generated_files(tmp_path) == expected_output_files("DLV_OAI_MRS_CMPGN.csv", "DLV_OAI_MRS_CMPGN_diff.csv")
 
 
 def test_targets_product_only_generates_product_files(tmp_path: Path) -> None:
     """product 指定では商品全量と全量更新diffだけを生成する。"""
     run_script(str(tmp_path), "--targets", "product")
-    assert generated_files(tmp_path) == expected_output_files("m_商品_all.csv", "m_商品_all_diff.csv")
+    assert generated_files(tmp_path) == expected_output_files("DLV_OAI_MRS_ITEM.csv", "DLV_OAI_MRS_ITEM_diff.csv")
 
 
 def test_pyproject_includes_ruff_in_dev_dependencies() -> None:
@@ -291,18 +291,18 @@ def test_readme_mentions_headers_only_option() -> None:
 
 def test_targets_compass_only_generates_single_file(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "compass")
-    assert generated_files(tmp_path) == expected_output_files("b_hjn_com_営業決裁.csv", "b_hjn_com_営業決裁_diff.csv")
+    assert generated_files(tmp_path) == expected_output_files("DLV_OAI_COM_EIG_KESSAI.csv", "DLV_OAI_COM_EIG_KESSAI_diff.csv")
 
 
 def test_targets_bfs_only_generates_two_files(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "bfs")
     assert generated_files(tmp_path) == expected_output_files(
-        "b_hjn_bfs_モバイル_エントリ情報.csv",
-        "b_hjn_bfs_モバイル_エントリ情報_diff.csv",
-        "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv",
-        "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv",
-        "b_hjn_bfs_モバイル_サービスサマリ_端末.csv",
-        "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv",
+        "DLV_OAI_BFS_BFS_ENTRY_INFO.csv",
+        "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv",
+        "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv",
+        "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv",
+        "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv",
+        "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv",
     )
 
 
@@ -310,9 +310,9 @@ def test_targets_corp_only_generates_three_files(tmp_path: Path) -> None:
     """corp 指定では統一企業情報の3ファイルだけを生成する。"""
     run_script(str(tmp_path), "--targets", "corp")
     assert generated_files(tmp_path) == expected_output_files(
-        "m_hjn_smt_統一企業情報_1.csv",
-        "m_hjn_smt_統一企業情報_2.csv",
-        "m_hjn_smt_統一企業情報_diff.csv",
+        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv",
+        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv",
+        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv",
     )
 
 
@@ -346,16 +346,16 @@ def test_jobs_argument_rejects_zero(tmp_path: Path) -> None:
 def test_console_outputs_generated_file_names(tmp_path: Path) -> None:
     completed = run_script(str(tmp_path), "--targets", "campaign,agency,compass,corp")
 
-    assert "m_キャンペーン.csv" in completed.stdout
-    assert "m_キャンペーン_diff.csv" in completed.stdout
-    assert "m_取次店_all.csv" in completed.stdout
-    assert "m_取次店_all_diff.csv" in completed.stdout
-    assert "b_hjn_com_営業決裁.csv" in completed.stdout
-    assert "b_hjn_com_営業決裁_diff.csv" in completed.stdout
-    assert "m_hjn_smt_統一企業情報_1.csv" in completed.stdout
-    assert "m_hjn_smt_統一企業情報_2.csv" in completed.stdout
-    assert "m_hjn_smt_統一企業情報_diff.csv" in completed.stdout
-    assert "m_商品_all.csv" not in completed.stdout
+    assert "DLV_OAI_MRS_CMPGN.csv" in completed.stdout
+    assert "DLV_OAI_MRS_CMPGN_diff.csv" in completed.stdout
+    assert "DLV_OAI_CST_ORDCSTM.csv" in completed.stdout
+    assert "DLV_OAI_CST_ORDCSTM_diff.csv" in completed.stdout
+    assert "DLV_OAI_COM_EIG_KESSAI.csv" in completed.stdout
+    assert "DLV_OAI_COM_EIG_KESSAI_diff.csv" in completed.stdout
+    assert "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv" in completed.stdout
+    assert "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv" in completed.stdout
+    assert "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv" in completed.stdout
+    assert "DLV_OAI_MRS_ITEM.csv" not in completed.stdout
 
 
 def test_console_does_not_emit_progress_lines_when_not_tty(tmp_path: Path) -> None:
@@ -372,14 +372,14 @@ def test_gzip_option_outputs_gzip_csv(tmp_path: Path) -> None:
     completed = run_script(str(tmp_path), "--targets", "campaign", "--gzip")
 
     assert generated_files(tmp_path) == expected_output_files(
-        "m_キャンペーン.csv",
-        "m_キャンペーン_diff.csv",
+        "DLV_OAI_MRS_CMPGN.csv",
+        "DLV_OAI_MRS_CMPGN_diff.csv",
         compress=True,
     )
-    assert f"{TODAY:%Y%m%d}_m_キャンペーン.csv.gz" in completed.stdout
-    assert f"{TOMORROW:%Y%m%d}_m_キャンペーン_diff.csv.gz" in completed.stdout
-    _, rows = read_csv(tmp_path, "m_キャンペーン.csv.gz")
-    _, diff_rows = read_csv(tmp_path, "m_キャンペーン_diff.csv.gz")
+    assert f"{TODAY:%Y%m%d}_DLV_OAI_MRS_CMPGN.csv.gz" in completed.stdout
+    assert f"{TOMORROW:%Y%m%d}_DLV_OAI_MRS_CMPGN_diff.csv.gz" in completed.stdout
+    _, rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN.csv.gz")
+    _, diff_rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN_diff.csv.gz")
     assert len(rows) == 50
     assert len(diff_rows) == 50
 
@@ -391,14 +391,14 @@ def test_headers_only_campaign_outputs_headers_without_rows(
     """headers-only指定時は対象CSVをヘッダー行だけで生成する。"""
     completed = run_script(str(tmp_path), "--targets", "campaign", "--headers-only")
 
-    assert generated_files(tmp_path) == expected_output_files("m_キャンペーン.csv", "m_キャンペーン_diff.csv")
-    assert "m_キャンペーン.csv" in completed.stdout
-    assert "m_キャンペーン_diff.csv" in completed.stdout
+    assert generated_files(tmp_path) == expected_output_files("DLV_OAI_MRS_CMPGN.csv", "DLV_OAI_MRS_CMPGN_diff.csv")
+    assert "DLV_OAI_MRS_CMPGN.csv" in completed.stdout
+    assert "DLV_OAI_MRS_CMPGN_diff.csv" in completed.stdout
 
-    normal_header, _ = read_csv(generated_default_dir, "m_キャンペーン.csv")
-    normal_diff_header, _ = read_csv(generated_default_dir, "m_キャンペーン_diff.csv")
-    header, rows = read_csv(tmp_path, "m_キャンペーン.csv")
-    diff_header, diff_rows = read_csv(tmp_path, "m_キャンペーン_diff.csv")
+    normal_header, _ = read_csv(generated_default_dir, "DLV_OAI_MRS_CMPGN.csv")
+    normal_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_MRS_CMPGN_diff.csv")
+    header, rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN.csv")
+    diff_header, diff_rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN_diff.csv")
 
     assert header == normal_header
     assert diff_header == normal_diff_header
@@ -410,8 +410,8 @@ def test_headers_only_omits_diff_type_headers(tmp_path: Path) -> None:
     """headers-only指定でも差分更新CSVに diff_type ヘッダーを出力しない。"""
     run_script(str(tmp_path), "--targets", "agency", "--headers-only")
 
-    header, rows = read_csv(tmp_path, "m_取次店_all.csv")
-    diff_header, diff_rows = read_csv(tmp_path, "m_取次店_all_diff.csv")
+    header, rows = read_csv(tmp_path, "DLV_OAI_CST_ORDCSTM.csv")
+    diff_header, diff_rows = read_csv(tmp_path, "DLV_OAI_CST_ORDCSTM_diff.csv")
 
     assert header[0] == "ordcstm_cd"
     assert diff_header[0] == "ordcstm_cd"
@@ -426,15 +426,15 @@ def test_headers_only_can_write_gzip_csv(tmp_path: Path) -> None:
     completed = run_script(str(tmp_path), "--targets", "campaign", "--headers-only", "--gzip")
 
     assert generated_files(tmp_path) == expected_output_files(
-        "m_キャンペーン.csv",
-        "m_キャンペーン_diff.csv",
+        "DLV_OAI_MRS_CMPGN.csv",
+        "DLV_OAI_MRS_CMPGN_diff.csv",
         compress=True,
     )
-    assert f"{TODAY:%Y%m%d}_m_キャンペーン.csv.gz" in completed.stdout
-    assert f"{TOMORROW:%Y%m%d}_m_キャンペーン_diff.csv.gz" in completed.stdout
+    assert f"{TODAY:%Y%m%d}_DLV_OAI_MRS_CMPGN.csv.gz" in completed.stdout
+    assert f"{TOMORROW:%Y%m%d}_DLV_OAI_MRS_CMPGN_diff.csv.gz" in completed.stdout
 
-    _, rows = read_csv(tmp_path, "m_キャンペーン.csv.gz")
-    _, diff_rows = read_csv(tmp_path, "m_キャンペーン_diff.csv.gz")
+    _, rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN.csv.gz")
+    _, diff_rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN_diff.csv.gz")
 
     assert rows == []
     assert diff_rows == []
@@ -500,14 +500,14 @@ def test_jobs_parallel_output_generates_expected_files(tmp_path: Path) -> None:
     completed = run_script(str(parallel_dir), "--targets", targets, "--seed", "7", "--jobs", "2", timeout=120)
 
     assert generated_files(parallel_dir) == expected_output_files(
-        "b_hjn_com_営業決裁.csv",
-        "b_hjn_com_営業決裁_diff.csv",
-        "m_キャンペーン.csv",
-        "m_キャンペーン_diff.csv",
-        "m_取次店_all.csv",
-        "m_取次店_all_diff.csv",
-        "m_商品_all.csv",
-        "m_商品_all_diff.csv",
+        "DLV_OAI_COM_EIG_KESSAI.csv",
+        "DLV_OAI_COM_EIG_KESSAI_diff.csv",
+        "DLV_OAI_MRS_CMPGN.csv",
+        "DLV_OAI_MRS_CMPGN_diff.csv",
+        "DLV_OAI_CST_ORDCSTM.csv",
+        "DLV_OAI_CST_ORDCSTM_diff.csv",
+        "DLV_OAI_MRS_ITEM.csv",
+        "DLV_OAI_MRS_ITEM_diff.csv",
     )
     assert "0%" not in completed.stdout
     assert "100%" not in completed.stdout
@@ -523,16 +523,16 @@ def test_dated_output_name_uses_next_day_for_diff_files() -> None:
     """差分CSVだけ基準日の翌日をファイル名プレフィックスに使う。"""
     base_date = date(2026, 5, 1)
 
-    assert dated_output_name("m_キャンペーン.csv", base_date) == "20260501_m_キャンペーン.csv"
-    assert dated_output_name("m_キャンペーン_diff.csv", base_date) == "20260502_m_キャンペーン_diff.csv"
-    assert dated_output_name("m_商品_all_diff.csv", base_date) == "20260502_m_商品_all_diff.csv"
+    assert dated_output_name("DLV_OAI_MRS_CMPGN.csv", base_date) == "20260501_DLV_OAI_MRS_CMPGN.csv"
+    assert dated_output_name("DLV_OAI_MRS_CMPGN_diff.csv", base_date) == "20260502_DLV_OAI_MRS_CMPGN_diff.csv"
+    assert dated_output_name("DLV_OAI_MRS_ITEM_diff.csv", base_date) == "20260502_DLV_OAI_MRS_ITEM_diff.csv"
 
 
 def test_dated_output_path_keeps_csv_gzip_suffix(tmp_path: Path) -> None:
     """日付付き出力パスでもgzip時は `.csv.gz` を末尾に付ける。"""
-    actual = build_dated_output_path(tmp_path, "m_キャンペーン_diff.csv", True, date(2026, 5, 1))
+    actual = build_dated_output_path(tmp_path, "DLV_OAI_MRS_CMPGN_diff.csv", True, date(2026, 5, 1))
 
-    assert actual.name == "20260502_m_キャンペーン_diff.csv.gz"
+    assert actual.name == "20260502_DLV_OAI_MRS_CMPGN_diff.csv.gz"
 
 
 def test_write_target_csv_can_write_gzip(tmp_path: Path) -> None:
@@ -556,23 +556,23 @@ def test_write_target_csv_always_quotes_all_string_values(tmp_path: Path) -> Non
 
 
 def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> None:
-    campaign_header, _ = read_csv(generated_default_dir, "m_キャンペーン.csv")
-    campaign_diff_header, _ = read_csv(generated_default_dir, "m_キャンペーン_diff.csv")
-    agency_header, _ = read_csv(generated_default_dir, "m_取次店_all.csv")
-    diff_header, _ = read_csv(generated_default_dir, "m_取次店_all_diff.csv")
-    compass_all_header, _ = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
-    compass_diff_header, _ = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
-    product_header, _ = read_csv(generated_default_dir, "m_商品_all.csv")
-    product_diff_header, _ = read_csv(generated_default_dir, "m_商品_all_diff.csv")
-    bfs_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
-    bfs_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
-    bfs_device_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
-    bfs_device_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
-    bfs_accessories_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
-    bfs_accessories_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
-    corp_all_1_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_1.csv")
-    corp_all_2_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_2.csv")
-    corp_diff_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
+    campaign_header, _ = read_csv(generated_default_dir, "DLV_OAI_MRS_CMPGN.csv")
+    campaign_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_MRS_CMPGN_diff.csv")
+    agency_header, _ = read_csv(generated_default_dir, "DLV_OAI_CST_ORDCSTM.csv")
+    diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_CST_ORDCSTM_diff.csv")
+    compass_all_header, _ = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI.csv")
+    compass_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI_diff.csv")
+    product_header, _ = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM.csv")
+    product_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM_diff.csv")
+    bfs_all_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO.csv")
+    bfs_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv")
+    bfs_device_all_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
+    bfs_device_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
+    bfs_accessories_all_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
+    bfs_accessories_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
+    corp_all_1_header, _ = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
+    corp_all_2_header, _ = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv")
+    corp_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
 
     assert campaign_header[0] == "campaign_id"
     assert campaign_diff_header[0] == "campaign_id"
@@ -596,23 +596,23 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
 def test_diff_type_header_is_not_output_to_any_csv(generated_default_dir: Path) -> None:
     """すべてのCSVに diff_type ヘッダーを出力しない。"""
     output_files = (
-        "m_取次店_all.csv",
-        "m_取次店_all_diff.csv",
-        "b_hjn_com_営業決裁.csv",
-        "b_hjn_com_営業決裁_diff.csv",
-        "m_hjn_smt_統一企業情報_1.csv",
-        "m_hjn_smt_統一企業情報_2.csv",
-        "m_hjn_smt_統一企業情報_diff.csv",
-        "b_hjn_bfs_モバイル_エントリ情報.csv",
-        "b_hjn_bfs_モバイル_エントリ情報_diff.csv",
-        "b_hjn_bfs_モバイル_サービスサマリ_端末.csv",
-        "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv",
-        "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv",
-        "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv",
-        "m_キャンペーン.csv",
-        "m_キャンペーン_diff.csv",
-        "m_商品_all.csv",
-        "m_商品_all_diff.csv",
+        "DLV_OAI_CST_ORDCSTM.csv",
+        "DLV_OAI_CST_ORDCSTM_diff.csv",
+        "DLV_OAI_COM_EIG_KESSAI.csv",
+        "DLV_OAI_COM_EIG_KESSAI_diff.csv",
+        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv",
+        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv",
+        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv",
+        "DLV_OAI_BFS_BFS_ENTRY_INFO.csv",
+        "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv",
+        "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv",
+        "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv",
+        "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv",
+        "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv",
+        "DLV_OAI_MRS_CMPGN.csv",
+        "DLV_OAI_MRS_CMPGN_diff.csv",
+        "DLV_OAI_MRS_ITEM.csv",
+        "DLV_OAI_MRS_ITEM_diff.csv",
     )
 
     for file_name in output_files:
@@ -622,23 +622,23 @@ def test_diff_type_header_is_not_output_to_any_csv(generated_default_dir: Path) 
 
 def test_csv_headers_use_column_names_from_format_spec(generated_default_dir: Path) -> None:
     """CSVヘッダーは項目名ではなく仕様のカラム名を使う。"""
-    campaign_header, _ = read_csv(generated_default_dir, "m_キャンペーン.csv")
-    campaign_diff_header, _ = read_csv(generated_default_dir, "m_キャンペーン_diff.csv")
-    agency_header, _ = read_csv(generated_default_dir, "m_取次店_all.csv")
-    diff_header, _ = read_csv(generated_default_dir, "m_取次店_all_diff.csv")
-    compass_all_header, _ = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
-    compass_diff_header, _ = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
-    product_header, _ = read_csv(generated_default_dir, "m_商品_all.csv")
-    product_diff_header, _ = read_csv(generated_default_dir, "m_商品_all_diff.csv")
-    bfs_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
-    bfs_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
-    bfs_device_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
-    bfs_device_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
-    bfs_accessories_all_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
-    bfs_accessories_diff_header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
-    corp_all_1_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_1.csv")
-    corp_all_2_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_2.csv")
-    corp_diff_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
+    campaign_header, _ = read_csv(generated_default_dir, "DLV_OAI_MRS_CMPGN.csv")
+    campaign_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_MRS_CMPGN_diff.csv")
+    agency_header, _ = read_csv(generated_default_dir, "DLV_OAI_CST_ORDCSTM.csv")
+    diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_CST_ORDCSTM_diff.csv")
+    compass_all_header, _ = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI.csv")
+    compass_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI_diff.csv")
+    product_header, _ = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM.csv")
+    product_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM_diff.csv")
+    bfs_all_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO.csv")
+    bfs_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv")
+    bfs_device_all_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
+    bfs_device_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
+    bfs_accessories_all_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
+    bfs_accessories_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
+    corp_all_1_header, _ = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
+    corp_all_2_header, _ = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv")
+    corp_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
 
     expected_headers = {
         "campaign": ["campaign_id", "campaign_nm", "description", "effective_dt_from"],
@@ -674,7 +674,7 @@ def test_csv_headers_use_column_names_from_format_spec(generated_default_dir: Pa
 
 def test_product_headers_reflect_updated_format_columns(generated_default_dir: Path) -> None:
     """商品CSVヘッダーは更新後フォーマットのカラム名を反映する。"""
-    header, _ = read_csv(generated_default_dir, "m_商品_all.csv")
+    header, _ = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM.csv")
 
     assert "itm_lvl4_id" in header
     assert "itm_lvl3_id" in header
@@ -693,8 +693,8 @@ def test_product_headers_reflect_updated_format_columns(generated_default_dir: P
 
 def test_product_decimal_values_fit_updated_format_lengths(generated_default_dir: Path) -> None:
     """商品CSVの更新対象DECIMAL列は数値で新しい整数桁数に収まる。"""
-    header, all_rows = read_csv(generated_default_dir, "m_商品_all.csv")
-    _, diff_rows = read_csv(generated_default_dir, "m_商品_all_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM_diff.csv")
     decimal_columns = {
         "carrier_id": 3,
         "charge_amt": 6,
@@ -842,22 +842,22 @@ def test_load_specs_includes_corp_unified_company_information() -> None:
 
 
 def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) -> None:
-    _, campaign_rows = read_csv(generated_seed7_dir, "m_キャンペーン.csv")
-    _, campaign_diff_rows = read_csv(generated_seed7_dir, "m_キャンペーン_diff.csv")
-    _, agency_rows = read_csv(generated_seed7_dir, "m_取次店_all.csv")
-    _, compass_all_rows = read_csv(generated_seed7_dir, "b_hjn_com_営業決裁.csv")
-    _, compass_diff_rows = read_csv(generated_seed7_dir, "b_hjn_com_営業決裁_diff.csv")
-    _, product_rows = read_csv(generated_seed7_dir, "m_商品_all.csv")
-    _, product_diff_rows = read_csv(generated_seed7_dir, "m_商品_all_diff.csv")
-    _, bfs_all_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
-    _, bfs_diff_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
-    _, bfs_device_all_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
-    _, bfs_device_diff_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
-    _, bfs_accessories_all_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
-    _, bfs_accessories_diff_rows = read_csv(generated_seed7_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
-    _, corp_all_1_rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_1.csv")
-    _, corp_all_2_rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_2.csv")
-    _, corp_diff_rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_diff.csv")
+    _, campaign_rows = read_csv(generated_seed7_dir, "DLV_OAI_MRS_CMPGN.csv")
+    _, campaign_diff_rows = read_csv(generated_seed7_dir, "DLV_OAI_MRS_CMPGN_diff.csv")
+    _, agency_rows = read_csv(generated_seed7_dir, "DLV_OAI_CST_ORDCSTM.csv")
+    _, compass_all_rows = read_csv(generated_seed7_dir, "DLV_OAI_COM_EIG_KESSAI.csv")
+    _, compass_diff_rows = read_csv(generated_seed7_dir, "DLV_OAI_COM_EIG_KESSAI_diff.csv")
+    _, product_rows = read_csv(generated_seed7_dir, "DLV_OAI_MRS_ITEM.csv")
+    _, product_diff_rows = read_csv(generated_seed7_dir, "DLV_OAI_MRS_ITEM_diff.csv")
+    _, bfs_all_rows = read_csv(generated_seed7_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO.csv")
+    _, bfs_diff_rows = read_csv(generated_seed7_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv")
+    _, bfs_device_all_rows = read_csv(generated_seed7_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
+    _, bfs_device_diff_rows = read_csv(generated_seed7_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
+    _, bfs_accessories_all_rows = read_csv(generated_seed7_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
+    _, bfs_accessories_diff_rows = read_csv(generated_seed7_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
+    _, corp_all_1_rows = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
+    _, corp_all_2_rows = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv")
+    _, corp_diff_rows = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
 
     expected_prefixes = {
         "campaign": "CP",
@@ -916,9 +916,9 @@ def test_bfs_summary_files_reference_generated_bfs_entries(tmp_path: Path) -> No
     """BFSサービスサマリのキーが同一実行のBFSエントリと整合することを確認する。"""
     run_script(str(tmp_path), "--targets", "bfs", "--seed", "7")
 
-    bfs_all_header, bfs_all_rows = read_csv(tmp_path, "b_hjn_bfs_モバイル_エントリ情報.csv")
-    device_all_header, device_all_rows = read_csv(tmp_path, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
-    accessories_all_header, accessories_all_rows = read_csv(tmp_path, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
+    bfs_all_header, bfs_all_rows = read_csv(tmp_path, "DLV_OAI_BFS_BFS_ENTRY_INFO.csv")
+    device_all_header, device_all_rows = read_csv(tmp_path, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
+    accessories_all_header, accessories_all_rows = read_csv(tmp_path, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
 
     bfs_entry_numbers = {row[header_index(bfs_all_header, "bfs", "エントリ番号")] for row in bfs_all_rows}
     device_entry_index = header_index(device_all_header, "bfs_device", "エントリ番号")
@@ -939,7 +939,7 @@ def test_bfs_summary_files_reference_generated_bfs_entries(tmp_path: Path) -> No
 
 def test_bfs_device_headers_include_new_columns(generated_default_dir: Path) -> None:
     """BFSサービスサマリ端末ヘッダーに追加カラムを含める。"""
-    header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
+    header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
 
     assert "offered_price_step1" in header
     assert "offered_price_step2" in header
@@ -949,8 +949,8 @@ def test_bfs_device_headers_include_new_columns(generated_default_dir: Path) -> 
 
 def test_bfs_device_optional_new_columns_use_valid_values_when_populated(generated_default_dir: Path) -> None:
     """BFSサービスサマリ端末の任意新規2項目は入力時に仕様内の値にする。"""
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
 
     current_device_contract_period_index = header_index(header, "bfs_device", "現端末契約期間")
     reflected_in_summary_unit_index = header_index(header, "bfs_device", "サマリ単位反映")
@@ -970,8 +970,8 @@ def test_bfs_device_optional_new_columns_use_valid_values_when_populated(generat
 
 def test_bfs_device_contract_period_uses_two_digit_decimal_values(generated_default_dir: Path) -> None:
     """BFSサービスサマリ端末の現端末契約期間は2桁以内の数値文字列で出力する。"""
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
     current_device_contract_period_index = header_index(header, "bfs_device", "現端末契約期間")
 
     for row in all_rows[:20] + diff_rows[:20]:
@@ -986,8 +986,8 @@ def test_bfs_device_required_columns_are_populated_in_all_and_diff(generated_def
     """BFSサービスサマリ端末の必須列は全量・差分とも空欄にしない。"""
     specs = load_specs(ROOT / "docs/format")
     required_names = [column.name for column in specs["bfs_device"] if column.required]
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
 
     assert required_names == ["entry_no", "svcsm_id", "itm_cd", "brand_nm", "itm_middle_grp_nm", "itm_nm", "cate01"]
     required_indexes = [header.index(name) for name in required_names]
@@ -998,8 +998,8 @@ def test_bfs_device_required_columns_are_populated_in_all_and_diff(generated_def
 def test_bfs_device_optional_columns_have_moderate_blanks(generated_default_dir: Path) -> None:
     """BFSサービスサマリ端末の任意列には20-35%程度の空欄を含める。"""
     specs = load_specs(ROOT / "docs/format")
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
 
     optional_indexes = [header.index(column.name) for column in specs["bfs_device"] if not column.required]
     values = [row[index] for row in all_rows + diff_rows for index in optional_indexes]
@@ -1010,8 +1010,8 @@ def test_bfs_device_optional_columns_have_moderate_blanks(generated_default_dir:
 
 def test_bfs_device_repeating_pairs_are_contiguous_and_complete(generated_default_dir: Path) -> None:
     """BFSサービスサマリ端末の連番ペア列は途中飛びや片側入力を作らない。"""
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
     paired_groups = [
         [
             (spec_column_name("bfs_device", f"オプションカテゴリ{index}"), spec_column_name("bfs_device", f"オプションサービス{index}"))
@@ -1049,7 +1049,7 @@ def test_bfs_device_repeating_pairs_are_contiguous_and_complete(generated_defaul
 
 def test_bfs_device_values_follow_updated_spec_examples(generated_default_dir: Path) -> None:
     """BFSサービスサマリ端末の主要列は短縮コードではなく仕様例に沿う値を使う。"""
-    header, rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
+    header, rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
     checks = {
         "rental_set_terminal_flg_nm": {"有", "無"},
         "mnp_flg_nm": {"有", "無"},
@@ -1075,8 +1075,8 @@ def test_bfs_entry_required_columns_are_populated_in_all_and_diff(generated_defa
     """BFSエントリ情報の必須列は全量・差分とも空欄にしない。"""
     specs = load_specs(ROOT / "docs/format")
     required_names = [column.name for column in specs["bfs"] if column.required]
-    all_header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
+    all_header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv")
 
     assert required_names == [
         "entry_no",
@@ -1105,8 +1105,8 @@ def test_bfs_entry_required_columns_are_populated_in_all_and_diff(generated_defa
 def test_bfs_entry_optional_columns_have_moderate_blanks(generated_default_dir: Path) -> None:
     """BFSエントリ情報の任意列には20-35%程度の空欄を含める。"""
     specs = load_specs(ROOT / "docs/format")
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv")
 
     optional_indexes = [header.index(column.name) for column in specs["bfs"] if not column.required]
     values = [row[index] for row in all_rows + diff_rows for index in optional_indexes]
@@ -1117,8 +1117,8 @@ def test_bfs_entry_optional_columns_have_moderate_blanks(generated_default_dir: 
 
 def test_bfs_entry_values_follow_updated_spec_examples(generated_default_dir: Path) -> None:
     """BFSエントリ情報の主要列は更新後の仕様例に沿う値を使う。"""
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv")
     rows = all_rows + diff_rows
     checks = {
         "entry_status_nm": {"エントリ作成", "試算作成", "申込書作成"},
@@ -1140,8 +1140,8 @@ def test_bfs_entry_values_follow_updated_spec_examples(generated_default_dir: Pa
 
 def test_bfs_entry_dates_follow_updated_formats(generated_default_dir: Path) -> None:
     """BFSエントリ情報の日付・日時列は更新後の仕様形式で出力する。"""
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv")
     rows = all_rows[:20] + diff_rows[:20]
 
     activation_date_index = header.index("open_date")
@@ -1159,8 +1159,8 @@ def test_bfs_entry_dates_follow_updated_formats(generated_default_dir: Path) -> 
 
 def test_bfs_entry_rental_periods_use_month_labels(generated_default_dir: Path) -> None:
     """BFSエントリ情報の期間列は仕様説明どおり月表記で出力する。"""
-    all_header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
+    all_header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv")
 
     period_after_renewal_index = all_header.index("auto_renew_term_nm")
     initial_rental_period_index = all_header.index("initial_rental_term_nm")
@@ -1177,8 +1177,8 @@ def test_bfs_accessories_required_columns_are_populated_in_all_and_diff(generate
     """BFSサービスサマリ付属品の必須列は全量・差分とも空欄にしない。"""
     specs = load_specs(ROOT / "docs/format")
     required_names = [column.name for column in specs["bfs_accessories"] if column.required]
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
 
     assert required_names == ["entry_no", "attach_sm_id", "serial_attach_flg_nm", "itm_cd", "brand_nm", "itm_nm", "num1", "base_price"]
     required_indexes = [header.index(name) for name in required_names]
@@ -1189,8 +1189,8 @@ def test_bfs_accessories_required_columns_are_populated_in_all_and_diff(generate
 def test_bfs_accessories_optional_columns_have_moderate_blanks(generated_default_dir: Path) -> None:
     """BFSサービスサマリ付属品の任意列には20-35%程度の空欄を含める。"""
     specs = load_specs(ROOT / "docs/format")
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
 
     optional_indexes = [header.index(column.name) for column in specs["bfs_accessories"] if not column.required]
     values = [row[index] for row in all_rows + diff_rows for index in optional_indexes]
@@ -1201,8 +1201,8 @@ def test_bfs_accessories_optional_columns_have_moderate_blanks(generated_default
 
 def test_bfs_accessories_serial_number_accessories_is_fixed_text(generated_default_dir: Path) -> None:
     """BFSサービスサマリ付属品のシリアル付付属品は仕様説明どおり固定文言で出力する。"""
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
     serial_index = header.index("serial_attach_flg_nm")
 
     assert {row[serial_index] for row in all_rows + diff_rows} == {"シリアルなし"}
@@ -1259,8 +1259,8 @@ def assert_full_refresh_diff_replaces_rows(
 
 def test_agency_diff_keys_include_insert_and_existing_updates(generated_default_dir: Path) -> None:
     """取次店差分の業務キーは新規追加分と既存更新分を含む。"""
-    header, all_rows = read_csv(generated_default_dir, "m_取次店_all.csv")
-    _, diff_rows = read_csv(generated_default_dir, "m_取次店_all_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_CST_ORDCSTM.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_CST_ORDCSTM_diff.csv")
 
     assert_diff_keys_partition_initial_and_existing(
         all_rows,
@@ -1272,8 +1272,8 @@ def test_agency_diff_keys_include_insert_and_existing_updates(generated_default_
 
 def test_compass_diff_keys_include_insert_and_existing_updates(generated_default_dir: Path) -> None:
     """COMPASS差分の業務キーは新規追加分と既存更新分を含む。"""
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI_diff.csv")
 
     assert_diff_keys_partition_initial_and_existing(all_rows, diff_rows, header.index("name"), expect_existing=True)
 
@@ -1282,8 +1282,8 @@ def test_compass_required_columns_are_populated_in_all_and_diff(generated_defaul
     """COMPASS営業決裁の必須列は全量・差分とも空欄にしない。"""
     specs = load_specs(ROOT / "docs/format")
     required_names = [column.name for column in specs["compass"] if column.required]
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI_diff.csv")
 
     assert required_names[:6] == ["id", "name", "salesapprovaltitle", "status", "applicationdate", "paymenttype"]
     required_indexes = [header.index(name) for name in required_names]
@@ -1294,8 +1294,8 @@ def test_compass_required_columns_are_populated_in_all_and_diff(generated_defaul
 def test_compass_optional_columns_include_blanks(generated_default_dir: Path) -> None:
     """COMPASS営業決裁の任意列には空欄を含める。"""
     specs = load_specs(ROOT / "docs/format")
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI_diff.csv")
 
     optional_indexes = [header.index(column.name) for column in specs["compass"] if not column.required]
     values = [row[index] for row in all_rows + diff_rows for index in optional_indexes]
@@ -1323,8 +1323,8 @@ def test_compass_boolean_columns_use_true_false(generated_default_dir: Path) -> 
         "SUMMITデータ移行フラグ",
         "与信審査依頼名（COMPASS）有無判定",
     ]
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI_diff.csv")
 
     for label in boolean_labels:
         index = header_index(header, "compass", label)
@@ -1346,8 +1346,8 @@ def test_compass_yes_no_columns_use_japanese_values(generated_default_dir: Path)
         "自動更新有無",
         "試算シート有無",
     ]
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI_diff.csv")
 
     for label in yes_no_labels:
         index = header_index(header, "compass", label)
@@ -1357,9 +1357,9 @@ def test_compass_yes_no_columns_use_japanese_values(generated_default_dir: Path)
 
 def test_corp_diff_keys_include_insert_and_existing_updates(generated_default_dir: Path) -> None:
     """統一企業情報差分の業務キーは新規追加分と既存更新分を含む。"""
-    header_1, all_rows_1 = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_1.csv")
-    _, all_rows_2 = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_2.csv")
-    _, diff_rows = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
+    header_1, all_rows_1 = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
+    _, all_rows_2 = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
 
     assert_diff_keys_partition_initial_and_existing(
         all_rows_1 + all_rows_2,
@@ -1371,14 +1371,14 @@ def test_corp_diff_keys_include_insert_and_existing_updates(generated_default_di
 
 def test_bfs_diff_keys_include_expected_insert_and_existing_updates(generated_default_dir: Path) -> None:
     """BFS差分3ファイルの業務キーは新規追加分と既存更新分に分かれる。"""
-    bfs_header, bfs_all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
-    _, bfs_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
-    device_header, device_all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
-    _, device_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
+    bfs_header, bfs_all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO.csv")
+    _, bfs_diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv")
+    device_header, device_all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
+    _, device_diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
     accessories_header, accessories_all_rows = read_csv(
-        generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv"
+        generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv"
     )
-    _, accessories_diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
+    _, accessories_diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
 
     assert_diff_keys_partition_initial_and_existing(
         bfs_all_rows,
@@ -1402,8 +1402,8 @@ def test_bfs_diff_keys_include_expected_insert_and_existing_updates(generated_de
 
 def test_bfs_accessories_diff_updates_existing_product_codes(generated_default_dir: Path) -> None:
     """BFS付属品差分の更新行は商品コードを維持しつつ主要列を変更する。"""
-    header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
-    _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
 
     product_code_index = header.index("itm_cd")
     manufacturer_index = header.index("brand_nm")
@@ -1428,24 +1428,24 @@ def test_bfs_accessories_diff_updates_existing_product_codes(generated_default_d
 
 def test_campaign_diff_replaces_deleted_added_and_updated_rows(generated_default_dir: Path) -> None:
     """キャンペーンdiffは全量更新として削除・追加・更新後の状態を表す。"""
-    all_header, all_rows = read_csv(generated_default_dir, "m_キャンペーン.csv")
-    diff_header, diff_rows = read_csv(generated_default_dir, "m_キャンペーン_diff.csv")
+    all_header, all_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_CMPGN.csv")
+    diff_header, diff_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_CMPGN_diff.csv")
 
     assert_full_refresh_diff_replaces_rows(all_header, all_rows, diff_header, diff_rows, "campaign_id")
 
 
 def test_product_diff_replaces_deleted_added_and_updated_rows(generated_default_dir: Path) -> None:
     """商品diffは全量更新として削除・追加・更新後の状態を表す。"""
-    all_header, all_rows = read_csv(generated_default_dir, "m_商品_all.csv")
-    diff_header, diff_rows = read_csv(generated_default_dir, "m_商品_all_diff.csv")
+    all_header, all_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM.csv")
+    diff_header, diff_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM_diff.csv")
 
     assert_full_refresh_diff_replaces_rows(all_header, all_rows, diff_header, diff_rows, "itm_cd")
 
 
 def test_agency_diff_existing_keys_are_subset_of_agency_all(generated_agency_seed11_dir: Path) -> None:
     """取次店差分は既存キー更新分と未存在キー追加分を生成する。"""
-    agency_header, agency_rows = read_csv(generated_agency_seed11_dir, "m_取次店_all.csv")
-    diff_header, diff_rows = read_csv(generated_agency_seed11_dir, "m_取次店_all_diff.csv")
+    agency_header, agency_rows = read_csv(generated_agency_seed11_dir, "DLV_OAI_CST_ORDCSTM.csv")
+    diff_header, diff_rows = read_csv(generated_agency_seed11_dir, "DLV_OAI_CST_ORDCSTM_diff.csv")
     assert agency_header == diff_header
 
     assert len(diff_rows) == 53
@@ -1462,8 +1462,8 @@ def test_agency_diff_existing_keys_are_subset_of_agency_all(generated_agency_see
 
 def test_compass_diff_updates_subset_of_compass_all(generated_compass_seed11_dir: Path) -> None:
     """営業決裁差分は既存キー更新分と未存在キー追加分を生成する。"""
-    all_header, all_rows = read_csv(generated_compass_seed11_dir, "b_hjn_com_営業決裁.csv")
-    diff_header, diff_rows = read_csv(generated_compass_seed11_dir, "b_hjn_com_営業決裁_diff.csv")
+    all_header, all_rows = read_csv(generated_compass_seed11_dir, "DLV_OAI_COM_EIG_KESSAI.csv")
+    diff_header, diff_rows = read_csv(generated_compass_seed11_dir, "DLV_OAI_COM_EIG_KESSAI_diff.csv")
     assert all_header == diff_header
 
     approval_number_index = all_header.index("name")
@@ -1501,10 +1501,10 @@ def test_default_run_fills_every_cell_in_all_csvs(generated_seed7_dir: Path) -> 
     """デフォルト実行では任意空欄許容CSV以外の全セルが非空欄になる。"""
     for name in generated_files(generated_seed7_dir):
         if (
-            "エントリ情報" in name
-            or "サービスサマリ_端末" in name
-            or "サービスサマリ_付属品" in name
-            or "営業決裁" in name
+            "DLV_OAI_BFS_BFS_ENTRY_INFO" in name
+            or "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4" in name
+            or "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY" in name
+            or "DLV_OAI_COM_EIG_KESSAI" in name
         ):
             continue
         header, rows = read_csv(generated_seed7_dir, name)
@@ -1513,8 +1513,8 @@ def test_default_run_fills_every_cell_in_all_csvs(generated_seed7_dir: Path) -> 
 
 def test_corp_company_codes_are_unique_across_all_files(generated_seed7_dir: Path) -> None:
     """corp 全量CSVの統一企業コードは分割後も重複しない。"""
-    header, rows_1 = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_1.csv")
-    _, rows_2 = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_2.csv")
+    header, rows_1 = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
+    _, rows_2 = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv")
     code_index = header.index("uniq_corp_cd")
 
     codes = [row[code_index] for row in [*rows_1, *rows_2]]
@@ -1523,8 +1523,8 @@ def test_corp_company_codes_are_unique_across_all_files(generated_seed7_dir: Pat
 
 def test_corp_all_files_split_rows_in_order(generated_seed7_dir: Path) -> None:
     """corp 全量CSVは前半と後半に分割され、統一企業コードの順序が連続する。"""
-    header, rows_1 = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_1.csv")
-    _, rows_2 = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_2.csv")
+    header, rows_1 = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
+    _, rows_2 = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv")
     code_index = header.index("uniq_corp_cd")
 
     assert rows_1[-1][code_index] < rows_2[0][code_index]
@@ -1542,7 +1542,7 @@ def test_corp_split_counts_put_extra_row_in_first_file() -> None:
 
 def test_corp_parent_and_invalidity_fields_are_consistent(generated_seed7_dir: Path) -> None:
     """corp の親企業・無効理由関連の最低限の整合を確認する。"""
-    header, rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_diff.csv")
+    header, rows = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
     company_code_index = header.index("uniq_corp_cd")
     parent_flag_index = header_index(header, "corp", "親企業フラグ")
     parent_company_index = header_index(header, "corp", "親企業番号")
@@ -1584,9 +1584,9 @@ def test_corp_datetime_columns_use_millisecond_timestamp_format(generated_seed7_
     timestamp_pattern = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.000$")
 
     for file_name in (
-        "m_hjn_smt_統一企業情報_1.csv",
-        "m_hjn_smt_統一企業情報_2.csv",
-        "m_hjn_smt_統一企業情報_diff.csv",
+        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv",
+        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv",
+        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv",
     ):
         header, rows = read_csv(generated_seed7_dir, file_name)
         datetime_indexes = [header_index(header, "corp", label) for label in ("登録日", "更新日", "登録日時", "更新日時")]
@@ -1600,7 +1600,7 @@ def test_campaign_old_flag_is_always_filled(tmp_path: Path) -> None:
     """キャンペーンの旧フラグは全行で非空欄にする。"""
     run_script(str(tmp_path), "--targets", "campaign", "--seed", "7")
 
-    for file_name in ("m_キャンペーン.csv", "m_キャンペーン_diff.csv"):
+    for file_name in ("DLV_OAI_MRS_CMPGN.csv", "DLV_OAI_MRS_CMPGN_diff.csv"):
         header, rows = read_csv(tmp_path, file_name)
         old_flag_index = header.index("old_flg")
 
@@ -1609,7 +1609,7 @@ def test_campaign_old_flag_is_always_filled(tmp_path: Path) -> None:
 
 def test_compass_status_is_fixed_to_approved_and_history_is_filled(generated_seed7_dir: Path) -> None:
     """営業決裁のステータス固定と承認履歴非空欄を確認する。"""
-    for file_name in ("b_hjn_com_営業決裁.csv", "b_hjn_com_営業決裁_diff.csv"):
+    for file_name in ("DLV_OAI_COM_EIG_KESSAI.csv", "DLV_OAI_COM_EIG_KESSAI_diff.csv"):
         header, rows = read_csv(generated_seed7_dir, file_name)
         status_index = header.index("status")
         history_index = header_index(header, "compass", "承認履歴")

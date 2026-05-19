@@ -2,8 +2,8 @@
 
 - マート名: `b_hjn_com_営業決裁`
 - CSVファイル名: 
-  - 初期データ: `b_hjn_com_営業決裁.csv`
-  - 差分データ: `b_hjn_com_営業決裁_diff.csv`
+  - 初期データ: `YYYYMMDD_DLV_OAI_COM_EIG_KESSAI.csv`
+  - 差分データ: `YYYYMMDD_DLV_OAI_COM_EIG_KESSAI_diff.csv`
 - 全量更新 or 差分更新: 差分更新
 - 更新頻度: 日次
 - データ数: 初期移行（160,000件）、日次差分（2,000件）

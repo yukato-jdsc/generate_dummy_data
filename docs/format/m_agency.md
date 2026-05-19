@@ -2,8 +2,8 @@
 
 - マート名: `m_取次店_all`
 - CSVファイル名:
-  - 初期データ: `m_取次店_all.csv`
-  - 差分データ: `m_取次店_all_diff.csv`
+  - 初期データ: `YYYYMMDD_DLV_OAI_CST_ORDCSTM.csv`
+  - 差分データ: `YYYYMMDD_DLV_OAI_CST_ORDCSTM_diff.csv`
 - 全量更新 or 差分更新: 差分更新
 - 更新頻度: 日次
 - データ数: 初期移行（120万件）、差分更新（53件）

@@ -1,7 +1,7 @@
 # (Mars)キャンペーン
 
 - マート名: `m_キャンペーン`
-- CSVファイル名： `m_キャンペーン.csv`, `m_キャンペーン_diff.csv`
+- CSVファイル名： `YYYYMMDD_DLV_OAI_MRS_CMPGN.csv`, `YYYYMMDD_DLV_OAI_MRS_CMPGN_diff.csv`
 - 全量更新 or 差分更新: 全量更新
 - 更新頻度: 日次
 - データ数: 全件（1,612件）

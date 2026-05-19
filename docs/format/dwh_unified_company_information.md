@@ -2,8 +2,8 @@
 
 - マート名: `m_hjn_smt_統一企業情報`
 - CSVファイル名: 
-  - 初期データ: `m_hjn_smt_統一企業情報_1.csv`, `m_hjn_smt_統一企業情報_2.csv`
-  - 差分データ: `m_hjn_smt_統一企業情報_diff.csv`
+  - 初期データ: `YYYYMMDD_DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv`, `YYYYMMDD_DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv`
+  - 差分データ: `YYYYMMDD_DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv`
 - 全量更新 or 差分更新: 差分更新
 - 更新頻度: 日次
 - データ数: 全件（300万件）、差分更新（46,021件）

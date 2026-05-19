@@ -26,12 +26,12 @@ CLI は次の6ターゲットをサポートする。
 
 | ターゲット | 出力ファイル |
 | --- | --- |
-| `campaign` | `m_キャンペーン.csv`、`m_キャンペーン_diff.csv` |
-| `agency` | `m_取次店_all.csv`、`m_取次店_all_diff.csv` |
-| `compass` | `b_hjn_com_営業決裁.csv`、`b_hjn_com_営業決裁_diff.csv` |
-| `product` | `m_商品_all.csv`、`m_商品_all_diff.csv` |
-| `corp` | `m_hjn_smt_統一企業情報_1.csv`、`m_hjn_smt_統一企業情報_2.csv`、`m_hjn_smt_統一企業情報_diff.csv` |
-| `bfs` | `b_hjn_bfs_モバイル_エントリ情報.csv`、`b_hjn_bfs_モバイル_エントリ情報_diff.csv`、`b_hjn_bfs_モバイル_サービスサマリ_端末.csv`、`b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv`、`b_hjn_bfs_モバイル_サービスサマリ_付属品.csv`、`b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` |
+| `campaign` | `DLV_OAI_MRS_CMPGN.csv`、`DLV_OAI_MRS_CMPGN_diff.csv` |
+| `agency` | `DLV_OAI_CST_ORDCSTM.csv`、`DLV_OAI_CST_ORDCSTM_diff.csv` |
+| `compass` | `DLV_OAI_COM_EIG_KESSAI.csv`、`DLV_OAI_COM_EIG_KESSAI_diff.csv` |
+| `product` | `DLV_OAI_MRS_ITEM.csv`、`DLV_OAI_MRS_ITEM_diff.csv` |
+| `corp` | `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv`、`DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv`、`DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv` |
+| `bfs` | `DLV_OAI_BFS_BFS_ENTRY_INFO.csv`、`DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv`、`DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv`、`DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv`、`DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv`、`DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv` |
 
 `--gzip` 指定時は各ファイルを gzip 圧縮し、拡張子は `*.csv.gz` になる。
 
@@ -82,45 +82,45 @@ uv run python generate_csv.py
 
 | 出力ファイル | 件数 |
 | --- | ---: |
-| `m_キャンペーン.csv` | 50 |
-| `m_キャンペーン_diff.csv` | 50 |
-| `m_取次店_all.csv` | 1,000 |
-| `m_取次店_all_diff.csv` | 53 |
-| `b_hjn_com_営業決裁.csv` | 100 |
-| `b_hjn_com_営業決裁_diff.csv` | 20 |
-| `m_商品_all.csv` | 1,000 |
-| `m_商品_all_diff.csv` | 1,000 |
-| `m_hjn_smt_統一企業情報_1.csv` | 500 |
-| `m_hjn_smt_統一企業情報_2.csv` | 500 |
-| `m_hjn_smt_統一企業情報_diff.csv` | 100 |
-| `b_hjn_bfs_モバイル_エントリ情報.csv` | 1,000 |
-| `b_hjn_bfs_モバイル_エントリ情報_diff.csv` | 100 |
-| `b_hjn_bfs_モバイル_サービスサマリ_端末.csv` | 1,000 |
-| `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` | 100 |
-| `b_hjn_bfs_モバイル_サービスサマリ_付属品.csv` | 1,000 |
-| `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` | 100 |
+| `DLV_OAI_MRS_CMPGN.csv` | 50 |
+| `DLV_OAI_MRS_CMPGN_diff.csv` | 50 |
+| `DLV_OAI_CST_ORDCSTM.csv` | 1,000 |
+| `DLV_OAI_CST_ORDCSTM_diff.csv` | 53 |
+| `DLV_OAI_COM_EIG_KESSAI.csv` | 100 |
+| `DLV_OAI_COM_EIG_KESSAI_diff.csv` | 20 |
+| `DLV_OAI_MRS_ITEM.csv` | 1,000 |
+| `DLV_OAI_MRS_ITEM_diff.csv` | 1,000 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv` | 500 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv` | 500 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv` | 100 |
+| `DLV_OAI_BFS_BFS_ENTRY_INFO.csv` | 1,000 |
+| `DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv` | 100 |
+| `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv` | 1,000 |
+| `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv` | 100 |
+| `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv` | 1,000 |
+| `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv` | 100 |
 
 ### 5.2 `--full` 実行時
 
 | 出力ファイル | 件数 |
 | --- | ---: |
-| `m_キャンペーン.csv` | 1,612 |
-| `m_キャンペーン_diff.csv` | 1,612 |
-| `m_取次店_all.csv` | 1,200,000 |
-| `m_取次店_all_diff.csv` | 53 |
-| `b_hjn_com_営業決裁.csv` | 160,000 |
-| `b_hjn_com_営業決裁_diff.csv` | 2,000 |
-| `m_商品_all.csv` | 122,802 |
-| `m_商品_all_diff.csv` | 122,802 |
-| `m_hjn_smt_統一企業情報_1.csv` | 1,500,000 |
-| `m_hjn_smt_統一企業情報_2.csv` | 1,500,000 |
-| `m_hjn_smt_統一企業情報_diff.csv` | 46,021 |
-| `b_hjn_bfs_モバイル_エントリ情報.csv` | 2,000,000 |
-| `b_hjn_bfs_モバイル_エントリ情報_diff.csv` | 5,921 |
-| `b_hjn_bfs_モバイル_サービスサマリ_端末.csv` | 1,200,000 |
-| `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` | 1,210 |
-| `b_hjn_bfs_モバイル_サービスサマリ_付属品.csv` | 300,000 |
-| `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` | 3,907 |
+| `DLV_OAI_MRS_CMPGN.csv` | 1,612 |
+| `DLV_OAI_MRS_CMPGN_diff.csv` | 1,612 |
+| `DLV_OAI_CST_ORDCSTM.csv` | 1,200,000 |
+| `DLV_OAI_CST_ORDCSTM_diff.csv` | 53 |
+| `DLV_OAI_COM_EIG_KESSAI.csv` | 160,000 |
+| `DLV_OAI_COM_EIG_KESSAI_diff.csv` | 2,000 |
+| `DLV_OAI_MRS_ITEM.csv` | 122,802 |
+| `DLV_OAI_MRS_ITEM_diff.csv` | 122,802 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv` | 1,500,000 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv` | 1,500,000 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv` | 46,021 |
+| `DLV_OAI_BFS_BFS_ENTRY_INFO.csv` | 2,000,000 |
+| `DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv` | 5,921 |
+| `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv` | 1,200,000 |
+| `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv` | 1,210 |
+| `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv` | 300,000 |
+| `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv` | 3,907 |
 
 補足:
 
@@ -141,15 +141,15 @@ uv run python generate_csv.py
 
 - 主キー相当の先頭列は `キャンペーンid`
 - 先頭値は `CP` プレフィックスのコードを使う
-- `m_キャンペーン.csv` と `m_キャンペーン_diff.csv` を必ず同時生成する
+- `DLV_OAI_MRS_CMPGN.csv` と `DLV_OAI_MRS_CMPGN_diff.csv` を必ず同時生成する
 - 2ファイルとも全量更新データのため `diff_type` は付与しない
-- `m_キャンペーン_diff.csv` は `m_キャンペーン.csv` と同じヘッダ、同じ件数で出力する
-- `m_キャンペーン_diff.csv` は、基準CSVに存在しない追加行、基準CSVから除かれた削除行、同じ `キャンペーンid` で値が変わる更新行を含む
+- `DLV_OAI_MRS_CMPGN_diff.csv` は `DLV_OAI_MRS_CMPGN.csv` と同じヘッダ、同じ件数で出力する
+- `DLV_OAI_MRS_CMPGN_diff.csv` は、基準CSVに存在しない追加行、基準CSVから除かれた削除行、同じ `キャンペーンid` で値が変わる更新行を含む
 - `旧フラグ` は常に `"0"` または `"1"`
 
 ### 6.3 `agency`
 
-- `m_取次店_all.csv` と `m_取次店_all_diff.csv` を必ず同時生成する
+- `DLV_OAI_CST_ORDCSTM.csv` と `DLV_OAI_CST_ORDCSTM_diff.csv` を必ず同時生成する
 - 差分は全量から固定件数をリザーバサンプリングして抽出する
 - 差分CSVのヘッダは全量CSVと同一
 - `diff_type` 列は出力しない
@@ -160,7 +160,7 @@ uv run python generate_csv.py
 
 ### 6.4 `compass`
 
-- `b_hjn_com_営業決裁.csv` と `b_hjn_com_営業決裁_diff.csv` を同時生成する
+- `DLV_OAI_COM_EIG_KESSAI.csv` と `DLV_OAI_COM_EIG_KESSAI_diff.csv` を同時生成する
 - `diff_type` 列は出力しない
 - 差分CSVは削除行を出力しない
 - `ID` 列を先頭に出力する
@@ -181,20 +181,20 @@ uv run python generate_csv.py
 
 - 先頭列は `商品コード`
 - 先頭値は `PRD` プレフィックスのコードを使う
-- `m_商品_all.csv` と `m_商品_all_diff.csv` を必ず同時生成する
+- `DLV_OAI_MRS_ITEM.csv` と `DLV_OAI_MRS_ITEM_diff.csv` を必ず同時生成する
 - 2ファイルとも全量更新データのため `diff_type` は付与しない
-- `m_商品_all_diff.csv` は `m_商品_all.csv` と同じヘッダ、同じ件数で出力する
-- `m_商品_all_diff.csv` は、基準CSVに存在しない追加行、基準CSVから除かれた削除行、同じ `商品コード` で値が変わる更新行を含む
+- `DLV_OAI_MRS_ITEM_diff.csv` は `DLV_OAI_MRS_ITEM.csv` と同じヘッダ、同じ件数で出力する
+- `DLV_OAI_MRS_ITEM_diff.csv` は、基準CSVに存在しない追加行、基準CSVから除かれた削除行、同じ `商品コード` で値が変わる更新行を含む
 - 商品カテゴリ、ブランド、メーカー、色、価格などをテンプレートベースで生成する
 - 開始日と終了日、開始時間と終了時間の整合を持たせる
 
 ### 6.6 `corp`
 
-- 全量は `m_hjn_smt_統一企業情報_1.csv` と `m_hjn_smt_統一企業情報_2.csv` に分割して出力する
+- 全量は `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv` と `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv` に分割して出力する
 - `diff_type` 列は出力しない
 - `_1` は前半、`_2` は後半の連続した順序で出力する
 - `統一企業コード` は `_1` と `_2` をまたいで重複しない
-- `m_hjn_smt_統一企業情報_diff.csv` は新規追加行と既存更新行を混在させる
+- `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv` は新規追加行と既存更新行を混在させる
 - 新規追加行は全量2ファイルに未存在の `統一企業コード` を使う
 - 既存更新行は全量2ファイルに存在する `統一企業コード` を使う
 - 差分CSVは削除行を出力しない
@@ -208,13 +208,13 @@ uv run python generate_csv.py
   - サービスサマリ_付属品
 - 各系統について全量と差分を生成する
 - `diff_type` 列は出力しない
-- `b_hjn_bfs_モバイル_エントリ情報_diff.csv` は新規追加行と既存更新行を混在させる
-- `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` は新規追加行のみを出力する
-- `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` は新規追加行と既存更新行を混在させる
+- `DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv` は新規追加行と既存更新行を混在させる
+- `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv` は新規追加行のみを出力する
+- `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv` は新規追加行と既存更新行を混在させる
 - `エントリ番号` は `EN`、`サマリ番号` は `SM` プレフィックスで生成する
-- `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` の新規追加行は初期データに未存在の `エントリ番号` / `サマリ番号` を使う
-- `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` の新規追加行は初期データに未存在の `商品コード` を使う
-- `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` の既存更新行は初期データに存在する `商品コード` を使う
+- `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv` の新規追加行は初期データに未存在の `エントリ番号` / `サマリ番号` を使う
+- `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv` の新規追加行は初期データに未存在の `商品コード` を使う
+- `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv` の既存更新行は初期データに存在する `商品コード` を使う
 - 差分CSVは削除行を出力しない
 - サービスサマリ系は同一実行で生成したBFSエントリと参照整合する
 - 付属品サマリの `紐付けサマリ番号` は `サマリ番号` と同値にする

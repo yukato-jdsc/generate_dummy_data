@@ -4,23 +4,23 @@
 
 対象は次の17ファイルです。実際の出力ファイル名には日付プレフィックスが付きます。
 
-- `m_キャンペーン.csv`
-- `m_キャンペーン_diff.csv`
-- `m_取次店_all.csv`
-- `m_取次店_all_diff.csv`
-- `b_hjn_com_営業決裁.csv`
-- `b_hjn_com_営業決裁_diff.csv`
-- `m_商品_all.csv`
-- `m_商品_all_diff.csv`
-- `m_hjn_smt_統一企業情報_1.csv`
-- `m_hjn_smt_統一企業情報_2.csv`
-- `m_hjn_smt_統一企業情報_diff.csv`
-- `b_hjn_bfs_モバイル_エントリ情報.csv`
-- `b_hjn_bfs_モバイル_エントリ情報_diff.csv`
-- `b_hjn_bfs_モバイル_サービスサマリ_端末.csv`
-- `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv`
-- `b_hjn_bfs_モバイル_サービスサマリ_付属品.csv`
-- `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv`
+- `DLV_OAI_MRS_CMPGN.csv`
+- `DLV_OAI_MRS_CMPGN_diff.csv`
+- `DLV_OAI_CST_ORDCSTM.csv`
+- `DLV_OAI_CST_ORDCSTM_diff.csv`
+- `DLV_OAI_COM_EIG_KESSAI.csv`
+- `DLV_OAI_COM_EIG_KESSAI_diff.csv`
+- `DLV_OAI_MRS_ITEM.csv`
+- `DLV_OAI_MRS_ITEM_diff.csv`
+- `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv`
+- `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv`
+- `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv`
+- `DLV_OAI_BFS_BFS_ENTRY_INFO.csv`
+- `DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv`
+- `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv`
+- `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv`
+- `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv`
+- `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv`
 
 `docs/format.md` は索引で、実体の定義は `docs/format/` 配下にあります。
 
@@ -31,10 +31,10 @@
 
 例: 2026年5月1日に実行した場合
 
-- `20260501_m_キャンペーン.csv`
-- `20260502_m_キャンペーン_diff.csv`
-- `20260501_m_取次店_all.csv`
-- `20260502_m_取次店_all_diff.csv`
+- `20260501_DLV_OAI_MRS_CMPGN.csv`
+- `20260502_DLV_OAI_MRS_CMPGN_diff.csv`
+- `20260501_DLV_OAI_CST_ORDCSTM.csv`
+- `20260502_DLV_OAI_CST_ORDCSTM_diff.csv`
 
 `--gzip` 指定時は日付プレフィックス付きの `.csv.gz` を生成します。
 
@@ -76,43 +76,43 @@ uv run python generate_csv.py --headers-only
 
 | CSV | 既定件数 | `--full` 時 |
 | --- | ---: | ---: |
-| `m_キャンペーン.csv` | 50 | 1,612 |
-| `m_キャンペーン_diff.csv` | 50 | 1,612 |
-| `m_取次店_all.csv` | 1,000 | 1,200,000 |
-| `m_取次店_all_diff.csv` | 53 | 53 |
-| `b_hjn_com_営業決裁.csv` | 100 | 160,000 |
-| `b_hjn_com_営業決裁_diff.csv` | 20 | 2,000 |
-| `m_商品_all.csv` | 1,000 | 122,802 |
-| `m_商品_all_diff.csv` | 1,000 | 122,802 |
-| `m_hjn_smt_統一企業情報_1.csv` | 500 | 1,500,000 |
-| `m_hjn_smt_統一企業情報_2.csv` | 500 | 1,500,000 |
-| `m_hjn_smt_統一企業情報_diff.csv` | 100 | 46,021 |
-| `b_hjn_bfs_モバイル_エントリ情報.csv` | 1,000 | 2,000,000 |
-| `b_hjn_bfs_モバイル_エントリ情報_diff.csv` | 100 | 5,921 |
-| `b_hjn_bfs_モバイル_サービスサマリ_端末.csv` | 1,000 | 1,200,000 |
-| `b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` | 100 | 1,210 |
-| `b_hjn_bfs_モバイル_サービスサマリ_付属品.csv` | 1,000 | 300,000 |
-| `b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv` | 100 | 3,907 |
+| `DLV_OAI_MRS_CMPGN.csv` | 50 | 1,612 |
+| `DLV_OAI_MRS_CMPGN_diff.csv` | 50 | 1,612 |
+| `DLV_OAI_CST_ORDCSTM.csv` | 1,000 | 1,200,000 |
+| `DLV_OAI_CST_ORDCSTM_diff.csv` | 53 | 53 |
+| `DLV_OAI_COM_EIG_KESSAI.csv` | 100 | 160,000 |
+| `DLV_OAI_COM_EIG_KESSAI_diff.csv` | 20 | 2,000 |
+| `DLV_OAI_MRS_ITEM.csv` | 1,000 | 122,802 |
+| `DLV_OAI_MRS_ITEM_diff.csv` | 1,000 | 122,802 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv` | 500 | 1,500,000 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv` | 500 | 1,500,000 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv` | 100 | 46,021 |
+| `DLV_OAI_BFS_BFS_ENTRY_INFO.csv` | 1,000 | 2,000,000 |
+| `DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv` | 100 | 5,921 |
+| `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv` | 1,000 | 1,200,000 |
+| `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv` | 100 | 1,210 |
+| `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv` | 1,000 | 300,000 |
+| `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv` | 100 | 3,907 |
 
 ## Output
 
-- `campaign` を含む場合は `YYYYMMDD_m_キャンペーン.csv` と `YYYYMMDD_m_キャンペーン_diff.csv` を同時に生成します
-- `agency` を含む場合は `YYYYMMDD_m_取次店_all.csv` と `YYYYMMDD_m_取次店_all_diff.csv` を同時に生成します
+- `campaign` を含む場合は `YYYYMMDD_DLV_OAI_MRS_CMPGN.csv` と `YYYYMMDD_DLV_OAI_MRS_CMPGN_diff.csv` を同時に生成します
+- `agency` を含む場合は `YYYYMMDD_DLV_OAI_CST_ORDCSTM.csv` と `YYYYMMDD_DLV_OAI_CST_ORDCSTM_diff.csv` を同時に生成します
 - `compass` を含む場合は次の2ファイルを生成します
-  - `YYYYMMDD_b_hjn_com_営業決裁.csv`
-  - `YYYYMMDD_b_hjn_com_営業決裁_diff.csv`
-- `product` を含む場合は `YYYYMMDD_m_商品_all.csv` と `YYYYMMDD_m_商品_all_diff.csv` を同時に生成します
+  - `YYYYMMDD_DLV_OAI_COM_EIG_KESSAI.csv`
+  - `YYYYMMDD_DLV_OAI_COM_EIG_KESSAI_diff.csv`
+- `product` を含む場合は `YYYYMMDD_DLV_OAI_MRS_ITEM.csv` と `YYYYMMDD_DLV_OAI_MRS_ITEM_diff.csv` を同時に生成します
 - `corp` を含む場合は次の3ファイルを生成します
-  - `YYYYMMDD_m_hjn_smt_統一企業情報_1.csv`
-  - `YYYYMMDD_m_hjn_smt_統一企業情報_2.csv`
-  - `YYYYMMDD_m_hjn_smt_統一企業情報_diff.csv`
+  - `YYYYMMDD_DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv`
+  - `YYYYMMDD_DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv`
+  - `YYYYMMDD_DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv`
 - `bfs` を含む場合は次の6ファイルを生成します
-  - `YYYYMMDD_b_hjn_bfs_モバイル_エントリ情報.csv`
-  - `YYYYMMDD_b_hjn_bfs_モバイル_エントリ情報_diff.csv`
-  - `YYYYMMDD_b_hjn_bfs_モバイル_サービスサマリ_端末.csv`
-  - `YYYYMMDD_b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv`
-  - `YYYYMMDD_b_hjn_bfs_モバイル_サービスサマリ_付属品.csv`
-  - `YYYYMMDD_b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv`
+  - `YYYYMMDD_DLV_OAI_BFS_BFS_ENTRY_INFO.csv`
+  - `YYYYMMDD_DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv`
+  - `YYYYMMDD_DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv`
+  - `YYYYMMDD_DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv`
+  - `YYYYMMDD_DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv`
+  - `YYYYMMDD_DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv`
 - 各CSVは `docs/format/` の列定義どおりに出力します
 
 ## 差分更新CSVについて
@@ -120,27 +120,27 @@ uv run python generate_csv.py --headers-only
 すべてのCSVは `docs/format/` の列定義どおりに出力し、`diff_type` 列は付与しません。
 差分更新CSVは削除行を出力せず、新規追加行と既存更新行を含みます。
 新規追加行は初期データに存在しない業務キー、既存更新行は初期データに存在する業務キーを使います。
-`b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv` は新規追加行のみを出力します。
+`DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv` は新規追加行のみを出力します。
 
 ## キャンペーンdiff CSVについて
 
-`m_キャンペーン_diff.csv` は同じ実行で作られた `m_キャンペーン.csv` を変更した全量更新後データとして生成します。
+`DLV_OAI_MRS_CMPGN_diff.csv` は同じ実行で作られた `DLV_OAI_MRS_CMPGN.csv` を変更した全量更新後データとして生成します。
 `diff_type` は持たず、基準CSVに存在しない追加行、基準CSVから除かれた削除行、同じ `キャンペーンid` で値が変わる更新行を含みます。
 
 ## 商品diff CSVについて
 
-`m_商品_all_diff.csv` は同じ実行で作られた `m_商品_all.csv` を変更した全量更新後データとして生成します。
+`DLV_OAI_MRS_ITEM_diff.csv` は同じ実行で作られた `DLV_OAI_MRS_ITEM.csv` を変更した全量更新後データとして生成します。
 `diff_type` は持たず、基準CSVに存在しない追加行、基準CSVから除かれた削除行、同じ `商品コード` で値が変わる更新行を含みます。
 
 ## 取次店差分CSVについて
 
-`m_取次店_all_diff.csv` は同じ実行で作られた `m_取次店_all.csv` とキー整合を持つように生成します。
-新規追加行の `取次店コード` は `m_取次店_all.csv` に未存在、既存更新行の `取次店コード` は `m_取次店_all.csv` に存在する値です。
+`DLV_OAI_CST_ORDCSTM_diff.csv` は同じ実行で作られた `DLV_OAI_CST_ORDCSTM.csv` とキー整合を持つように生成します。
+新規追加行の `取次店コード` は `DLV_OAI_CST_ORDCSTM.csv` に未存在、既存更新行の `取次店コード` は `DLV_OAI_CST_ORDCSTM.csv` に存在する値です。
 
 ## COMPASS差分CSVについて
 
-`b_hjn_com_営業決裁_diff.csv` は同じ実行で作られた `b_hjn_com_営業決裁.csv` とキー整合を持つように生成します。
-新規追加行の `決裁番号` は `b_hjn_com_営業決裁.csv` に未存在、既存更新行の `決裁番号` は `b_hjn_com_営業決裁.csv` に存在する値です。
+`DLV_OAI_COM_EIG_KESSAI_diff.csv` は同じ実行で作られた `DLV_OAI_COM_EIG_KESSAI.csv` とキー整合を持つように生成します。
+新規追加行の `決裁番号` は `DLV_OAI_COM_EIG_KESSAI.csv` に未存在、既存更新行の `決裁番号` は `DLV_OAI_COM_EIG_KESSAI.csv` に存在する値です。
 既存更新行では件名、日時、売上・利益系、備考などの主要業務列も更新されます。
 
 ## 生成ルール
