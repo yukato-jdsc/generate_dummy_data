@@ -136,9 +136,21 @@ def assert_all_cells_filled(header: list[str], rows: list[list[str]], name: str)
 
 def bfs_device_column_index(header: list[str], column_name: str) -> int:
     """BFSサービスサマリ端末の英字カラム名からCSV列位置を返す。"""
+    return header.index(column_name)
+
+
+def spec_column_name(spec_key: str, item_label: str) -> str:
+    """仕様の項目名からCSVヘッダーに出力するカラム名を返す。"""
     specs = load_specs(ROOT / "docs/format")
-    labels = {column.name: column.header_label for column in specs["bfs_device"]}
-    return header.index(labels[column_name])
+    for column in specs[spec_key]:
+        if column.header_label == item_label:
+            return column.name
+    raise AssertionError(f"{spec_key}: item label not found: {item_label}")
+
+
+def header_index(header: list[str], spec_key: str, item_label: str) -> int:
+    """項目名を使って、カラム名ヘッダーの列位置を返す。"""
+    return header.index(spec_column_name(spec_key, item_label))
 
 
 @pytest.fixture(scope="module")
@@ -401,8 +413,8 @@ def test_headers_only_omits_diff_type_headers(tmp_path: Path) -> None:
     header, rows = read_csv(tmp_path, "m_取次店_all.csv")
     diff_header, diff_rows = read_csv(tmp_path, "m_取次店_all_diff.csv")
 
-    assert header[0] == "取次店コード"
-    assert diff_header[0] == "取次店コード"
+    assert header[0] == "ordcstm_cd"
+    assert diff_header[0] == "ordcstm_cd"
     assert "diff_type" not in header
     assert "diff_type" not in diff_header
     assert rows == []
@@ -562,45 +574,23 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
     corp_all_2_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_2.csv")
     corp_diff_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
 
-    assert campaign_header[0] == "キャンペーンid"
-    assert campaign_diff_header[0] == "キャンペーンid"
-    assert agency_header[0] == "取次店コード"
-    assert diff_header[0] == "取次店コード"
-    assert compass_all_header[0] == "ID"
-    assert compass_diff_header[0] == "ID"
-    assert product_header[0] == "商品コード"
-    assert product_diff_header[0] == "商品コード"
-    assert bfs_all_header[0] == "エントリ番号"
-    assert bfs_diff_header[0] == "エントリ番号"
-    assert bfs_device_all_header[0] == "エントリ番号"
-    assert bfs_device_diff_header[0] == "エントリ番号"
-    assert bfs_accessories_all_header[0] == "エントリ番号"
-    assert bfs_accessories_diff_header[0] == "エントリ番号"
-    assert corp_all_1_header[0] == "統一企業コード"
-    assert corp_all_2_header[0] == "統一企業コード"
-    assert corp_diff_header[0] == "統一企業コード"
-    for header in (
-        campaign_header,
-        campaign_diff_header,
-        agency_header,
-        compass_all_header,
-        compass_diff_header,
-        product_header,
-        product_diff_header,
-        bfs_all_header,
-        bfs_diff_header,
-        bfs_device_all_header,
-        bfs_device_diff_header,
-        bfs_accessories_all_header,
-        bfs_accessories_diff_header,
-        corp_all_1_header,
-        corp_all_2_header,
-        corp_diff_header,
-    ):
-        if header == compass_all_header or header == compass_diff_header:
-            assert "ID" in header
-        else:
-            assert "id" not in header
+    assert campaign_header[0] == "campaign_id"
+    assert campaign_diff_header[0] == "campaign_id"
+    assert agency_header[0] == "ordcstm_cd"
+    assert diff_header[0] == "ordcstm_cd"
+    assert compass_all_header[0] == "id"
+    assert compass_diff_header[0] == "id"
+    assert product_header[0] == "itm_cd"
+    assert product_diff_header[0] == "itm_cd"
+    assert bfs_all_header[0] == "entry_no"
+    assert bfs_diff_header[0] == "entry_no"
+    assert bfs_device_all_header[0] == "entry_no"
+    assert bfs_device_diff_header[0] == "entry_no"
+    assert bfs_accessories_all_header[0] == "entry_no"
+    assert bfs_accessories_diff_header[0] == "entry_no"
+    assert corp_all_1_header[0] == "uniq_corp_cd"
+    assert corp_all_2_header[0] == "uniq_corp_cd"
+    assert corp_diff_header[0] == "uniq_corp_cd"
 
 
 def test_diff_type_header_is_not_output_to_any_csv(generated_default_dir: Path) -> None:
@@ -630,7 +620,8 @@ def test_diff_type_header_is_not_output_to_any_csv(generated_default_dir: Path) 
         assert "diff_type" not in header
 
 
-def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir: Path) -> None:
+def test_csv_headers_use_column_names_from_format_spec(generated_default_dir: Path) -> None:
+    """CSVヘッダーは項目名ではなく仕様のカラム名を使う。"""
     campaign_header, _ = read_csv(generated_default_dir, "m_キャンペーン.csv")
     campaign_diff_header, _ = read_csv(generated_default_dir, "m_キャンペーン_diff.csv")
     agency_header, _ = read_csv(generated_default_dir, "m_取次店_all.csv")
@@ -650,14 +641,14 @@ def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir:
     corp_diff_header, _ = read_csv(generated_default_dir, "m_hjn_smt_統一企業情報_diff.csv")
 
     expected_headers = {
-        "campaign": ["キャンペーンid", "キャンペーン名称", "説明", "有効開始日"],
-        "agency": ["取次店コード", "有効開始日", "有効終了日", "共通店舗コード"],
-        "compass": ["ID", "決裁番号", "決裁件名", "ステータス"],
-        "product": ["商品コード", "有効開始日", "有効開始時間", "有効終了日"],
-        "bfs": ["エントリ番号", "件名", "作成区分", "オーダ種別"],
-        "bfs_device": ["エントリ番号", "サマリ番号", "回線数", "レンタルセット端末"],
-        "bfs_accessories": ["エントリ番号", "サマリ番号", "シリアル付付属品", "商品コード"],
-        "corp": ["統一企業コード", "法人管理番号", "dunsnumber", "法人格コード"],
+        "campaign": ["campaign_id", "campaign_nm", "description", "effective_dt_from"],
+        "agency": ["ordcstm_cd", "effective_dt_from", "effective_dt_to", "common_store_cd"],
+        "compass": ["id", "name", "salesapprovaltitle", "status"],
+        "product": ["itm_cd", "effective_dt_from", "effective_tm_from", "effective_dt_to"],
+        "bfs": ["entry_no", "entry_nm", "entry_status_nm", "entry_type_nm"],
+        "bfs_device": ["entry_no", "svcsm_id", "linenum", "rental_set_terminal_flg_nm"],
+        "bfs_accessories": ["entry_no", "attach_sm_id", "serial_attach_flg_nm", "itm_cd"],
+        "corp": ["uniq_corp_cd", "h_no", "teikoku_db_kigyo_bng", "hojinkaku_flg"],
     }
 
     assert campaign_header[:4] == expected_headers["campaign"]
@@ -681,22 +672,23 @@ def test_csv_headers_use_japanese_labels_from_format_spec(generated_default_dir:
     assert corp_all_1_header == corp_diff_header
 
 
-def test_product_headers_reflect_updated_format_labels(generated_default_dir: Path) -> None:
-    """商品CSVヘッダーは更新後フォーマットの表示名を反映する。"""
+def test_product_headers_reflect_updated_format_columns(generated_default_dir: Path) -> None:
+    """商品CSVヘッダーは更新後フォーマットのカラム名を反映する。"""
     header, _ = read_csv(generated_default_dir, "m_商品_all.csv")
 
-    assert "商品細分類ID" in header
-    assert "商品小分類ID" in header
-    assert "商品中分類ID" in header
-    assert "商品大分類ID" in header
-    assert "メーカーID" in header
-    assert "ブランドID" in header
-    assert "MVNO識別ID" in header
-    assert "個装箱サイズ_縦(mm)" in header
-    assert "梱包財_紙重量(g)" in header
-    assert "MRP管理者コード" in header
-    assert "MODEL_ID" in header
-    assert "ISMIタイプ名称" in header
+    assert "itm_lvl4_id" in header
+    assert "itm_lvl3_id" in header
+    assert "itm_lvl2_id" in header
+    assert "itm_lvl1_id" in header
+    assert "maker_id" in header
+    assert "brand_id" in header
+    assert "carrier_id" in header
+    assert "size_d" in header
+    assert "pack_mtr_paper_wgt" in header
+    assert "mrpplanner_cd" in header
+    assert "model_id" in header
+    assert "imsi_typ_nm" in header
+    assert "pickup_flg" in header
 
 
 def test_product_decimal_values_fit_updated_format_lengths(generated_default_dir: Path) -> None:
@@ -704,20 +696,20 @@ def test_product_decimal_values_fit_updated_format_lengths(generated_default_dir
     header, all_rows = read_csv(generated_default_dir, "m_商品_all.csv")
     _, diff_rows = read_csv(generated_default_dir, "m_商品_all_diff.csv")
     decimal_columns = {
-        "MVNO識別ID": 3,
-        "チャージ額": 6,
-        "ユニバーサル使用料": 4,
-        "利用有効期間": 5,
-        "標準入数": 10,
-        "出荷時入数": 6,
-        "個装箱サイズ_縦(mm)": 4,
-        "個装箱サイズ_横(mm)": 4,
-        "個装箱サイズ_高さ(mm)": 4,
-        "梱包財_紙重量(g)": 7,
-        "梱包財_プラ重量(g)": 7,
-        "商品重量(g)": 7,
-        "パレット積み付け数": 8,
-        "梱包仕様等": 4,
+        "carrier_id": 3,
+        "charge_amt": 6,
+        "universal_amt": 4,
+        "effective_dt_use": 5,
+        "standard_qty": 10,
+        "ship_qty": 6,
+        "size_d": 4,
+        "size_w": 4,
+        "size_h": 4,
+        "pack_mtr_paper_wgt": 7,
+        "pack_mtr_plstc_wgt": 7,
+        "itm_wgt": 7,
+        "palette_stack_num": 8,
+        "pack_spcf": 4,
     }
 
     for row in all_rows[:20] + diff_rows[:20]:
@@ -793,16 +785,21 @@ def test_load_specs_includes_bfs_entry_information() -> None:
     assert "bfs" in specs
     assert "bfs_device" in specs
     assert "bfs_accessories" in specs
-    assert len(specs["bfs"]) == 216
-    assert len(specs["bfs_device"]) == 504
-    assert len(specs["bfs_accessories"]) == 22
-    assert [column.name for column in specs["bfs"][:4]] == ["entry_number", "subject", "creation_category", "order_type"]
+    assert len(specs["bfs"]) == 217
+    assert len(specs["bfs_device"]) == 509
+    assert len(specs["bfs_accessories"]) == 26
+    assert [column.name for column in specs["bfs"][:4]] == [
+        "entry_no",
+        "entry_nm",
+        "entry_status_nm",
+        "entry_type_nm",
+    ]
     assert [column.header_label for column in specs["bfs"][:4]] == ["エントリ番号", "件名", "作成区分", "オーダ種別"]
     assert [column.name for column in specs["bfs_device"][:4]] == [
-        "entry_number",
-        "summary_number",
-        "number_of_lines",
-        "rental_set_device",
+        "entry_no",
+        "svcsm_id",
+        "linenum",
+        "rental_set_terminal_flg_nm",
     ]
     assert [column.header_label for column in specs["bfs_device"][:4]] == [
         "エントリ番号",
@@ -811,10 +808,10 @@ def test_load_specs_includes_bfs_entry_information() -> None:
         "レンタルセット端末",
     ]
     assert [column.name for column in specs["bfs_accessories"][:4]] == [
-        "entry_number",
-        "summary_number",
-        "serial_number_accessories",
-        "product_code",
+        "entry_no",
+        "attach_sm_id",
+        "serial_attach_flg_nm",
+        "itm_cd",
     ]
     assert [column.header_label for column in specs["bfs_accessories"][:4]] == [
         "エントリ番号",
@@ -831,10 +828,10 @@ def test_load_specs_includes_corp_unified_company_information() -> None:
     assert "corp" in specs
     assert len(specs["corp"]) == 63
     assert [column.name for column in specs["corp"][:4]] == [
-        "統一企業コード",
-        "法人管理番号",
-        "dunsnumber",
-        "法人格コード",
+        "uniq_corp_cd",
+        "h_no",
+        "teikoku_db_kigyo_bng",
+        "hojinkaku_flg",
     ]
     assert [column.header_label for column in specs["corp"][:4]] == [
         "統一企業コード",
@@ -923,12 +920,12 @@ def test_bfs_summary_files_reference_generated_bfs_entries(tmp_path: Path) -> No
     device_all_header, device_all_rows = read_csv(tmp_path, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
     accessories_all_header, accessories_all_rows = read_csv(tmp_path, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
 
-    bfs_entry_numbers = {row[bfs_all_header.index("エントリ番号")] for row in bfs_all_rows}
-    device_entry_index = device_all_header.index("エントリ番号")
-    device_summary_index = device_all_header.index("サマリ番号")
-    accessories_entry_index = accessories_all_header.index("エントリ番号")
-    accessories_summary_index = accessories_all_header.index("サマリ番号")
-    linked_summary_index = accessories_all_header.index("紐付けサマリ番号")
+    bfs_entry_numbers = {row[header_index(bfs_all_header, "bfs", "エントリ番号")] for row in bfs_all_rows}
+    device_entry_index = header_index(device_all_header, "bfs_device", "エントリ番号")
+    device_summary_index = header_index(device_all_header, "bfs_device", "サマリ番号")
+    accessories_entry_index = header_index(accessories_all_header, "bfs_accessories", "エントリ番号")
+    accessories_summary_index = header_index(accessories_all_header, "bfs_accessories", "サマリ番号")
+    linked_summary_index = header_index(accessories_all_header, "bfs_accessories", "紐付けサマリ番号")
 
     for row in device_all_rows[:20]:
         assert row[device_entry_index] in bfs_entry_numbers
@@ -941,10 +938,13 @@ def test_bfs_summary_files_reference_generated_bfs_entries(tmp_path: Path) -> No
 
 
 def test_bfs_device_headers_include_new_columns(generated_default_dir: Path) -> None:
-    """BFSサービスサマリ端末ヘッダーの末尾に新規2項目を含める。"""
+    """BFSサービスサマリ端末ヘッダーに追加カラムを含める。"""
     header, _ = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
 
-    assert header[-2:] == ["現端末契約期間", "サマリ単位反映"]
+    assert "offered_price_step1" in header
+    assert "offered_price_step2" in header
+    assert "offered_price_step3" in header
+    assert header[-2:] == ["industrial_company_cd", "load_day"]
 
 
 def test_bfs_device_optional_new_columns_use_valid_values_when_populated(generated_default_dir: Path) -> None:
@@ -952,8 +952,8 @@ def test_bfs_device_optional_new_columns_use_valid_values_when_populated(generat
     header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
 
-    current_device_contract_period_index = header.index("現端末契約期間")
-    reflected_in_summary_unit_index = header.index("サマリ単位反映")
+    current_device_contract_period_index = header_index(header, "bfs_device", "現端末契約期間")
+    reflected_in_summary_unit_index = header_index(header, "bfs_device", "サマリ単位反映")
 
     current_device_contract_period_values = []
     reflected_in_summary_unit_values = []
@@ -972,7 +972,7 @@ def test_bfs_device_contract_period_uses_two_digit_decimal_values(generated_defa
     """BFSサービスサマリ端末の現端末契約期間は2桁以内の数値文字列で出力する。"""
     header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
-    current_device_contract_period_index = header.index("現端末契約期間")
+    current_device_contract_period_index = header_index(header, "bfs_device", "現端末契約期間")
 
     for row in all_rows[:20] + diff_rows[:20]:
         value = row[current_device_contract_period_index]
@@ -985,12 +985,12 @@ def test_bfs_device_contract_period_uses_two_digit_decimal_values(generated_defa
 def test_bfs_device_required_columns_are_populated_in_all_and_diff(generated_default_dir: Path) -> None:
     """BFSサービスサマリ端末の必須列は全量・差分とも空欄にしない。"""
     specs = load_specs(ROOT / "docs/format")
-    required_labels = [column.header_label for column in specs["bfs_device"] if column.required]
+    required_names = [column.name for column in specs["bfs_device"] if column.required]
     header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
 
-    assert required_labels == ["エントリ番号", "サマリ番号", "商品コード", "メーカ", "移動機分類", "機種名", "プラン"]
-    required_indexes = [header.index(label) for label in required_labels]
+    assert required_names == ["entry_no", "svcsm_id", "itm_cd", "brand_nm", "itm_middle_grp_nm", "itm_nm", "cate01"]
+    required_indexes = [header.index(name) for name in required_names]
     for row in all_rows + diff_rows:
         assert all(row[index] != "" for index in required_indexes)
 
@@ -1001,7 +1001,7 @@ def test_bfs_device_optional_columns_have_moderate_blanks(generated_default_dir:
     header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
 
-    optional_indexes = [header.index(column.header_label) for column in specs["bfs_device"] if not column.required]
+    optional_indexes = [header.index(column.name) for column in specs["bfs_device"] if not column.required]
     values = [row[index] for row in all_rows + diff_rows for index in optional_indexes]
     blank_rate = values.count("") / len(values)
 
@@ -1013,15 +1013,25 @@ def test_bfs_device_repeating_pairs_are_contiguous_and_complete(generated_defaul
     header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末_diff.csv")
     paired_groups = [
-        [(f"option_category_{index}", f"option_service_{index}") for index in range(1, 8)]
-        + [("option_category_8", "optional_service_8")]
-        + [(f"optional_category_{index}", f"optional_service_{index}") for index in range(9, 11)],
-        [(f"rntopt_category_{index}", f"rntopt_plan_{index}") for index in range(1, 11)],
-        [(f"rntoptatt_category_{index}", f"rntoptatt_plan_{index}") for index in range(1, 9)]
-        + [("rntopta_tt_category_9", "rntoptatt_plan_9")]
-        + [("rntoptatt_category_10", "rntoptatt_plan_10")],
-        [(f"relative_pd_category_{index}", f"relative_pd_name_{index}") for index in range(1, 11)],
-        [(f"relative_other_pd_category_{index}", f"relative_other_pd_name_{index}") for index in range(1, 6)],
+        [
+            (spec_column_name("bfs_device", f"オプションカテゴリ{index}"), spec_column_name("bfs_device", f"オプションサービス{index}"))
+            for index in range(1, 11)
+        ],
+        [
+            (spec_column_name("bfs_device", f"rntoptカテゴリ{index}"), spec_column_name("bfs_device", f"rntoptプラン{index}"))
+            for index in range(1, 11)
+        ],
+        [
+            (
+                spec_column_name("bfs_device", f"rntoptattカテゴリ{index}"),
+                spec_column_name("bfs_device", f"rntoptattプラン{index}"),
+            )
+            for index in range(1, 11)
+        ],
+        [
+            (spec_column_name("bfs_device", f"相対pdカテゴリ{index}"), spec_column_name("bfs_device", f"相対pd名称{index}"))
+            for index in range(1, 11)
+        ],
     ]
 
     for row in all_rows[:50] + diff_rows[:50]:
@@ -1041,17 +1051,17 @@ def test_bfs_device_values_follow_updated_spec_examples(generated_default_dir: P
     """BFSサービスサマリ端末の主要列は短縮コードではなく仕様例に沿う値を使う。"""
     header, rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_端末.csv")
     checks = {
-        "rental_set_device": {"有", "無"},
-        "mnp": {"有", "無"},
-        "plan": {"基本プラン（音声）", "基本プラン（データ）", "通話定額基本料（ケータイ）", "ホワイト特別相対S", "ホワイト特別相対L"},
-        "call_discount_w_white": {"通話料割引Wホワイト", "通話料割引Wホワイトライト"},
-        "breaking_contract_gold_annual_contract": {"相対2年契約10000", "相対5年契約15000"},
-        "s_basic_pack": {"ウェブ使用料（無料）", "ウェブ使用料（i）", "ウェブ使用料なし", "ウェブ使用料（スマ放題/通話基本プラン）"},
-        "data_communication_basic_fee_4g": {"4Gデータ通信基本料(i)", "4Gデータ通信基本料(F)", "4Gデータ通信基本料(S)"},
-        "basic_fee_5g": {"5Gサービス利用料", "5G基本料（内包用）"},
-        "packet_discount": {"データプラン7GB（法人）", "パケットし放題フラット"},
-        "option_pack": {"セレクトパック", "iPhone法人基本パック", "スマートフォン法人基本パック"},
-        "anshin_guarantee_pack": {"(端末)安心保証パックB", "あんしん保証パックプラス"},
+        "rental_set_terminal_flg_nm": {"有", "無"},
+        "mnp_flg_nm": {"有", "無"},
+        "cate01": {"基本プラン（音声）", "基本プラン（データ）", "通話定額基本料（ケータイ）", "ホワイト特別相対S", "ホワイト特別相対L"},
+        "cate04": {"通話料割引Wホワイト", "通話料割引Wホワイトライト"},
+        "cate10": {"相対2年契約10000", "相対5年契約15000"},
+        "cate11": {"ウェブ使用料（無料）", "ウェブ使用料（i）", "ウェブ使用料なし", "ウェブ使用料（スマ放題/通話基本プラン）"},
+        "cate12": {"4Gデータ通信基本料(i)", "4Gデータ通信基本料(F)", "4Gデータ通信基本料(S)"},
+        "cate13": {"5Gサービス利用料", "5G基本料（内包用）"},
+        "cate14": {"データプラン7GB（法人）", "パケットし放題フラット"},
+        "cate23": {"セレクトパック", "iPhone法人基本パック", "スマートフォン法人基本パック"},
+        "cate24": {"(端末)安心保証パックB", "あんしん保証パックプラス"},
     }
 
     for column_name, expected_values in checks.items():
@@ -1064,30 +1074,30 @@ def test_bfs_device_values_follow_updated_spec_examples(generated_default_dir: P
 def test_bfs_entry_required_columns_are_populated_in_all_and_diff(generated_default_dir: Path) -> None:
     """BFSエントリ情報の必須列は全量・差分とも空欄にしない。"""
     specs = load_specs(ROOT / "docs/format")
-    required_labels = [column.header_label for column in specs["bfs"] if column.required]
+    required_names = [column.name for column in specs["bfs"] if column.required]
     all_header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
 
-    assert required_labels == [
-        "エントリ番号",
-        "作成区分",
-        "オーダ種別",
-        "申込書連携",
-        "特約分離出力有無",
-        "通知書対象",
-        "開通済有無",
-        "取次店コード",
-        "所属代理店",
-        "キャリア種別",
-        "事業者区分",
-        "申込書番号",
-        "契約種別",
-        "エントリ作成者id",
-        "エントリ作成日時",
-        "エントリ更新担当者id",
-        "エントリ更新日時",
+    assert required_names == [
+        "entry_no",
+        "entry_status_nm",
+        "entry_type_nm",
+        "application_make_type",
+        "latest_appli_output_type",
+        "corp_notification",
+        "line_opened_status",
+        "unit_agent_cd",
+        "unit_agent_nm",
+        "carrier_type_nm",
+        "enterprise_type_nm",
+        "application_no",
+        "contract_type_nm",
+        "entry_create_user_id",
+        "entry_ins_tstamp",
+        "entry_last_upd_user_id",
+        "entry_last_upd_tstamp",
     ]
-    required_indexes = [all_header.index(label) for label in required_labels]
+    required_indexes = [all_header.index(name) for name in required_names]
     for row in all_rows + diff_rows:
         assert all(row[index] != "" for index in required_indexes)
 
@@ -1098,7 +1108,7 @@ def test_bfs_entry_optional_columns_have_moderate_blanks(generated_default_dir: 
     header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
 
-    optional_indexes = [header.index(column.header_label) for column in specs["bfs"] if not column.required]
+    optional_indexes = [header.index(column.name) for column in specs["bfs"] if not column.required]
     values = [row[index] for row in all_rows + diff_rows for index in optional_indexes]
     blank_rate = values.count("") / len(values)
 
@@ -1111,18 +1121,18 @@ def test_bfs_entry_values_follow_updated_spec_examples(generated_default_dir: Pa
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
     rows = all_rows + diff_rows
     checks = {
-        "作成区分": {"エントリ作成", "試算作成", "申込書作成"},
-        "オーダ種別": {"追加新規"},
-        "申込書連携": {"有", "無"},
-        "特約分離出力有無": {"有", "無"},
-        "通知書対象": {"有", "無"},
-        "開通済有無": {"有", "無"},
-        "契約種別": {"相対", "約款"},
-        "付属品購入": {"有", "無"},
+        "entry_status_nm": {"エントリ作成", "試算作成", "申込書作成"},
+        "entry_type_nm": {"追加新規"},
+        "application_make_type": {"有", "無"},
+        "latest_appli_output_type": {"有", "無"},
+        "corp_notification": {"有", "無"},
+        "line_opened_status": {"有", "無"},
+        "contract_type_nm": {"相対", "約款"},
+        "accessory_sale_flg_nm": {"有", "無"},
     }
 
-    for label, expected_values in checks.items():
-        index = header.index(label)
+    for name, expected_values in checks.items():
+        index = header.index(name)
         values = {row[index] for row in rows if row[index] != ""}
         assert values
         assert values.issubset(expected_values)
@@ -1134,9 +1144,9 @@ def test_bfs_entry_dates_follow_updated_formats(generated_default_dir: Path) -> 
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
     rows = all_rows[:20] + diff_rows[:20]
 
-    activation_date_index = header.index("開通日")
-    entry_creation_index = header.index("エントリ作成日時")
-    entry_update_index = header.index("エントリ更新日時")
+    activation_date_index = header.index("open_date")
+    entry_creation_index = header.index("entry_ins_tstamp")
+    entry_update_index = header.index("entry_last_upd_tstamp")
     activation_date_pattern = re.compile(r"^\d{4}/\d{1,2}/\d{1,2} \d{1,2}:\d{2}$")
     date_time_pattern = re.compile(r"^\d{4}/\d{2}/\d{2} \d{1,2}:\d{2}:\d{2}$")
 
@@ -1152,8 +1162,8 @@ def test_bfs_entry_rental_periods_use_month_labels(generated_default_dir: Path) 
     all_header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_エントリ情報_diff.csv")
 
-    period_after_renewal_index = all_header.index("自動更新後の期間")
-    initial_rental_period_index = all_header.index("初期レンタル期間")
+    period_after_renewal_index = all_header.index("auto_renew_term_nm")
+    initial_rental_period_index = all_header.index("initial_rental_term_nm")
 
     for row in all_rows[:20] + diff_rows[:20]:
         for index in (period_after_renewal_index, initial_rental_period_index):
@@ -1166,21 +1176,12 @@ def test_bfs_entry_rental_periods_use_month_labels(generated_default_dir: Path) 
 def test_bfs_accessories_required_columns_are_populated_in_all_and_diff(generated_default_dir: Path) -> None:
     """BFSサービスサマリ付属品の必須列は全量・差分とも空欄にしない。"""
     specs = load_specs(ROOT / "docs/format")
-    required_labels = [column.header_label for column in specs["bfs_accessories"] if column.required]
+    required_names = [column.name for column in specs["bfs_accessories"] if column.required]
     header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
 
-    assert required_labels == [
-        "エントリ番号",
-        "サマリ番号",
-        "シリアル付付属品",
-        "商品コード",
-        "メーカ",
-        "商品名",
-        "台数1",
-        "付属品標準価格",
-    ]
-    required_indexes = [header.index(label) for label in required_labels]
+    assert required_names == ["entry_no", "attach_sm_id", "serial_attach_flg_nm", "itm_cd", "brand_nm", "itm_nm", "num1", "base_price"]
+    required_indexes = [header.index(name) for name in required_names]
     for row in all_rows + diff_rows:
         assert all(row[index] != "" for index in required_indexes)
 
@@ -1191,7 +1192,7 @@ def test_bfs_accessories_optional_columns_have_moderate_blanks(generated_default
     header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
 
-    optional_indexes = [header.index(column.header_label) for column in specs["bfs_accessories"] if not column.required]
+    optional_indexes = [header.index(column.name) for column in specs["bfs_accessories"] if not column.required]
     values = [row[index] for row in all_rows + diff_rows for index in optional_indexes]
     blank_rate = values.count("") / len(values)
 
@@ -1202,7 +1203,7 @@ def test_bfs_accessories_serial_number_accessories_is_fixed_text(generated_defau
     """BFSサービスサマリ付属品のシリアル付付属品は仕様説明どおり固定文言で出力する。"""
     header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
-    serial_index = header.index("シリアル付付属品")
+    serial_index = header.index("serial_attach_flg_nm")
 
     assert {row[serial_index] for row in all_rows + diff_rows} == {"シリアルなし"}
 
@@ -1264,7 +1265,7 @@ def test_agency_diff_keys_include_insert_and_existing_updates(generated_default_
     assert_diff_keys_partition_initial_and_existing(
         all_rows,
         diff_rows,
-        header.index("取次店コード"),
+        header.index("ordcstm_cd"),
         expect_existing=True,
     )
 
@@ -1274,18 +1275,18 @@ def test_compass_diff_keys_include_insert_and_existing_updates(generated_default
     header, all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
 
-    assert_diff_keys_partition_initial_and_existing(all_rows, diff_rows, header.index("決裁番号"), expect_existing=True)
+    assert_diff_keys_partition_initial_and_existing(all_rows, diff_rows, header.index("name"), expect_existing=True)
 
 
 def test_compass_required_columns_are_populated_in_all_and_diff(generated_default_dir: Path) -> None:
     """COMPASS営業決裁の必須列は全量・差分とも空欄にしない。"""
     specs = load_specs(ROOT / "docs/format")
-    required_labels = [column.header_label for column in specs["compass"] if column.required]
+    required_names = [column.name for column in specs["compass"] if column.required]
     header, all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
 
-    assert required_labels[:6] == ["ID", "決裁番号", "決裁件名", "ステータス", "申請日時", "決裁種別"]
-    required_indexes = [header.index(label) for label in required_labels]
+    assert required_names[:6] == ["id", "name", "salesapprovaltitle", "status", "applicationdate", "paymenttype"]
+    required_indexes = [header.index(name) for name in required_names]
     for row in all_rows + diff_rows:
         assert all(row[index] != "" for index in required_indexes)
 
@@ -1296,7 +1297,7 @@ def test_compass_optional_columns_include_blanks(generated_default_dir: Path) ->
     header, all_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
 
-    optional_indexes = [header.index(column.header_label) for column in specs["compass"] if not column.required]
+    optional_indexes = [header.index(column.name) for column in specs["compass"] if not column.required]
     values = [row[index] for row in all_rows + diff_rows for index in optional_indexes]
 
     assert "" in values
@@ -1326,7 +1327,7 @@ def test_compass_boolean_columns_use_true_false(generated_default_dir: Path) -> 
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
 
     for label in boolean_labels:
-        index = header.index(label)
+        index = header_index(header, "compass", label)
         values = {row[index] for row in all_rows + diff_rows if row[index] != ""}
         assert values
         assert values.issubset({"TRUE", "FALSE"})
@@ -1349,7 +1350,7 @@ def test_compass_yes_no_columns_use_japanese_values(generated_default_dir: Path)
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_com_営業決裁_diff.csv")
 
     for label in yes_no_labels:
-        index = header.index(label)
+        index = header_index(header, "compass", label)
         values = {row[index] for row in all_rows + diff_rows}
         assert values <= {"", "有", "無"}
 
@@ -1363,7 +1364,7 @@ def test_corp_diff_keys_include_insert_and_existing_updates(generated_default_di
     assert_diff_keys_partition_initial_and_existing(
         all_rows_1 + all_rows_2,
         diff_rows,
-        header_1.index("統一企業コード"),
+        header_1.index("uniq_corp_cd"),
         expect_existing=True,
     )
 
@@ -1382,19 +1383,19 @@ def test_bfs_diff_keys_include_expected_insert_and_existing_updates(generated_de
     assert_diff_keys_partition_initial_and_existing(
         bfs_all_rows,
         bfs_diff_rows,
-        bfs_header.index("エントリ番号"),
+        bfs_header.index("entry_no"),
         expect_existing=True,
     )
     assert_diff_keys_partition_initial_and_existing(
         device_all_rows,
         device_diff_rows,
-        device_header.index("エントリ番号"),
+        device_header.index("entry_no"),
         expect_existing=False,
     )
     assert_diff_keys_partition_initial_and_existing(
         accessories_all_rows,
         accessories_diff_rows,
-        accessories_header.index("商品コード"),
+        accessories_header.index("itm_cd"),
         expect_existing=True,
     )
 
@@ -1404,11 +1405,11 @@ def test_bfs_accessories_diff_updates_existing_product_codes(generated_default_d
     header, all_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品.csv")
     _, diff_rows = read_csv(generated_default_dir, "b_hjn_bfs_モバイル_サービスサマリ_付属品_diff.csv")
 
-    product_code_index = header.index("商品コード")
-    manufacturer_index = header.index("メーカ")
-    product_name_index = header.index("商品名")
-    quantity_1_index = header.index("台数1")
-    price_index = header.index("付属品標準価格")
+    product_code_index = header.index("itm_cd")
+    manufacturer_index = header.index("brand_nm")
+    product_name_index = header.index("itm_nm")
+    quantity_1_index = header.index("num1")
+    price_index = header.index("base_price")
 
     all_by_product_code = {row[product_code_index]: row for row in all_rows}
     updated_rows = [row for row in diff_rows if row[product_code_index] in all_by_product_code]
@@ -1430,7 +1431,7 @@ def test_campaign_diff_replaces_deleted_added_and_updated_rows(generated_default
     all_header, all_rows = read_csv(generated_default_dir, "m_キャンペーン.csv")
     diff_header, diff_rows = read_csv(generated_default_dir, "m_キャンペーン_diff.csv")
 
-    assert_full_refresh_diff_replaces_rows(all_header, all_rows, diff_header, diff_rows, "キャンペーンid")
+    assert_full_refresh_diff_replaces_rows(all_header, all_rows, diff_header, diff_rows, "campaign_id")
 
 
 def test_product_diff_replaces_deleted_added_and_updated_rows(generated_default_dir: Path) -> None:
@@ -1438,7 +1439,7 @@ def test_product_diff_replaces_deleted_added_and_updated_rows(generated_default_
     all_header, all_rows = read_csv(generated_default_dir, "m_商品_all.csv")
     diff_header, diff_rows = read_csv(generated_default_dir, "m_商品_all_diff.csv")
 
-    assert_full_refresh_diff_replaces_rows(all_header, all_rows, diff_header, diff_rows, "商品コード")
+    assert_full_refresh_diff_replaces_rows(all_header, all_rows, diff_header, diff_rows, "itm_cd")
 
 
 def test_agency_diff_existing_keys_are_subset_of_agency_all(generated_agency_seed11_dir: Path) -> None:
@@ -1448,7 +1449,7 @@ def test_agency_diff_existing_keys_are_subset_of_agency_all(generated_agency_see
     assert agency_header == diff_header
 
     assert len(diff_rows) == 53
-    code_index = agency_header.index("取次店コード")
+    code_index = agency_header.index("ordcstm_cd")
     agency_codes = {row[code_index] for row in agency_rows}
     diff_codes = [row[code_index] for row in diff_rows]
     existing_diff_codes = {row[code_index] for row in diff_rows if row[code_index] in agency_codes}
@@ -1465,13 +1466,13 @@ def test_compass_diff_updates_subset_of_compass_all(generated_compass_seed11_dir
     diff_header, diff_rows = read_csv(generated_compass_seed11_dir, "b_hjn_com_営業決裁_diff.csv")
     assert all_header == diff_header
 
-    approval_number_index = all_header.index("決裁番号")
-    approval_subject_index = all_header.index("決裁件名")
-    application_datetime_index = all_header.index("申請日時")
-    approval_datetime_index = all_header.index("承認日時")
-    sales_yen_index = all_header.index("売上（円）")
-    notes_index = all_header.index("備考")
-    changes_index = all_header.index("追加・変更内容")
+    approval_number_index = all_header.index("name")
+    approval_subject_index = all_header.index("salesapprovaltitle")
+    application_datetime_index = all_header.index("applicationdate")
+    approval_datetime_index = header_index(all_header, "compass", "承認日時")
+    sales_yen_index = header_index(all_header, "compass", "売上（円）")
+    notes_index = header_index(all_header, "compass", "備考")
+    changes_index = header_index(all_header, "compass", "追加・変更内容")
 
     all_by_approval_number = {row[approval_number_index]: row for row in all_rows}
     diff_approval_numbers = [row[approval_number_index] for row in diff_rows]
@@ -1514,7 +1515,7 @@ def test_corp_company_codes_are_unique_across_all_files(generated_seed7_dir: Pat
     """corp 全量CSVの統一企業コードは分割後も重複しない。"""
     header, rows_1 = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_1.csv")
     _, rows_2 = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_2.csv")
-    code_index = header.index("統一企業コード")
+    code_index = header.index("uniq_corp_cd")
 
     codes = [row[code_index] for row in [*rows_1, *rows_2]]
     assert len(codes) == len(set(codes))
@@ -1524,7 +1525,7 @@ def test_corp_all_files_split_rows_in_order(generated_seed7_dir: Path) -> None:
     """corp 全量CSVは前半と後半に分割され、統一企業コードの順序が連続する。"""
     header, rows_1 = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_1.csv")
     _, rows_2 = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_2.csv")
-    code_index = header.index("統一企業コード")
+    code_index = header.index("uniq_corp_cd")
 
     assert rows_1[-1][code_index] < rows_2[0][code_index]
 
@@ -1542,14 +1543,14 @@ def test_corp_split_counts_put_extra_row_in_first_file() -> None:
 def test_corp_parent_and_invalidity_fields_are_consistent(generated_seed7_dir: Path) -> None:
     """corp の親企業・無効理由関連の最低限の整合を確認する。"""
     header, rows = read_csv(generated_seed7_dir, "m_hjn_smt_統一企業情報_diff.csv")
-    company_code_index = header.index("統一企業コード")
-    parent_flag_index = header.index("親企業フラグ")
-    parent_company_index = header.index("親企業番号")
-    invalid_flag_index = header.index("有効無効フラグ")
-    invalid_reason_index = header.index("無効理由")
-    merged_company_index = header.index("合併企業番号")
-    registered_at_index = header.index("登録日時")
-    updated_at_index = header.index("更新日時")
+    company_code_index = header.index("uniq_corp_cd")
+    parent_flag_index = header_index(header, "corp", "親企業フラグ")
+    parent_company_index = header_index(header, "corp", "親企業番号")
+    invalid_flag_index = header_index(header, "corp", "有効無効フラグ")
+    invalid_reason_index = header_index(header, "corp", "無効理由")
+    merged_company_index = header_index(header, "corp", "合併企業番号")
+    registered_at_index = header_index(header, "corp", "登録日時")
+    updated_at_index = header_index(header, "corp", "更新日時")
 
     assert rows
     for row in rows[:30]:
@@ -1588,7 +1589,7 @@ def test_corp_datetime_columns_use_millisecond_timestamp_format(generated_seed7_
         "m_hjn_smt_統一企業情報_diff.csv",
     ):
         header, rows = read_csv(generated_seed7_dir, file_name)
-        datetime_indexes = [header.index(label) for label in ("登録日", "更新日", "登録日時", "更新日時")]
+        datetime_indexes = [header_index(header, "corp", label) for label in ("登録日", "更新日", "登録日時", "更新日時")]
 
         for row in rows[:20]:
             for index in datetime_indexes:
@@ -1601,7 +1602,7 @@ def test_campaign_old_flag_is_always_filled(tmp_path: Path) -> None:
 
     for file_name in ("m_キャンペーン.csv", "m_キャンペーン_diff.csv"):
         header, rows = read_csv(tmp_path, file_name)
-        old_flag_index = header.index("旧フラグ")
+        old_flag_index = header.index("old_flg")
 
         assert {row[old_flag_index] for row in rows}.issubset({"0", "1"})
 
@@ -1610,8 +1611,8 @@ def test_compass_status_is_fixed_to_approved_and_history_is_filled(generated_see
     """営業決裁のステータス固定と承認履歴非空欄を確認する。"""
     for file_name in ("b_hjn_com_営業決裁.csv", "b_hjn_com_営業決裁_diff.csv"):
         header, rows = read_csv(generated_seed7_dir, file_name)
-        status_index = header.index("ステータス")
-        history_index = header.index("承認履歴")
+        status_index = header.index("status")
+        history_index = header_index(header, "compass", "承認履歴")
 
         assert {row[status_index] for row in rows} == {"承認"}
         assert all(row[history_index] != "" for row in rows)

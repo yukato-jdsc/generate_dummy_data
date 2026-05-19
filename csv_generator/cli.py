@@ -168,7 +168,7 @@ def write_headers_only_csvs(
     """指定targetの各CSVをヘッダー行のみで書き出す。"""
     for spec_key, output_key in build_headers_only_outputs(targets):
         path = build_output_path_for_key(output_dir, output_key, compress, output_date)
-        base_headers = [column.header_label for column in specs[spec_key]]
+        base_headers = [column.name for column in specs[spec_key]]
         headers = build_output_headers(base_headers, output_key)
         announce_output(path)
         write_csv(path, headers, [])

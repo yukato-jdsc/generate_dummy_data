@@ -10,11 +10,11 @@
 
 ## カラム定義
 
-| 項目名 | カラム名 | 型 | 桁 | 仮名化 | 説明 |
+| 項目名 | カラム名 | 型 | 桁 | 必須 | 説明 |
 | --- | --- | --- | --- | --- | --- |
-| キャンペーンid | `campaign_id` | VARCHAR | 40 | － | キャンペーンを一意に特定するID |
-| キャンペーン名称 | `campaign_name` | VARCHAR | 2400 | － | 半角は許容しない |
-| 説明 | `description` | VARCHAR | 1200 | － | 半角は許容しない |
-| 有効開始日 | `effective_start_date` | VARCHAR | 16 | － | レコードの有効開始日（履歴管理用日時） |
-| 有効終了日 | `effective_end_date` | VARCHAR | 16 | － | レコードの有効終了日（履歴管理用日時） |
-| 旧フラグ | `old_flag` | VARCHAR | 2 | － | 新データモデル: `null`、旧データモデル: `1`。新旧データモデルの区分け方は、CAERUS PJのS-in前のデータモデルを旧、S-in後のデータモデルを新とする。 |
+| キャンペーンid | `campaign_id` | VARCHAR | 40 | ⚪︎ | キャンペーンを一意に特定するID |
+| キャンペーン名称 | `campaign_nm` | VARCHAR | 2400 | ⚪︎ | 半角は許容しない |
+| 説明 | `description` | VARCHAR | 1200 | ⚪︎ | 半角は許容しない |
+| 有効開始日 | `effective_dt_from` | VARCHAR | 16 | ⚪︎ | レコードの有効開始日（履歴管理用日時） |
+| 有効終了日 | `effective_dt_to` | VARCHAR | 16 | ⚪︎ | レコードの有効終了日（履歴管理用日時） |
+| 旧フラグ | `old_flg` | VARCHAR | 2 | ⚪︎ | 新データモデル: `null`、旧データモデル: `1`。新旧データモデルの区分け方は、CAERUS PJのS-in前のデータモデルを旧、S-in後のデータモデルを新とする。 |

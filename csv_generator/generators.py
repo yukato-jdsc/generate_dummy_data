@@ -128,24 +128,149 @@ COMPASS_BOOLEAN_COLUMNS = {
     "credit_review_request_name_compass_presence_absence",
 }
 COMPASS_DIFF_REQUIRED_OPTIONAL_COLUMNS = {
-    "approval_date",
-    "last_updated_date",
-    "contract_start_date",
-    "expiration_date",
-    "sales_yen",
-    "notes",
-    "additions_changes",
-    "approval_history",
+    "approveddate",
+    "expirationdate",
+    "revenue",
+    "remarks",
+    "addchangecontent",
+    "approvalhistory",
 }
 BFS_ENTRY_REQUIRED_OPTIONAL_COLUMNS = {
-    "activation_date",
-    "expected_delivery_date",
+    "open_date",
+    "delivery_expect_date",
     "application_date",
-    "period_after_automatic_renewal",
-    "initial_rental_period",
+    "auto_renew_term_nm",
+    "initial_rental_term_nm",
 }
 BFS_ACCESSORIES_REQUIRED_OPTIONAL_COLUMNS = {
-    "linked_summary_number",
+    "linked_svcsm_id",
+}
+AGENCY_COLUMN_ALIASES = {
+    "ordcstm_cd": "agent_code",
+    "effective_dt_from": "valid_start_date",
+    "effective_dt_to": "valid_end_date",
+    "common_store_cd": "common_store_code",
+}
+PRODUCT_COLUMN_ALIASES = {
+    "itm_cd": "product_code",
+    "effective_dt_from": "validity_start_date",
+    "effective_tm_from": "validity_start_time",
+    "effective_dt_to": "validity_end_date",
+    "effective_tm_to": "validity_end_time",
+    "area_cd": "area_code",
+    "long_nm": "product_official_name",
+    "kana_nm": "product_name_in_kana",
+    "eng_nm": "product_name_in_english",
+    "short_nm": "product_abbreviation",
+}
+COMPASS_COLUMN_ALIASES = {
+    "name": "approval_number",
+    "salesapprovaltitle": "approval_subject",
+    "applicationdate": "date_and_time_of_application",
+    "paymenttype": "approval_type",
+    "mobile": "mobile_type",
+    "voice": "voice_type",
+    "voicediscount": "voice_otoku_hikari_type",
+    "dataid": "id_data_type",
+    "isniproduct": "is_ni_product_type",
+    "phs": "phs_type",
+    "comprehensivesalesapproval": "comprehensive_approval",
+    "groupsalesapproval": "group_comprehensive_approval",
+    "useothercases": "used_in_other_projects",
+    "agencyinputflag": "agency_information_manual_input_flag",
+    "createdecisionflag": "create_sub_approval_from_flow_flag",
+    "isprivateflag": "private_flag",
+    "isvalid": "valid_flg",
+    "isdeleted": "deleted_flg",
+    "smt_datamigrationflag": "summit_data_migration_flag",
+    "csrnamesummitexists": "credit_review_request_name_compass_presence_absence",
+    "creditalert": "credit_alert",
+    "creditscreeningexecuted": "whether_credit_review",
+    "legalpreauditexecuted": "whether_legal_pre_review_conducted",
+    "resalesapprovalflag": "re_approval_draft_flag",
+    "preconsultationexists": "pre_confirmation",
+    "constructionfeefree": "activation_installation_fee",
+    "waiverexists": "exemption_deduction",
+    "autorenewexists": "automatic_renewal",
+    "approveddate": "approval_date",
+    "revenue": "sales_yen",
+    "remarks": "notes",
+    "addchangecontent": "additions_changes",
+    "approvalhistory": "approval_history",
+}
+COMPASS_YES_NO_COLUMNS = {
+    "aggregatequotationexisted",
+}
+BFS_ENTRY_COLUMN_ALIASES = {
+    "entry_no": "entry_number",
+    "entry_nm": "subject",
+    "entry_status_nm": "creation_category",
+    "entry_type_nm": "order_type",
+    "application_make_type": "application_form_linkage",
+    "latest_appli_output_type": "special_contract_separate_output",
+    "corp_notification": "notification_target",
+    "line_opened_status": "activation_status",
+    "open_date": "activation_date",
+    "incomplete_type_nm": "incomplete_request_type",
+    "src_entry_type_nm": "source_entry_type",
+    "cmn_staff_no_bizchrg": "salesperson_code",
+    "entry_user_nm": "salesperson",
+    "unit_agent_cd": "agency_code",
+    "unit_agent_nm": "affiliated_agency",
+    "carrier_type_nm": "carrier_type",
+    "enterprise_type_nm": "business_operator_category",
+    "application_no": "application_form_number",
+    "contract_type_nm": "contract_type",
+    "delivery_expect_date": "expected_delivery_date",
+    "accessory_sale_flg_nm": "accessory_purchase",
+    "entry_create_user_id": "entry_creator_id",
+    "entry_ins_tstamp": "entry_creation_date_and_time",
+    "entry_last_upd_user_id": "entry_updater_id",
+    "entry_last_upd_tstamp": "entry_update_date_and_time",
+    "auto_renew_term_nm": "period_after_automatic_renewal",
+    "initial_rental_term_nm": "initial_rental_period",
+    "entry_detail_status_nm": "estimated_status",
+    "rental_used_date_month": "rental_used_period_months",
+}
+BFS_DEVICE_COLUMN_ALIASES = {
+    "entry_no": "entry_number",
+    "svcsm_id": "summary_number",
+    "linenum": "number_of_lines",
+    "rental_set_terminal_flg_nm": "rental_set_device",
+    "mnp_flg_nm": "mnp",
+    "itm_cd": "product_code",
+    "brand_nm": "manufacturer",
+    "itm_middle_grp_nm": "mobile_device_classification",
+    "itm_nm": "model_name",
+    "color1": "color_1",
+    "num1": "quantity_1",
+    "cate01": "plan",
+    "cate04": "call_discount_w_white",
+    "cate10": "breaking_contract_gold_annual_contract",
+    "cate11": "s_basic_pack",
+    "cate12": "data_communication_basic_fee_4g",
+    "cate13": "basic_fee_5g",
+    "cate14": "packet_discount",
+    "cate23": "option_pack",
+    "cate24": "anshin_guarantee_pack",
+    "old_trmnl_contract_period": "current_device_contract_period",
+    "summary_unit_reflection_nm": "reflected_in_summary_unit",
+}
+BFS_ACCESSORIES_COLUMN_ALIASES = {
+    "entry_no": "entry_number",
+    "attach_sm_id": "summary_number",
+    "serial_attach_flg_nm": "serial_number_accessories",
+    "itm_cd": "product_code",
+    "brand_nm": "manufacturer",
+    "itm_nm": "product_name",
+    "color1": "color_1",
+    "num1": "quantity_1",
+    "base_price": "standard_price_of_accessories",
+    "offered_price": "provision_fee",
+    "use_point": "usage_points",
+    "trade_price": "cost",
+    "linked_svcsm_id": "linked_summary_number",
+    "attach_reserve_base_price": "cost_contingency",
 }
 BFS_DEVICE_PLANS = ["基本プラン（音声）", "基本プラン（データ）", "通話定額基本料（ケータイ）", "ホワイト特別相対S", "ホワイト特別相対L"]
 BFS_DEVICE_CALL_DISCOUNTS = ["通話料割引Wホワイト", "通話料割引Wホワイトライト"]
@@ -174,6 +299,23 @@ ACCESSORY_PRODUCT_NAMES = [
 
 ProgressReporter = NullProgressReporter | QueueProgressReporter | TqdmProgressReporter
 ProgressFactory = Callable[[Path, int], ProgressReporter]
+
+
+def apply_column_aliases(context: dict[str, str], aliases: dict[str, str]) -> dict[str, str]:
+    """旧カラム名で組み立てた文脈値を、新カラム名でも参照できるよう補完する。"""
+    for new_name, old_name in aliases.items():
+        if old_name in context:
+            context[new_name] = context[old_name]
+    return context
+
+
+def context_column_value(context: dict[str, str], column: ColumnSpec) -> str | None:
+    """カラム名または項目名で文脈に登録済みの値を取り出す。"""
+    if column.name in context:
+        return context[column.name]
+    if column.header_label in context:
+        return context[column.header_label]
+    return None
 
 
 @dataclass(frozen=True)
@@ -361,11 +503,11 @@ class CsvGenerator:
         name = self._campaign_name(index)
         context = {
             "campaign_id": self.values.code("CP", index + 1, 10),
-            "campaign_name": name,
+            "campaign_nm": name,
             "description": f"{name}のテスト投入用データ",
-            "effective_start_date": ymd(start),
-            "effective_end_date": ymd(end),
-            "old_flag": "1" if index % 5 == 0 else "0",
+            "effective_dt_from": ymd(start),
+            "effective_dt_to": ymd(end),
+            "old_flg": "1" if index % 5 == 0 else "0",
         }
         return self._row_from_context(self.specs["campaign"], context)
 
@@ -388,11 +530,11 @@ class CsvGenerator:
         name = f"{self._campaign_name(index)}改定"
         context = {
             "campaign_id": self.values.code("CP", index + 1, 10),
-            "campaign_name": name,
+            "campaign_nm": name,
             "description": f"{name}の全量更新後データ",
-            "effective_start_date": ymd(start),
-            "effective_end_date": ymd(end),
-            "old_flag": "1" if index % 5 == 0 else "0",
+            "effective_dt_from": ymd(start),
+            "effective_dt_to": ymd(end),
+            "old_flg": "1" if index % 5 == 0 else "0",
         }
         return self._row_from_context(self.specs["campaign"], context)
 
@@ -440,8 +582,8 @@ class CsvGenerator:
         write_csv(diff_path, diff_headers, diff_rows, progress_reporter=diff_progress)
 
     def _spec_header_labels(self, spec_key: str) -> list[str]:
-        """指定した仕様キーの定義どおりのヘッダー表示名一覧を返す。"""
-        return [column.header_label for column in self.specs[spec_key]]
+        """指定した仕様キーのカラム名一覧をCSVヘッダーとして返す。"""
+        return [column.name for column in self.specs[spec_key]]
 
     def _output_headers(self, spec_key: str, output_key: str) -> list[str]:
         """出力ファイル種別に応じたCSVヘッダー一覧を返す。"""
@@ -533,7 +675,8 @@ class CsvGenerator:
         context.update(self._agency_operation_context(index))
         context.update(self._agency_billing_context(index))
         context.update(self._agency_misc_context(index))
-        return context
+        context["pickup_flg"] = "1"
+        return apply_column_aliases(context, AGENCY_COLUMN_ALIASES)
 
     def agency_row(self, index: int) -> list[str]:
         """取次店1行ぶんを全量CSV向けのサイズで生成する。"""
@@ -758,8 +901,9 @@ class CsvGenerator:
 
     def resolve_agency_value(self, column: ColumnSpec, context: dict[str, str], index: int) -> str:
         """明示値が無い列に対し、列名規則から妥当な既定値を補完する。"""
-        if column.name in context:
-            return context[column.name]
+        value = context_column_value(context, column)
+        if value is not None:
+            return value
         name = column.name
         if column.data_type.startswith("DECIMAL"):
             return self.values.decimal_value(index, modulo=9, minimum=1)
@@ -778,6 +922,8 @@ class CsvGenerator:
             return self.values.katakana_word(index) + self.values.katakana_word(index + 1)
         if name.endswith("_name") or "official_name" in name or name.endswith("_nm") or "kanji" in name:
             return f"サンプル{index % 50:02d}"
+        if name.endswith("_flg") or name.endswith("_cfc"):
+            return str(index % 2)
         if "code" in name or name.endswith("_cd") or name.endswith("_id") or name.endswith("_number"):
             return self.values.code("X", index + 1, 8)
         return f"VAL{index % 1000}"
@@ -916,7 +1062,7 @@ class CsvGenerator:
             f"希望開始日: {ymd_dash(execution_date)}\n"
             f"提案条件: 法人向け標準プランをベースに個別調整を実施"
         )
-        return {
+        context = {
             "id": self.values.code("CMP", index + 1, 16),
             "approval_number": approval_number,
             "approval_subject": f"{company_name}向け営業決裁 {index % 30 + 1}",
@@ -1116,6 +1262,7 @@ class CsvGenerator:
             "last_processing_date_and_time": ymdhms_millis(approval_at + timedelta(hours=3)),
             "approval_history": "一次承認済み;最終承認済み",
         }
+        return apply_column_aliases(context, COMPASS_COLUMN_ALIASES)
 
     def _compass_diff_context(self, base_context: dict[str, str], index: int) -> dict[str, str]:
         """営業決裁差分向けに、主要業務列を更新した文脈を返す。"""
@@ -1183,7 +1330,7 @@ class CsvGenerator:
                 "approval_history": "一次承認済み;条件変更承認済み;最終承認済み",
             }
         )
-        return context
+        return apply_column_aliases(context, COMPASS_COLUMN_ALIASES)
 
     def _product_context(self, index: int) -> dict[str, str]:
         """商品1行ぶんの主要属性をテンプレートから組み立てる。"""
@@ -1191,7 +1338,7 @@ class CsvGenerator:
         color_name, color_abbr = COLORS[index % len(COLORS)]
         start = BASE_DATE - timedelta(days=index % 400)
         end = start + timedelta(days=730)
-        return {
+        context = {
             "product_code": self.values.code("PRD", index + 1, 10),
             "validity_start_date": ymd(start),
             "validity_start_time": hms(9, index % 60),
@@ -1291,6 +1438,8 @@ class CsvGenerator:
             "imsi_type": str((index % 3) + 1),
             "imsi_type_official_name": "標準ISMI",
         }
+        context["pickup_flg"] = "1"
+        return apply_column_aliases(context, PRODUCT_COLUMN_ALIASES)
 
     def _product_diff_context(self, index: int) -> dict[str, str]:
         """既存商品コードを維持した更新後の商品文脈を組み立てる。"""
@@ -1311,35 +1460,39 @@ class CsvGenerator:
                 "logistics_product_code": self.values.code("LPD", index + 1, 8),
             }
         )
-        return context
+        return apply_column_aliases(context, PRODUCT_COLUMN_ALIASES)
 
     def resolve_product_value(self, column: ColumnSpec, context: dict[str, str], index: int) -> str:
         """商品列の明示値が無い場合に、列名規則から既定値を補完する。"""
-        if column.name in context:
-            return context[column.name]
+        value = context_column_value(context, column)
+        if value is not None:
+            return value
         if column.data_type.startswith("DECIMAL"):
             return self.values.decimal_value(index, modulo=9, minimum=1)
-        if column.name.endswith("_date"):
+        if column.name.endswith("_date") or column.name.endswith("_dt"):
             return ymd(BASE_DATE - timedelta(days=index % 300))
-        if column.name.endswith("_time"):
+        if column.name.endswith("_time") or column.name.endswith("_tm"):
             return hms((index * 5) % 24, (index * 11) % 60)
-        if "english" in column.name:
+        if "english" in column.name or column.name.endswith("_eng_nm"):
             return f"{self.values.english_word(index)} {self.values.english_word(index + 1)}"
-        if "kana" in column.name:
+        if "kana" in column.name or column.name.endswith("_kana_nm"):
             return self.values.katakana_word(index) + self.values.katakana_word(index + 1)
         if "name" in column.name or column.name.endswith("_nm"):
             return f"商品サンプル{index % 100:02d}"
-        if "code" in column.name or column.name.endswith("_id"):
+        if "code" in column.name or column.name.endswith("_id") or column.name.endswith("_cd"):
             return self.values.code("P", index + 1, 8)
         return f"VAL{index % 1000}"
 
     def resolve_compass_value(self, column: ColumnSpec, context: dict[str, str], index: int) -> str:
         """営業決裁列の明示値が無い場合に、列名規則から既定値を補完する。"""
-        if column.name in context:
-            return context[column.name]
+        value = context_column_value(context, column)
+        if value is not None:
+            return value
         name = column.name
         if column.data_type.startswith("DECIMAL"):
             return str(1 + (index % 50))
+        if name in COMPASS_YES_NO_COLUMNS:
+            return ["有", "無"][index % 2]
         if name in COMPASS_BOOLEAN_COLUMNS or name.endswith("_flag") or name.endswith("_flg") or name.endswith("_type"):
             return self._compass_bool(index)
         if "unixtime" in name:
@@ -1361,7 +1514,7 @@ class CsvGenerator:
 
     def _row_from_context(self, columns: list[ColumnSpec], context: dict[str, str]) -> list[str]:
         """列定義順に文脈値を並べ替え、最大長を適用した1行へ変換する。"""
-        return [clip(context[column.name], column.max_length) for column in columns]
+        return [clip(context_column_value(context, column) or "", column.max_length) for column in columns]
 
     def _resolved_row(
         self,
@@ -1924,7 +2077,8 @@ class CsvGenerator:
             context[f"op_ratio_{op_index}"] = ("50", "30", "15", "5")[op_index - 1]
         for other_index, other_option in enumerate(other_options, start=1):
             context[f"other_options_{other_index}"] = other_option
-        return context
+        context["article"] = f"特約条項{base_index % 100:02d}"
+        return apply_column_aliases(context, BFS_ENTRY_COLUMN_ALIASES)
 
     def _bfs_base_index(self, index: int, variant: str, diff_type: str | None = None) -> int:
         """全量・差分の種別からBFS採番用の基準インデックスを返す。"""
@@ -1940,7 +2094,7 @@ class CsvGenerator:
         value_index = self._bfs_device_value_index(context)
         created_at = datetime(2025, 12, 21, 11, 0, 0) + timedelta(hours=base_index % 48)
         updated_at = created_at + timedelta(minutes=15)
-        return {
+        return apply_column_aliases({
             "number_of_lines": "1",
             "rental_set_device": ["有", "無"][base_index % 2],
             "mnp": ["有", "無"][(base_index // 2) % 2],
@@ -2028,7 +2182,12 @@ class CsvGenerator:
             "provision_generation_type": ["4G", "5G"][base_index % 2],
             "current_device_contract_period": ["12", "24", "36", "48"][value_index % 4],
             "reflected_in_summary_unit": ["1", "0"][value_index % 2],
-        }
+            "offered_price_step1": "1",
+            "offered_price_step2": "1",
+            "offered_price_step3": "1",
+            "industrial_company_cd": "0001",
+            "load_day": f"{BASE_DATE:%Y%m%d}",
+        }, BFS_DEVICE_COLUMN_ALIASES)
 
     def _bfs_device_value_index(self, context: dict[str, str]) -> int:
         """BFS端末で更新後の値生成に使う基準インデックスを返す。"""
@@ -2145,7 +2304,7 @@ class CsvGenerator:
         product_code = self.values.code("ACC", base_index + 1, 3)
         if context["variant"] == "diff" and context.get("diff_type") == INITIAL_DIFF_TYPE:
             product_code = self.values.code("ACI", base_index + 1, 4)
-        return {
+        return apply_column_aliases({
             "summary_number": summary_number,
             "serial_number_accessories": "シリアルなし",
             "product_code": product_code,
@@ -2167,7 +2326,11 @@ class CsvGenerator:
             "cost": str(1_200 + (value_index % 6) * 200),
             "linked_summary_number": summary_number,
             "cost_contingency": str(100 + (value_index % 8) * 20),
-        }
+            "regist_date": f"{BASE_DATE:%Y/%m/%d}",
+            "update_date": f"{BASE_DATE:%Y/%m/%d}",
+            "industrial_company_cd": "0001",
+            "load_day": f"{BASE_DATE:%Y%m%d}",
+        }, BFS_ACCESSORIES_COLUMN_ALIASES)
 
     def _bfs_device_row(self, context: dict[str, str], index: int, diff_type: str | None = None) -> list[str]:
         """BFSサービスサマリ端末の1行を生成する。"""
@@ -2181,6 +2344,7 @@ class CsvGenerator:
         for scope_index in range(1, 10):
             device_context[f"plan_change_permission_range_{scope_index}"] = f"R{scope_index}"
             device_context[f"consultation_regarding_relative_{scope_index}"] = f"S{scope_index}"
+        apply_column_aliases(device_context, BFS_DEVICE_COLUMN_ALIASES)
         row = self._resolved_bfs_device_row(device_context, index)
         return prepend_diff_type(row, diff_type)
 
@@ -2208,6 +2372,10 @@ class CsvGenerator:
     def _bfs_device_repeat_slot(self, name: str) -> tuple[str, int, int] | None:
         """BFSサービスサマリ端末の連番グループ名・番号・最大数を返す。"""
         numbered_groups = (
+            ("option", 10, ("optcate", "optsvc")),
+            ("rntoptatt", 10, ("rntoptatt", "rntplnatt")),
+            ("rntopt", 10, ("rntopt", "rntpln")),
+            ("relative", 10, ("pcn", "pdn")),
             ("option", 10, ("option_category_", "option_service_", "optional_category_", "optional_service_")),
             ("rntopt", 10, ("rntopt_category_", "rntopt_plan_")),
             ("rntoptatt", 10, ("rntoptatt_category_", "rntoptatt_plan_", "rntopta_tt_category_")),
@@ -2243,15 +2411,21 @@ class CsvGenerator:
     def _trailing_number(self, name: str) -> int | None:
         """末尾のアンダースコア付き番号を整数として返す。"""
         parts = name.rsplit("_", 1)
-        if len(parts) != 2 or not parts[1].isdecimal():
+        if len(parts) == 2 and parts[1].isdecimal():
+            return int(parts[1])
+        digit_start = len(name)
+        while digit_start > 0 and name[digit_start - 1].isdecimal():
+            digit_start -= 1
+        if digit_start == len(name):
             return None
-        return int(parts[1])
+        return int(name[digit_start:])
 
     def _bfs_accessories_row(self, context: dict[str, str], index: int, diff_type: str | None = None) -> list[str]:
         """BFSサービスサマリ付属品の1行を生成する。"""
         accessories_context = dict(context)
         accessories_context["diff_type"] = diff_type or ""
         accessories_context.update(self._bfs_accessories_summary_context(accessories_context))
+        apply_column_aliases(accessories_context, BFS_ACCESSORIES_COLUMN_ALIASES)
         row = self._resolved_bfs_accessories_row(accessories_context, index)
         return prepend_diff_type(row, diff_type)
 
@@ -2274,15 +2448,16 @@ class CsvGenerator:
 
     def resolve_bfs_value(self, column: ColumnSpec, context: dict[str, str], index: int) -> str:
         """BFS列の明示値が無い場合に、列名規則から既定値を補完する。"""
-        if column.name in context:
-            return context[column.name]
+        value = context_column_value(context, column)
+        if value is not None:
+            return value
         name = column.name
         base_index = int(context["base_index"])
         if column.data_type.startswith("DECIMAL"):
             return str(1 + (base_index % 99))
         if "date_and_time" in name:
             return f"{datetime(2025, 12, 1, 9, 0) + timedelta(hours=base_index % 240):%Y/%m/%d %H:%M:%S}"
-        if name.endswith("_date"):
+        if name.endswith("_date") or name.endswith("_dt"):
             return ymd(BASE_DATE - timedelta(days=base_index % 365))
         if "kana" in name or "katakana" in name:
             return self._bfs_short_kana_name(base_index)
@@ -2340,16 +2515,17 @@ class CsvGenerator:
             return str(5 + (base_index % 80))
         if self._is_bfs_long_text_column(name):
             return f"補{base_index % 100:02d}"
-        if "number" in name or name.endswith("_id") or "code" in name or "book" in name or "sheet" in name:
+        if "number" in name or name.endswith("_id") or name.endswith("_no") or name.endswith("_cd") or "code" in name or "book" in name or "sheet" in name:
             return self.values.code("BFS", base_index + 1, 10)
-        if "name" in name:
+        if "name" in name or name.endswith("_nm"):
             return f"BFSサンプル{base_index % 100:02d}"
         return f"VAL{base_index % 1000}"
 
     def resolve_bfs_device_value(self, column: ColumnSpec, context: dict[str, str], index: int) -> str:
         """BFSサービスサマリ端末の未指定列を列名規則で補完する。"""
-        if column.name in context:
-            return context[column.name]
+        value = context_column_value(context, column)
+        if value is not None:
+            return value
         name = column.name
         base_index = int(context["base_index"])
         if column.data_type.startswith("DECIMAL"):
@@ -2357,7 +2533,7 @@ class CsvGenerator:
         if "date_and_time" in name:
             base = datetime(2025, 12, 21, 9, 0, 0) + timedelta(hours=base_index % 72)
             return base.strftime("%Y%m%d%H%M")
-        if name.endswith("_date"):
+        if name.endswith("_date") or name.endswith("_dt"):
             return (BASE_DATE + timedelta(days=base_index % 180)).strftime("%Y%m%d")
         if "month" in name:
             return f"2025{(base_index % 12) + 1:02d}"
@@ -2365,7 +2541,7 @@ class CsvGenerator:
             return "1"
         if "amount" in name or "price" in name or "cost" in name or "fee" in name or "capex" in name or "discount" in name:
             return "1"
-        if "code" in name or name.endswith("_id") or "number" in name:
+        if "code" in name or name.endswith("_id") or name.endswith("_cd") or name.endswith("_no") or "number" in name:
             return f"D{base_index % 100}"
         if "category" in name:
             return f"C{(base_index % 5) + 1}"
@@ -2375,21 +2551,22 @@ class CsvGenerator:
             return f"K{(base_index % 10) + 1}"
         if "service" in name:
             return f"S{(base_index % 10) + 1}"
-        if "name" in name:
+        if "name" in name or name.endswith("_nm"):
             return f"N{(base_index % 20) + 1}"
         return f"V{base_index % 1000}"
 
     def resolve_bfs_accessories_value(self, column: ColumnSpec, context: dict[str, str], index: int) -> str:
         """BFSサービスサマリ付属品の未指定列を列名規則で補完する。"""
-        if column.name in context:
-            return context[column.name]
+        value = context_column_value(context, column)
+        if value is not None:
+            return value
         base_index = int(context["base_index"])
         if column.data_type.startswith("DECIMAL"):
             return str(1 + (base_index % 50))
-        if "code" in column.name or "number" in column.name or column.name.endswith("_id"):
+        if "code" in column.name or "number" in column.name or column.name.endswith("_id") or column.name.endswith("_cd"):
             return self.values.code("AC", base_index + 1, 6)
         if "color" in column.name:
             return COLORS[base_index % len(COLORS)][0]
-        if "name" in column.name:
+        if "name" in column.name or column.name.endswith("_nm"):
             return f"付属品{(base_index % 20) + 1}"
         return f"VAL{base_index % 1000}"
