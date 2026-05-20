@@ -31,6 +31,7 @@ from csv_generator.io import (
     dated_output_name,
 )
 from csv_generator.progress import NullProgressReporter, TqdmProgressReporter
+from csv_generator.values import ValueFactory
 
 SCRIPT = ROOT / "generate_csv.py"
 TODAY = date.today()
@@ -62,6 +63,16 @@ def test_unit_tests_do_not_use_full_option() -> None:
     source = Path(__file__).read_text(encoding="utf-8")
     forbidden = "--" + "full"
     assert f'"{forbidden}"' not in source
+
+
+def test_company_code_uses_unified_ten_character_format() -> None:
+    """統一企業コード系の共通生成は `UC` + 8桁の10文字形式に揃える。"""
+    values = ValueFactory(seed=1)
+
+    codes = [values.company_code(number) for number in (1, 999, 10_000_000, 100_000_000)]
+
+    assert codes == ["UC00000001", "UC00000999", "UC10000000", "UC00000000"]
+    assert all(len(code) == 10 for code in codes)
 
 
 def run_script(
@@ -1355,6 +1366,29 @@ def test_compass_yes_no_columns_use_japanese_values(generated_default_dir: Path)
         assert values <= {"", "有", "無"}
 
 
+def test_compass_date_columns_follow_documented_formats(generated_default_dir: Path) -> None:
+    """COMPASS営業決裁の仕様に形式がある日付列は、全量・差分とも指定形式で出力する。"""
+    date_labels = ["実行予定日（提案/処理依頼予定日)", "契約開始予定日", "有効期限"]
+    datetime_labels = ["作成日", "最終更新日", "最終参照日", "最終閲覧日"]
+    date_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+    datetime_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI_diff.csv")
+    rows = all_rows + diff_rows
+
+    for label in date_labels:
+        index = header_index(header, "compass", label)
+        values = [row[index] for row in rows if row[index] != ""]
+        assert values
+        assert all(date_pattern.match(value) for value in values)
+
+    for label in datetime_labels:
+        index = header_index(header, "compass", label)
+        values = [row[index] for row in rows if row[index] != ""]
+        assert values
+        assert all(datetime_pattern.match(value) for value in values)
+
+
 def test_corp_diff_keys_include_insert_and_existing_updates(generated_default_dir: Path) -> None:
     """統一企業情報差分の業務キーは新規追加分と既存更新分を含む。"""
     header_1, all_rows_1 = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
@@ -1528,6 +1562,30 @@ def test_corp_all_files_split_rows_in_order(generated_seed7_dir: Path) -> None:
     code_index = header.index("uniq_corp_cd")
 
     assert rows_1[-1][code_index] < rows_2[0][code_index]
+
+
+def test_unified_company_codes_use_same_ten_character_format(generated_seed7_dir: Path) -> None:
+    """各CSVの統一企業コード系項目は `UC` + 8桁の10文字形式に揃える。"""
+    code_pattern = re.compile(r"^UC\d{8}$")
+    targets = [
+        ("DLV_OAI_COM_EIG_KESSAI.csv", "compass", ["統一企業コード"]),
+        ("DLV_OAI_COM_EIG_KESSAI_diff.csv", "compass", ["統一企業コード"]),
+        ("DLV_OAI_BFS_BFS_ENTRY_INFO.csv", "bfs", ["統一企業コード"]),
+        ("DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv", "bfs", ["統一企業コード"]),
+        ("DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv", "corp", ["統一企業コード", "親企業番号", "合併企業番号"]),
+        ("DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv", "corp", ["統一企業コード", "親企業番号", "合併企業番号"]),
+        ("DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv", "corp", ["統一企業コード", "親企業番号", "合併企業番号"]),
+    ]
+
+    for file_name, spec_key, labels in targets:
+        header, rows = read_csv(generated_seed7_dir, file_name)
+        assert rows
+        for label in labels:
+            index = header_index(header, spec_key, label)
+            values = [row[index] for row in rows if row[index] not in {"", "0"}]
+            assert values, f"{file_name}: {label}"
+            assert all(len(value) <= 10 for value in values)
+            assert all(code_pattern.match(value) for value in values)
 
 
 def test_corp_split_counts_put_extra_row_in_first_file() -> None:
