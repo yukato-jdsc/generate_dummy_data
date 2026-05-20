@@ -188,15 +188,23 @@ COMPASS_COLUMN_ALIASES = {
     "creditscreeningexecuted": "whether_credit_review",
     "legalpreauditexecuted": "whether_legal_pre_review_conducted",
     "resalesapprovalflag": "re_approval_draft_flag",
+    "executionschedule": "scheduled_execution_date",
+    "plannedstartdate": "contract_start_date",
     "preconsultationexists": "pre_confirmation",
     "constructionfeefree": "activation_installation_fee",
     "waiverexists": "exemption_deduction",
     "autorenewexists": "automatic_renewal",
     "approveddate": "approval_date",
+    "expirationdate": "expiration_date",
+    "createddate": "creation_date",
+    "lastmodifieddate": "last_updated_date",
+    "lastreferenceddate": "last_reference_date",
+    "lastvieweddate": "last_viewed_date",
     "revenue": "sales_yen",
     "remarks": "notes",
     "addchangecontent": "additions_changes",
     "approvalhistory": "approval_history",
+    "accountcode": "uniform_company_code",
 }
 COMPASS_YES_NO_COLUMNS = {
     "aggregatequotationexisted",
@@ -231,6 +239,7 @@ BFS_ENTRY_COLUMN_ALIASES = {
     "initial_rental_term_nm": "initial_rental_period",
     "entry_detail_status_nm": "estimated_status",
     "rental_used_date_month": "rental_used_period_months",
+    "corp_cd": "unified_company_code",
 }
 BFS_DEVICE_COLUMN_ALIASES = {
     "entry_no": "entry_number",
@@ -1130,7 +1139,7 @@ class CsvGenerator:
             "project_name": project_name,
             "project_id": self.values.code("0065H", index + 1, 10),
             "company_name": company_name,
-            "uniform_company_code": self.values.code("UC", index + 1, 8),
+            "uniform_company_code": self.values.company_code(index + 1),
             "tsr_rating": str(50 + (index % 40)),
             "number_of_lines": str(line_count),
             "contract_period_months": str(12 + (index % 24)),
@@ -1575,8 +1584,8 @@ class CsvGenerator:
         """統一企業情報1行ぶんの主要属性を組み立てる。"""
         base_index = self._corp_base_index(index, variant, diff_type)
         pref = PREFECTURES[base_index % len(PREFECTURES)]
-        company_code = self.values.code("UC", base_index + 1, 8)
-        parent_code = self.values.code("UC", ((base_index // 7) + 1), 8)
+        company_code = self.values.company_code(base_index + 1)
+        parent_code = self.values.company_code((base_index // 7) + 1)
         postal_code = self.values.postal_code(1_000_000 + base_index)
         address_3 = pref["common_name_kanji"]
         address_4 = f"{(base_index % 8) + 1}-{(base_index % 20) + 1}-{(base_index % 30) + 1}"
@@ -1601,7 +1610,7 @@ class CsvGenerator:
         secondary_name = CORP_SECONDARY_INDUSTRY_NAMES[(base_index + 1) % len(CORP_SECONDARY_INDUSTRY_NAMES)]
         dunsnumber = self.values.number_string(9, 690_000_000 + base_index)
         securities_code = self.values.number_string(4, 1000 + (base_index % 8000))
-        merged_company_code = self.values.code("UC", 5_000_000 + base_index + 1, 8) if invalid_reason == "10" else "0"
+        merged_company_code = self.values.company_code(5_000_000 + base_index + 1) if invalid_reason == "10" else "0"
         local_name = f"{company_name}日本法人"
         english_name = self.values.company_english_name(base_index)
         customer_note = f"法人番号:{self.values.number_string(13, 3_010_000_000_000 + base_index)}"
@@ -1940,7 +1949,7 @@ class CsvGenerator:
             "entry_update_date_and_time": f"{updated_at:%Y/%m/%d %H:%M:%S}",
             "sfa_number": self.values.code("SFA", base_index + 1, 9),
             "sfa_project_name": f"SFA{base_index % 10_000:04d}",
-            "unified_company_code": self.values.code("UC", base_index + 1, 8),
+            "unified_company_code": self.values.company_code(base_index + 1),
             "company_name": company_name,
             "sales_approval_subject": f"決裁{base_index % 10_000:04d}",
             "sales_approval_number": self.values.code("LS", base_index + 1, 9),

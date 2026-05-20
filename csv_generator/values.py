@@ -61,6 +61,10 @@ class ValueFactory:
         """接頭辞付きの業務コード風文字列を生成する。"""
         return f"{prefix}{self.number_string(width, number)}"
 
+    def company_code(self, number: int) -> str:
+        """統一企業コードを `UC` + 8桁の10文字形式で生成する。"""
+        return self.code("UC", number, 8)
+
     def katakana_word(self, index: int) -> str:
         """カタカナ語の固定語彙を巡回して返す。"""
         return self._cycled_word(KATAKANA_WORDS, index)
