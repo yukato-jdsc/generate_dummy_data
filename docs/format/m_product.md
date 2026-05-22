@@ -12,14 +12,14 @@
 
 | 項目名 | カラム名 | 型 | 桁 | 必須 | 説明 |
 | --- | --- | --- | --- | --- | --- |
-| 商品コード | `itm_cd` | VARCHAR | 40 | ⚪︎ | - |
-| 有効開始日 | `effective_dt_from` | VARCHAR | 16 | ⚪︎ | - |
-| 有効開始時間 | `effective_tm_from` | VARCHAR | 12 | ⚪︎ | - |
-| 有効終了日 | `effective_dt_to` | VARCHAR | 16 | ⚪︎ | - |
-| 有効終了時間 | `effective_tm_to` | VARCHAR | 12 | ⚪︎ | - |
+| 商品コード | `itm_cd` | VARCHAR | 40 | ○ | - |
+| 有効開始日 | `effective_dt_from` | VARCHAR | 16 | ○ | - |
+| 有効開始時間 | `effective_tm_from` | VARCHAR | 12 | ○ | - |
+| 有効終了日 | `effective_dt_to` | VARCHAR | 16 | ○ | - |
+| 有効終了時間 | `effective_tm_to` | VARCHAR | 12 | ○ | - |
 | 地域コード | `area_cd` | VARCHAR | 6 | － | - |
-| 商品正式名称 | `long_nm` | VARCHAR | 1200 | ⚪︎ | - |
-| 商品カナ名称 | `kana_nm` | VARCHAR | 1200 | ⚪︎ | - |
+| 商品正式名称 | `long_nm` | VARCHAR | 1200 | ○ | - |
+| 商品カナ名称 | `kana_nm` | VARCHAR | 1200 | ○ | - |
 | 商品英語名称 | `eng_nm` | VARCHAR | 1200 | － | - |
 | 商品略称 | `short_nm` | VARCHAR | 600 | － | - |
 | 商品細分類ID | `itm_lvl4_id` | VARCHAR | 20 | － | - |
@@ -56,8 +56,8 @@
 | 標準色正式名称 | `color_long_nm` | VARCHAR | 1200 | － | - |
 | 標準色カナ名称 | `color_kana_nm` | VARCHAR | 1200 | － | - |
 | 標準色英語名称 | `color_eng_nm` | VARCHAR | 1200 | － | - |
-| 機種コード | `model_cd` | VARCHAR | 40 | ⚪︎ | - |
-| 機種正式名称 | `model_long_nm` | VARCHAR | 1200 | ⚪︎ | - |
+| 機種コード | `model_cd` | VARCHAR | 40 | ○ | - |
+| 機種正式名称 | `model_long_nm` | VARCHAR | 1200 | ○ | - |
 | 手数料支払停止日 | `pay_stop_dt` | VARCHAR | 16 | － | - |
 | MVNO識別ID | `carrier_id` | DECIMAL | 3,0 | － | - |
 | MVNO識別略称2 | `short_nm2` | VARCHAR | 120 | － | - |
@@ -110,4 +110,4 @@
 | MODEL_ID | `model_id` | DECIMAL | 10,0 | － | - |
 | ISMIタイプ | `imsi_typ` | VARCHAR | 4 | － | - |
 | ISMIタイプ名称 | `imsi_typ_nm` | VARCHAR | 1200 | － | - |
-| 最新フラグ | `pickup_flg` | VARCHAR | 1 | ⚪︎ | 0 / 1 |
+| 最新フラグ | `pickup_flg` | VARCHAR | 1 | ○ | 0 / 1 |

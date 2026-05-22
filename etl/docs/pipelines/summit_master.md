@@ -11,7 +11,9 @@
 |---|---|---|
 | `extract_daily` | SFTP から日次ファイルを取得し、`tmp_diff_*` / `tmp_mars_*` にロード。 | [extract_daily.md](./extract_daily.md) |
 | `extract_monthly` | 月初だけ評価する placeholder。 |  |
-| `process_trn_bfs_entries` | BFS エントリ系 3 テーブルから `trn_bfs_entries` を作成。 | [sp_process_trn_bfs_entries.md](../stored_procedures/sp_process_trn_bfs_entries.md) |
+| `process_bfs_entry_informations` | BFS エントリ情報を App DB へ反映。 | [architecture.md](../architecture.md) |
+| `process_bfs_service_summary_devices` | BFS 端末サマリを App DB へ反映。 | [architecture.md](../architecture.md) |
+| `process_bfs_service_summary_accessories` | BFS 付属品サマリを App DB へ反映。 | [architecture.md](../architecture.md) |
 | `process_mst_service_options` | 端末サマリから `mst_service_options` を作成。 | [sp_process_mst_service_options.md](../stored_procedures/sp_process_mst_service_options.md) |
 | `process_mst_accessories` | 付属品サマリから `mst_accessories` を作成。 | [sp_process_mst_accessories.md](../stored_procedures/sp_process_mst_accessories.md) |
 | `process_mst_corp_customer_info` | 顧客 CSV と BFS エントリから `mst_corp_customer_info` を作成。 | [sp_process_corp_customer_info.md](../stored_procedures/sp_process_corp_customer_info.md) |
@@ -29,7 +31,9 @@ flowchart TB
     GATE{"is_first_day_of_the_month"}
     MONTHLY["extract_monthly<br/>(inactive placeholder)"]
 
-    BFS["process_trn_bfs_entries"]
+    ENTRY["process_bfs_entry_informations"]
+    DEV["process_bfs_service_summary_devices"]
+    ACCSUM["process_bfs_service_summary_accessories"]
     SVC["process_mst_service_options"]
     ACC["process_mst_accessories"]
     CORP["process_mst_corp_customer_info"]
@@ -41,7 +45,9 @@ flowchart TB
     START --> DAILY
     DAILY --> GATE
     GATE -. 月初のみ評価 .-> MONTHLY
-    GATE --> BFS
+    GATE --> ENTRY
+    GATE --> DEV
+    GATE --> ACCSUM
     GATE --> SVC
     GATE --> ACC
     GATE --> CORP
@@ -55,6 +61,7 @@ flowchart TB
 
 - `extract_monthly` は ADF テンプレート上では `Inactive`。現状は placeholder 扱い。
 - 各 `process_*` は `is_first_day_of_the_month` の `Completed` 後に起動。月初判定の真偽にかかわらず後続処理へ進む。
+- `process_*` 系のリトライ回数と間隔は [architecture.md](../architecture.md) の基本方針に従う。
 - 実行順の起点は `extract_daily`。
 
 ## 参照実装

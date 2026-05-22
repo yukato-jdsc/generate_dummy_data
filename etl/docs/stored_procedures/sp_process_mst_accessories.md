@@ -21,7 +21,7 @@
 ```mermaid
 flowchart TB
     SRC["tmp_diff_bfs_service_summary_accessories"]
-    FILTER["diff_type in (I, U)<br/>かつ product_code != ''"]
+    FILTER["product_code != ''"]
     DISTINCT["DISTINCT ON (product_code)"]
     NORMALIZE["manufacturer / product_name を整形<br/>product_name_normalized を作成"]
     OUT["sp_output_mst_accessories"]
@@ -36,7 +36,7 @@ flowchart TB
 
 | 出力列 / 段階 | ルール |
 |---|---|
-| 抽出対象 | `diff_type in ('I', 'U')` のみ |
+| 抽出対象 | `product_code` が空でない行のみ |
 | 主キー候補 | `product_code` が空の行は除外 |
 | 重複排除 | `DISTINCT ON (product_code)` |
 | `manufacturer`, `product_name` | `LEFT(..., 255)` で切り詰め |

@@ -23,14 +23,14 @@
 
 | 項目名 | カラム名 | 型 | 桁 | 必須 | 説明 |
 | --- | --- | --- | --- | --- | --- |
-| エントリ番号 | `entry_no` | VARCHAR | 54 | ⚪︎ | - |
-| サマリ番号 | `attach_sm_id` | VARCHAR | 36 | ⚪︎ | - |
-| シリアル付付属品 | `serial_attach_flg_nm` | VARCHAR | 2295 | ⚪︎ | シリアルなし で文言固定 |
-| 商品コード | `itm_cd` | VARCHAR | 45 | ⚪︎ | - |
-| メーカ | `brand_nm` | VARCHAR | 1800 | ⚪︎ | - |
-| 商品名 | `itm_nm` | VARCHAR | 900 | ⚪︎ | - |
+| エントリ番号 | `entry_no` | VARCHAR | 54 | ○ | - |
+| サマリ番号 | `attach_sm_id` | VARCHAR | 36 | ○ | - |
+| シリアル付付属品 | `serial_attach_flg_nm` | VARCHAR | 2295 | ○ | シリアルなし で文言固定 |
+| 商品コード | `itm_cd` | VARCHAR | 45 | ○ | - |
+| メーカ | `brand_nm` | VARCHAR | 1800 | ○ | - |
+| 商品名 | `itm_nm` | VARCHAR | 900 | ○ | - |
 | カラー1 | `color1` | VARCHAR | 900 | － | - |
-| 台数1 | `num1` | DECIMAL | 6 | ⚪︎ | - |
+| 台数1 | `num1` | DECIMAL | 6 | ○ | - |
 | カラー2 | `color2` | VARCHAR | 900 | － | - |
 | 台数2 | `num2` | DECIMAL | 6 | － | - |
 | カラー3 | `color3` | VARCHAR | 900 | － | - |
@@ -39,7 +39,7 @@
 | 台数4 | `num4` | DECIMAL | 6 | － | - |
 | カラー5 | `color5` | VARCHAR | 900 | － | - |
 | 台数5 | `num5` | DECIMAL | 6 | － | - |
-| 付属品標準価格 | `base_price` | DECIMAL | 10 | ⚪︎ | - |
+| 付属品標準価格 | `base_price` | DECIMAL | 10 | ○ | - |
 | 提供代金 | `offered_price` | DECIMAL | 10 | － | - |
 | 使用ポイント | `use_point` | DECIMAL | 6 | － | - |
 | 原価 | `trade_price` | DECIMAL | 11 | － | - |

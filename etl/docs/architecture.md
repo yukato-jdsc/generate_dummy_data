@@ -60,22 +60,26 @@ flowchart TB
 
     subgraph DAILY["extract_daily"]
         SETDATE["set target date"]
-        COPYDIFF["copy_* child pipelines<br/>tmp_diff_* へロード"]
-        COPYFULL["copy_* child pipelines<br/>tmp_mars_* へロード"]
-        SETDATE --> COPYDIFF
-        SETDATE --> COPYFULL
+        WRAPPER["copy_exec_wrapper<br/>Until で最大 3 回試行"]
+        COPYDIFF["copy_* pipelines<br/>tmp_diff_* へロード"]
+        COPYFULL["copy_* pipelines<br/>tmp_mars_* へロード"]
+        SETDATE --> WRAPPER
+        WRAPPER --> COPYDIFF
+        WRAPPER --> COPYFULL
     end
 
     GATE{"is_first_day_of_the_month"}
     MONTHLY["extract_monthly<br/>(inactive placeholder)"]
 
     subgraph DIFF["差分ファイル系 process_*"]
-        BFS["process_trn_bfs_entries<br/>sp_process_trn_bfs_entries<br/>-> upsert_delete_trn_bfs_entries"]
+        ENTRY["process_bfs_entry_informations<br/>-> upsert_trn_bfs_entry_informations"]
+        DEV["process_bfs_service_summary_devices<br/>-> upsert_trn_bfs_service_summary_devices"]
+        ACCSUM["process_bfs_service_summary_accessories<br/>-> upsert_trn_bfs_service_summary_accessories"]
         SVC["process_mst_service_options<br/>sp_process_mst_service_options<br/>-> filter_by_existing_three_columns"]
         ACC["process_mst_accessories<br/>sp_process_mst_accessories<br/>-> upsert_mst_accessories"]
         CORP["process_mst_corp_customer_info<br/>sp_process_corp_customer_info<br/>-> upsert_mst_corp_customer_info"]
         APPR["process_trn_approval_mobile<br/>sp_process_trn_approval_mobile<br/>-> upsert_delete_trn_approval_mobile"]
-        AGY["process_mst_agency<br/>upsert_delete_mst_agency"]
+        AGY["process_mst_agency<br/>-> upsert_mst_agency"]
     end
 
     subgraph FULL["全件ファイル系 process_*"]
@@ -86,7 +90,9 @@ flowchart TB
     COPYDIFF --> GATE
     COPYFULL --> GATE
     GATE -. 月初のみ評価 .-> MONTHLY
-    GATE --> BFS
+    GATE --> ENTRY
+    GATE --> DEV
+    GATE --> ACCSUM
     GATE --> SVC
     GATE --> ACC
     GATE --> CORP
@@ -96,18 +102,18 @@ flowchart TB
 ```
 
 - `process_mst_campaign` と `process_mst_product` は ADF 上の手順がほぼ同型のため、1 ノードにまとめている
-- `process_mst_agency` は Script を挟まず、Data Flow のみで `mst_agency` に反映
-- そのほかの差分ファイル系 `process_*` は、Script で ETL DB 側の加工を行ってから Data Flow で App DB に反映
+- `process_mst_agency` と BFS 3 系統は、Data Flow で App DB に反映する
 
 ## 基本方針
 
-- 旧 `pl_bfs_compass_etl` を廃止し、目的ごとにパイプラインを分割する
+- 目的ごとにパイプラインを分割する
 - `summit_master` が抽出と後続処理をオーケストレーションする
-- `extract_daily` は `targetDate` を決めて 8 本の `copy_*` 子パイプラインを並列起動する
+- `extract_daily` は `targetDate` を決めて 8 対象分の `copy_exec_wrapper` を並列起動する
 - `extract_monthly` は将来用の placeholder として残す
-- 差分ファイルは `tmp_diff_*` に、全件ファイルは `tmp_mars_*` に取り込む
-- 取込先テーブルの作成・初期化は `sp_init_tmp_*` に寄せ、DDL を git 管理する
-- `extract_daily.json` 内の旧 `extractSources` ForEach は残っているが `Inactive`
+- `copy_exec_wrapper` は `targetCSV` に応じて `copy_*` 系を呼び出し、Until Activity で初期化から Copy までをまとめて最大 3 回試行し、間隔は 30 秒とする
+- `process_*` 系の各Activityの再試行数は 2 回とし、再試行の間隔は 30 秒とする
+- 差分ファイルは `tmp_diff_*` に、全件ファイルは `tmp_*` に取り込む
+- 取込先テーブルの作成・初期化は `sp_init_tmp_*` で行い、DDL を git 管理する
 - 差分ファイルは `tmp_diff_*` を直接後続処理に渡す
 - 全件ファイルは `tmp_base_*` / `tmp_diff_*` を使って差分判定してから App DB に反映する
 - `sp_detect_diff` は比較対象カラム未指定時、主キー以外の全カラムを差分判定対象にできる
@@ -124,20 +130,20 @@ flowchart TB
 | 役割 | テーブル |
 |---|---|
 | 差分ファイル取込先 | `tmp_diff_*` |
-| 全件ファイル取込先 | `tmp_mars_*` |
+| 全件ファイル取込先 | `tmp_*` |
 | 全件比較用ベース | `tmp_base_*` |
 | 全件比較結果 | `tmp_diff_*` |
 | App DB 反映用中間出力 | `sp_output_*` |
 
 ## App DB反映先
 
-既存の process パイプラインから確認できる反映先は以下。
+現在の process パイプラインで使用する反映先は以下。
 
 | 取り込み元 | App DB反映先 |
 |---|---|
-| `b_hjn_bfs_mobile_entry` | `trn_bfs_entries` |
-| `b_hjn_bfs_mobile_service_summary_device` | `trn_bfs_entries`, `mst_service_options` |
-| `b_hjn_bfs_mobile_service_summary_accessory` | `trn_bfs_entries`, `mst_accessories` |
+| `b_hjn_bfs_mobile_entry` | `trn_bfs_entry_informations`, `mst_corp_customer_info` |
+| `b_hjn_bfs_mobile_service_summary_device` | `trn_bfs_service_summary_devices`, `mst_service_options` |
+| `b_hjn_bfs_mobile_service_summary_accessory` | `trn_bfs_service_summary_accessories`, `mst_accessories` |
 | `m_hjn_smt_unified_company` | `mst_corp_customer_info` |
 | `b_hjn_com_sales_approval` | `trn_approval_mobile` |
 | `m_agency_all` | `mst_agency` |
@@ -146,13 +152,15 @@ flowchart TB
 
 1. `summit_master` が `extract_daily` を実行する
 2. 毎月 1 日のみ `extract_monthly` を評価する
-3. `process_trn_bfs_entries`
-4. `process_mst_service_options`
-5. `process_mst_accessories`
-6. `process_mst_corp_customer_info`
-7. `process_trn_approval_mobile`
-8. `process_mst_agency`
-9. `process_mst_campaign`
-10. `process_mst_product`
+3. `process_bfs_entry_informations`
+4. `process_bfs_service_summary_devices`
+5. `process_bfs_service_summary_accessories`
+6. `process_mst_service_options`
+7. `process_mst_accessories`
+8. `process_mst_corp_customer_info`
+9. `process_trn_approval_mobile`
+10. `process_mst_agency`
+11. `process_mst_campaign`
+12. `process_mst_product`
 
-`process_*` は monthly 判定完了後に並列で実行する構成。
+`process_*` は monthly 判定完了後に並列で実行。

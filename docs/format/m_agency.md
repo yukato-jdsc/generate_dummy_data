@@ -14,9 +14,9 @@
 
 | 項目名 | カラム名 | 型 | 桁 | 必須 | 説明 |
 | --- | --- | --- | --- | --- | --- |
-| 取次店コード | `ordcstm_cd` | VARCHAR | 40 | ⚪︎ | - |
-| 有効開始日 | `effective_dt_from` | VARCHAR | 16 | ⚪︎ | - |
-| 有効終了日 | `effective_dt_to` | VARCHAR | 16 | ⚪︎ | - |
+| 取次店コード | `ordcstm_cd` | VARCHAR | 40 | ○ | - |
+| 有効開始日 | `effective_dt_from` | VARCHAR | 16 | ○ | - |
+| 有効終了日 | `effective_dt_to` | VARCHAR | 16 | ○ | - |
 | 共通店舗コード | `common_store_cd` | VARCHAR | 20 | － | - |
 | chkdigit共通店舗cd | `chkdegt_common_store_cd` | VARCHAR | 22 | － | - |
 | 物流取次店コード | `logi_ordcstm_cd` | VARCHAR | 40 | － | - |
@@ -32,10 +32,10 @@
 | 企業区分正式名称 | `company_cfc_long_nm` | VARCHAR | 1200 | － | - |
 | 店舗種別コード | `agency_type_cd` | DECIMAL | 10,0 | － | - |
 | 店舗登録設定ptn_cd | `store_reg_pattern_cd` | DECIMAL | 10,0 | － | - |
-| 取次店正式名称 | `long_nm` | VARCHAR | 1200 | ⚪︎ | - |
-| 取次店略称 | `short_nm` | VARCHAR | 240 | ⚪︎ | - |
-| 取次店カナ名称 | `kana_nm` | VARCHAR | 1200 | ⚪︎ | - |
-| 取次店英語名称 | `eng_nm` | VARCHAR | 1200 | ⚪︎ | - |
+| 取次店正式名称 | `long_nm` | VARCHAR | 1200 | ○ | - |
+| 取次店略称 | `short_nm` | VARCHAR | 240 | ○ | - |
+| 取次店カナ名称 | `kana_nm` | VARCHAR | 1200 | ○ | - |
+| 取次店英語名称 | `eng_nm` | VARCHAR | 1200 | ○ | - |
 | 登記簿登録法人名 | `registry_corporate_nm` | VARCHAR | 600 | － | - |
 | 地域コード | `area_cd` | VARCHAR | 20 | － | - |
 | 地域正式名称 | `area_cd_long_nm` | VARCHAR | 1200 | － | - |
@@ -193,4 +193,4 @@
 | 法人マイナンバー | `corporate_number` | VARCHAR | 26 | － | - |
 | 法人名称 | `corporate_nm` | VARCHAR | 1800 | － | - |
 | 管理責任者名 | `person_charge_nm` | VARCHAR | 600 | － | - |
-| 最新フラグ | `pickup_flg` | VARCHAR | 3 | ⚪︎ | - |
+| 最新フラグ | `pickup_flg` | VARCHAR | 3 | ○ | - |

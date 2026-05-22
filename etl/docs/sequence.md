@@ -20,13 +20,19 @@ sequenceDiagram
     ADF->>ADF: extract_daily 実行
     ADF->>ADF: targetDate を決定
 
-    par copy_* child pipelines
+    par copy_exec_wrapper
+        ADF->>ADF: targetCSV を指定して wrapper 実行
+        ADF->>ADF: Until Activity で成功または最大 3 回まで試行
+        ADF->>ADF: targetCSV に応じて copy_* を実行
         ADF->>ETL: CALL sp_init_tmp_*()
         ADF->>SRC: 対象 CSV.gz を取得
         SRC-->>ADF: 対象ファイル
         ADF->>ETL: tmp_diff_* / tmp_mars_* に Copy
         ETL-->>ADF: ロード完了
-    and copy_* child pipelines
+    and copy_exec_wrapper
+        ADF->>ADF: targetCSV を指定して wrapper 実行
+        ADF->>ADF: Until Activity で成功または最大 3 回まで試行
+        ADF->>ADF: targetCSV に応じて copy_* を実行
         ADF->>ETL: CALL sp_init_tmp_*()
         ADF->>SRC: 対象 CSV.gz を取得
         SRC-->>ADF: 対象ファイル
@@ -37,9 +43,8 @@ sequenceDiagram
     ADF->>ADF: 月初判定
 
     par diff系 process_*
-        ADF->>ETL: SP 実行
-        ETL-->>ADF: sp_output_* を生成
-        ADF->>APP: Data Flow で反映
+        ADF->>ETL: 必要な変換を実行
+        ADF->>APP: Data Flow で直接 upsert または業務変換して反映
     and full系 process_*
         ADF->>ETL: tmp_diff_* を初期化
         ADF->>ETL: sp_detect_diff 実行
@@ -54,7 +59,7 @@ sequenceDiagram
 
 ## 日次抽出
 
-`extract_daily` は `testTargetDate` か `TriggerTime` から `targetDate` を決め、8 本の `copy_*` 子パイプラインを並列に実行。
+`extract_daily` は `testTargetDate` か `TriggerTime` から `targetDate` を決め、8 対象分の `copy_exec_wrapper` を並列に実行する。`copy_exec_wrapper` は `targetCSV` に応じて対象の `copy_*` パイプラインを呼び出し、Activity 単位のリトライではなく Until Activity 内で初期化から Copy までをまとめて最大 3 回試行する。
 
 ```mermaid
 sequenceDiagram
@@ -65,20 +70,42 @@ sequenceDiagram
 
     ADF->>ADF: targetDate を yyyyMMdd で設定
 
-    par 各 copy_*
-        ADF->>ETL: CALL sp_init_tmp_*()
-        ETL-->>ADF: 対象テーブル作成 / TRUNCATE 完了
-        ADF->>SRC: {targetDate}_*.csv.gz を取得
-        SRC-->>ADF: gzip CSV
-        ADF->>ETL: tmp_diff_* / tmp_mars_* に Copy
-        ETL-->>ADF: ロード完了
-    and 各 copy_*
-        ADF->>ETL: CALL sp_init_tmp_*()
-        ETL-->>ADF: 対象テーブル作成 / TRUNCATE 完了
-        ADF->>SRC: {targetDate}_*.csv.gz を取得
-        SRC-->>ADF: gzip CSV
-        ADF->>ETL: tmp_diff_* / tmp_mars_* に Copy
-        ETL-->>ADF: ロード完了
+    par 各 copy_exec_wrapper
+        loop Until isSuccess == true or retryCount >= 3
+            ADF->>ADF: targetCSV に応じて Switch Target
+            ADF->>ADF: 対象の copy_* を ExecutePipeline で実行
+            ADF->>ETL: CALL sp_init_tmp_*()
+            ETL-->>ADF: 対象テーブル作成 / TRUNCATE 完了
+            ADF->>SRC: {targetDate}_*.csv.gz を取得
+            SRC-->>ADF: gzip CSV
+            ADF->>ETL: tmp_diff_* / tmp_mars_* に Copy
+            alt Copy 成功
+                ETL-->>ADF: ロード完了
+                ADF->>ADF: isSuccess = true
+            else Copy 失敗
+                ADF->>ADF: 30 秒待機
+                ADF->>ADF: tmpRetryCount = retryCount + 1
+                ADF->>ADF: retryCount = tmpRetryCount
+            end
+        end
+    and 各 copy_exec_wrapper
+        loop Until isSuccess == true or retryCount >= 3
+            ADF->>ADF: targetCSV に応じて Switch Target
+            ADF->>ADF: 対象の copy_* を ExecutePipeline で実行
+            ADF->>ETL: CALL sp_init_tmp_*()
+            ETL-->>ADF: 対象テーブル作成 / TRUNCATE 完了
+            ADF->>SRC: {targetDate}_*.csv.gz を取得
+            SRC-->>ADF: gzip CSV
+            ADF->>ETL: tmp_diff_* / tmp_mars_* に Copy
+            alt Copy 成功
+                ETL-->>ADF: ロード完了
+                ADF->>ADF: isSuccess = true
+            else Copy 失敗
+                ADF->>ADF: 30 秒待機
+                ADF->>ADF: tmpRetryCount = retryCount + 1
+                ADF->>ADF: retryCount = tmpRetryCount
+            end
+        end
     end
 ```
 
@@ -101,9 +128,8 @@ sequenceDiagram
     participant ETL as ETL DB
     participant APP as App DB
 
-    ADF->>ETL: process_* の Script / Data Flow を実行
-    ETL-->>ADF: sp_output_* または tmp_diff_* を返す
-    ADF->>APP: Upsert / Delete
+    ADF->>ETL: process_* を実行
+    ADF->>APP: Data Flow で直接 upsert または業務変換して反映
     APP-->>ADF: 更新完了
 ```
 
