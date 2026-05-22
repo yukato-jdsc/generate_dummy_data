@@ -86,4 +86,4 @@ def parse_max_length(length_text: str) -> int | None:
 
 def is_required_marker(required_text: str) -> bool:
     """列定義の必須セルが必須マークを含むかどうかを返す。"""
-    return "⚪" in required_text or "○" in required_text
+    return any(marker in required_text for marker in ("⚪", "○", "◯"))

@@ -782,11 +782,12 @@ def test_parse_section_columns_detects_required_marker() -> None:
         [
             "| 項目名 | カラム名 | 型 | 桁 | 必須 | 説明 |",
             "| エントリ番号 | `entry_number` | VARCHAR | 18 | ⚪︎ | - |",
+            "| 契約期間 | `contract_period` | DECIMAL | 18,0 | ◯ | - |",
             "| 回線数 | `number_of_lines` | DECIMAL | 10 | － | - |",
         ]
     )
 
-    assert [column.required for column in columns] == [True, False]
+    assert [column.required for column in columns] == [True, True, False]
 
 
 def test_load_specs_includes_bfs_entry_information() -> None:
@@ -1297,6 +1298,7 @@ def test_compass_required_columns_are_populated_in_all_and_diff(generated_defaul
     _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI_diff.csv")
 
     assert required_names[:6] == ["id", "name", "salesapprovaltitle", "status", "applicationdate", "paymenttype"]
+    assert {"contractperiod", "plannedstartdate"} <= set(required_names)
     required_indexes = [header.index(name) for name in required_names]
     for row in all_rows + diff_rows:
         assert all(row[index] != "" for index in required_indexes)
