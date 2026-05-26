@@ -1,0 +1,3 @@
+﻿"approval_id","company_id","company_name","operation_type","approval_title","name_pic","phone_number_pic","case_title","case_description","expected_contract_start_date","contract_period","auto_extension_flg","related_approval_ids","created_at","updated_at"
+"LS2968483","TK2458","No11初期企業A","追加新規","No11更新前モバイル決裁A","山田太郎","0312345678","No11更新前案件A","更新前概要A1更新前概要A2","2026-05-01","24","有","{LS1000001,LS1000002}","2026-04-27 10:00:00.000000","2026-04-27 10:00:00.000000"
+"LS2968484","TK2459","No11維持企業B","新規","No11維持モバイル決裁B","佐藤花子","0322223333","No11維持案件B","維持概要B1維持概要B2","2026-06-01","12","無","","2026-04-27 10:00:00.000000","2026-04-27 10:00:00.000000"
