@@ -10,3 +10,21 @@
 - [BFSエントリモバイル_サービスサマリ_端末](format/bfs_service_summary_device.md)
 - [BFSエントリモバイル_サービスサマリ_付属品](format/bfs_service_summary_accessories.md)
 - [COMPASS営業決裁](format/compass_sales_approval.md)
+
+
+# 全体ルール
+各出力データの特定のカラムはフォーマットを揃える必要がある。以下にそのカラムを定義する。
+
+## 統一企業コード
+- (DWH)統一企業情報 : `uniq_corp_cd`
+- (COMPASS)営業決裁 : `accountcode`
+- (BFSエントリ)モバイル_エントリ情報 : `corp_cd`
+
+## エントリ番号
+- (BFSエントリ)モバイル_エントリ情報 : `entry_no`
+- (BFSエントリ)モバイル_サービスサマリ_付属品 : `entry_no` 
+- (BFSエントリ)モバイル_サービスサマリ_端末 : `entry_no`
+
+## 決裁番号
+- (COMPASS)営業決裁 : `name`
+- (BFSエントリ)モバイル_エントリ情報 : `decide_no1`

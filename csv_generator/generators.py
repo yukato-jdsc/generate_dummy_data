@@ -240,6 +240,7 @@ BFS_ENTRY_COLUMN_ALIASES = {
     "entry_detail_status_nm": "estimated_status",
     "rental_used_date_month": "rental_used_period_months",
     "corp_cd": "unified_company_code",
+    "decide_no1": "approval_number_1",
 }
 BFS_DEVICE_COLUMN_ALIASES = {
     "entry_no": "entry_number",

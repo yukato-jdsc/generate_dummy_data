@@ -1590,6 +1590,23 @@ def test_unified_company_codes_use_same_ten_character_format(generated_seed7_dir
             assert all(code_pattern.match(value) for value in values)
 
 
+def test_approval_numbers_use_same_format(generated_seed7_dir: Path) -> None:
+    """各CSVの決裁番号系項目は `LS` + 7桁の9文字形式に揃える。"""
+    approval_pattern = re.compile(r"^LS\d{7}$")
+    targets = [
+        ("DLV_OAI_COM_EIG_KESSAI.csv", "name"),
+        ("DLV_OAI_COM_EIG_KESSAI_diff.csv", "name"),
+        ("DLV_OAI_BFS_BFS_ENTRY_INFO.csv", "decide_no1"),
+        ("DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv", "decide_no1"),
+    ]
+
+    for file_name, column_name in targets:
+        header, rows = read_csv(generated_seed7_dir, file_name)
+        values = [row[header.index(column_name)] for row in rows if row[header.index(column_name)] != ""]
+        assert values, f"{file_name}: {column_name}"
+        assert all(approval_pattern.match(value) for value in values)
+
+
 def test_corp_split_counts_put_extra_row_in_first_file() -> None:
     """奇数件のcorp全量は先頭ファイルを1件多くして分割する。"""
     specs = load_specs(ROOT / "docs/format")
