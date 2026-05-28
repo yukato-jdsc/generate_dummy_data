@@ -36,8 +36,12 @@ def _load_specs_from_directory(path: Path) -> dict[str, list[ColumnSpec]]:
 def parse_section_columns(lines: list[str]) -> list[ColumnSpec]:
     """Markdownの1セクションから、列定義を抽出する。"""
     columns: list[ColumnSpec] = []
+    header_parts: list[str] = []
     for line in lines:
-        parsed = _parse_column_row(line)
+        if _is_table_header(line):
+            header_parts = _split_markdown_row(line)
+            continue
+        parsed = _parse_column_row(line, header_parts)
         if parsed is None:
             continue
         item_label, name, data_type, max_length_text, required_text = parsed
@@ -53,21 +57,40 @@ def parse_section_columns(lines: list[str]) -> list[ColumnSpec]:
     return columns
 
 
-def _parse_column_row(line: str) -> tuple[str, str, str, str, str] | None:
+def _parse_column_row(line: str, header_parts: list[str] | None = None) -> tuple[str, str, str, str, str] | None:
     """列定義のMarkdown行を、表示名・列名・型・桁に分解する。"""
     if not line.startswith("|") or "`" not in line:
         return None
-    parts = [part.strip() for part in line.strip().strip("|").split("|")]
+    parts = _split_markdown_row(line)
     column_name_index = _find_column_name_index(parts)
     if column_name_index is None or column_name_index == 0 or column_name_index + 2 >= len(parts):
         return None
+    required_index = _find_required_index(header_parts or [], column_name_index)
     return (
         parts[column_name_index - 1],
         parts[column_name_index].strip("`"),
         parts[column_name_index + 1],
         parts[column_name_index + 2],
-        parts[column_name_index + 3] if column_name_index + 3 < len(parts) else "",
+        parts[required_index] if required_index is not None and required_index < len(parts) else "",
     )
+
+
+def _split_markdown_row(line: str) -> list[str]:
+    """Markdown表の1行をセルの配列へ変換する。"""
+    return [part.strip() for part in line.strip().strip("|").split("|")]
+
+
+def _is_table_header(line: str) -> bool:
+    """列定義テーブルのヘッダー行かどうかを返す。"""
+    return line.startswith("|") and "カラム名" in line and "`" not in line
+
+
+def _find_required_index(header_parts: list[str], column_name_index: int) -> int | None:
+    """ヘッダー行から必須セルの位置を特定する。"""
+    if "必須" in header_parts:
+        return header_parts.index("必須")
+    fallback_index = column_name_index + 3
+    return fallback_index
 
 
 def _find_column_name_index(parts: list[str]) -> int | None:

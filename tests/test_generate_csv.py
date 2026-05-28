@@ -780,10 +780,10 @@ def test_parse_section_columns_detects_required_marker() -> None:
     """列定義の必須マークを ColumnSpec に保持する。"""
     columns = parse_section_columns(
         [
-            "| 項目名 | カラム名 | 型 | 桁 | 必須 | 説明 |",
-            "| エントリ番号 | `entry_number` | VARCHAR | 18 | ⚪︎ | - |",
-            "| 契約期間 | `contract_period` | DECIMAL | 18,0 | ◯ | - |",
-            "| 回線数 | `number_of_lines` | DECIMAL | 10 | － | - |",
+            "| 項目名 | カラム名 | 型 | 桁 | PK | 必須 | 説明 |",
+            "| エントリ番号 | `entry_number` | VARCHAR | 18 | ○ | ⚪︎ | - |",
+            "| 契約期間 | `contract_period` | DECIMAL | 18,0 | － | ◯ | - |",
+            "| 回線数 | `number_of_lines` | DECIMAL | 10 | ○ | － | - |",
         ]
     )
 
