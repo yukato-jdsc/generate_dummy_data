@@ -5,22 +5,22 @@ from datetime import date
 
 DEFAULT_SEED = 42
 DEFAULT_COUNTS = {
-    "campaign": 50,
-    "campaign_diff": 50,
-    "agency_all": 1_000,
-    "agency_diff": 53,
-    "compass_all": 100,
-    "compass_diff": 20,
-    "product": 1_000,
-    "product_diff": 1_000,
-    "corp_all": 1_000,
-    "corp_diff": 100,
-    "bfs_all": 1_000,
-    "bfs_diff": 100,
-    "bfs_device_all": 1_000,
-    "bfs_device_diff": 100,
-    "bfs_accessories_all": 1_000,
-    "bfs_accessories_diff": 100,
+    "campaign": 5,
+    "campaign_diff": 5,
+    "agency_all": 100,
+    "agency_diff": 5,
+    "compass_all": 10,
+    "compass_diff": 2,
+    "product": 100,
+    "product_diff": 100,
+    "corp_all": 100,
+    "corp_diff": 10,
+    "bfs_all": 100,
+    "bfs_diff": 10,
+    "bfs_device_all": 100,
+    "bfs_device_diff": 10,
+    "bfs_accessories_all": 100,
+    "bfs_accessories_diff": 10,
 }
 FULL_COUNTS = {
     "campaign": 1_612,
@@ -77,6 +77,7 @@ class ColumnSpec:
     header_label: str
     data_type: str
     max_length: int | None
+    primary_key: bool = False
     required: bool = False
 
 

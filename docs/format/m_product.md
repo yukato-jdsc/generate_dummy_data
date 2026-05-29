@@ -13,8 +13,8 @@
 | 項目名 | カラム名 | 型 | 桁 | PK | 必須 | 説明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | 商品コード | `itm_cd` | VARCHAR | 40 | ○ | ○ | - |
-| 有効開始日 | `effective_dt_from` | VARCHAR | 16 | － | ○ | - |
-| 有効開始時間 | `effective_tm_from` | VARCHAR | 12 | － | ○ | - |
+| 有効開始日 | `effective_dt_from` | VARCHAR | 16 | ○ | ○ | - |
+| 有効開始時間 | `effective_tm_from` | VARCHAR | 12 | ○ | ○ | - |
 | 有効終了日 | `effective_dt_to` | VARCHAR | 16 | － | ○ | - |
 | 有効終了時間 | `effective_tm_to` | VARCHAR | 12 | － | ○ | - |
 | 地域コード | `area_cd` | VARCHAR | 6 | － | － | - |

@@ -76,23 +76,23 @@ uv run python generate_csv.py --headers-only
 
 | CSV | 既定件数 | `--full` 時 |
 | --- | ---: | ---: |
-| `DLV_OAI_MRS_CMPGN.csv` | 50 | 1,612 |
-| `DLV_OAI_MRS_CMPGN_diff.csv` | 50 | 1,612 |
-| `DLV_OAI_CST_ORDCSTM.csv` | 1,000 | 1,200,000 |
-| `DLV_OAI_CST_ORDCSTM_diff.csv` | 53 | 53 |
-| `DLV_OAI_COM_EIG_KESSAI.csv` | 100 | 160,000 |
-| `DLV_OAI_COM_EIG_KESSAI_diff.csv` | 20 | 2,000 |
-| `DLV_OAI_MRS_ITEM.csv` | 1,000 | 122,802 |
-| `DLV_OAI_MRS_ITEM_diff.csv` | 1,000 | 122,802 |
-| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv` | 500 | 1,500,000 |
-| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv` | 500 | 1,500,000 |
-| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv` | 100 | 46,021 |
-| `DLV_OAI_BFS_BFS_ENTRY_INFO.csv` | 1,000 | 2,000,000 |
-| `DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv` | 100 | 5,921 |
-| `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv` | 1,000 | 1,200,000 |
-| `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv` | 100 | 1,210 |
-| `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv` | 1,000 | 300,000 |
-| `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv` | 100 | 3,907 |
+| `DLV_OAI_MRS_CMPGN.csv` | 5 | 1,612 |
+| `DLV_OAI_MRS_CMPGN_diff.csv` | 5 | 1,612 |
+| `DLV_OAI_CST_ORDCSTM.csv` | 100 | 1,200,000 |
+| `DLV_OAI_CST_ORDCSTM_diff.csv` | 5 | 53 |
+| `DLV_OAI_COM_EIG_KESSAI.csv` | 10 | 160,000 |
+| `DLV_OAI_COM_EIG_KESSAI_diff.csv` | 2 | 2,000 |
+| `DLV_OAI_MRS_ITEM.csv` | 100 | 122,802 |
+| `DLV_OAI_MRS_ITEM_diff.csv` | 100 | 122,802 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv` | 50 | 1,500,000 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv` | 50 | 1,500,000 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv` | 10 | 46,021 |
+| `DLV_OAI_BFS_BFS_ENTRY_INFO.csv` | 100 | 2,000,000 |
+| `DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv` | 10 | 5,921 |
+| `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv` | 100 | 1,200,000 |
+| `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv` | 10 | 1,210 |
+| `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv` | 100 | 300,000 |
+| `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv` | 10 | 3,907 |
 
 ## Output
 

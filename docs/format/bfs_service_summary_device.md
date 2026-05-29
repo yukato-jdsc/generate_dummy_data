@@ -23,7 +23,7 @@
 | 項目名 | カラム名 | 型 | 桁 | PK | 必須 | 説明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | エントリ番号 | `entry_no` | VARCHAR | 18 | ○ | ○ | - |
-| サマリ番号 | `svcsm_id` | VARCHAR | 12 | － | ○ | - |
+| サマリ番号 | `svcsm_id` | VARCHAR | 12 | ○ | ○ | - |
 | 回線数 | `linenum` | DECIMAL | 10 | － | － | - |
 | レンタルセット端末 | `rental_set_terminal_flg_nm` | VARCHAR | 765 | － | － | 有 / 無 |
 | mnp | `mnp_flg_nm` | VARCHAR | 765 | － | － | 有 / 無 |

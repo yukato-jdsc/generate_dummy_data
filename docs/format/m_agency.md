@@ -15,7 +15,7 @@
 | 項目名 | カラム名 | 型 | 桁 | PK | 必須 | 説明 |
 | --- | --- | --- | --- | --- | --- | --- |
 | 取次店コード | `ordcstm_cd` | VARCHAR | 40 | ○ | ○ | - |
-| 有効開始日 | `effective_dt_from` | VARCHAR | 16 | － | ○ | - |
+| 有効開始日 | `effective_dt_from` | VARCHAR | 16 | ○ | ○ | - |
 | 有効終了日 | `effective_dt_to` | VARCHAR | 16 | － | ○ | - |
 | 共通店舗コード | `common_store_cd` | VARCHAR | 20 | － | － | - |
 | chkdigit共通店舗cd | `chkdegt_common_store_cd` | VARCHAR | 22 | － | － | - |

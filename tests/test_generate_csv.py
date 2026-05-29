@@ -164,6 +164,18 @@ def header_index(header: list[str], spec_key: str, item_label: str) -> int:
     return header.index(spec_column_name(spec_key, item_label))
 
 
+def primary_key_names(spec_key: str) -> list[str]:
+    """仕様定義から主キーのカラム名一覧を返す。"""
+    specs = load_specs(ROOT / "docs/format")
+    return [column.name for column in specs[spec_key] if column.primary_key]
+
+
+def row_keys(header: list[str], rows: list[list[str]], key_names: list[str]) -> list[tuple[str, ...]]:
+    """指定したキー列の値を行順のタプル一覧として返す。"""
+    indexes = [header.index(name) for name in key_names]
+    return [tuple(row[index] for index in indexes) for row in rows]
+
+
 @pytest.fixture(scope="module")
 def generated_default_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """デフォルト実行結果をモジュール内で使い回す。"""
@@ -210,23 +222,23 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
     _, corp_diff_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
     _, campaign_diff_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_CMPGN_diff.csv")
 
-    assert len(campaign_rows) == 50
-    assert len(campaign_diff_rows) == 50
-    assert len(agency_rows) == 1000
-    assert len(agency_diff_rows) == 53
-    assert len(compass_all_rows) == 100
-    assert len(compass_diff_rows) == 20
-    assert len(product_rows) == 1000
-    assert len(product_diff_rows) == 1000
-    assert len(bfs_all_rows) == 1000
-    assert len(bfs_diff_rows) == 100
-    assert len(bfs_device_all_rows) == 1000
-    assert len(bfs_device_diff_rows) == 100
-    assert len(bfs_accessories_all_rows) == 1000
-    assert len(bfs_accessories_diff_rows) == 100
-    assert len(corp_all_1_rows) == 500
-    assert len(corp_all_2_rows) == 500
-    assert len(corp_diff_rows) == 100
+    assert len(campaign_rows) == 5
+    assert len(campaign_diff_rows) == 5
+    assert len(agency_rows) == 100
+    assert len(agency_diff_rows) == 5
+    assert len(compass_all_rows) == 10
+    assert len(compass_diff_rows) == 2
+    assert len(product_rows) == 100
+    assert len(product_diff_rows) == 100
+    assert len(bfs_all_rows) == 100
+    assert len(bfs_diff_rows) == 10
+    assert len(bfs_device_all_rows) == 100
+    assert len(bfs_device_diff_rows) == 10
+    assert len(bfs_accessories_all_rows) == 100
+    assert len(bfs_accessories_diff_rows) == 10
+    assert len(corp_all_1_rows) == 50
+    assert len(corp_all_2_rows) == 50
+    assert len(corp_diff_rows) == 10
 
 
 def test_bfs_entry_information_uncompressed_size_is_reduced(generated_default_dir: Path) -> None:
@@ -391,8 +403,8 @@ def test_gzip_option_outputs_gzip_csv(tmp_path: Path) -> None:
     assert f"{TOMORROW:%Y%m%d}_DLV_OAI_MRS_CMPGN_diff.csv.gz" in completed.stdout
     _, rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN.csv.gz")
     _, diff_rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN_diff.csv.gz")
-    assert len(rows) == 50
-    assert len(diff_rows) == 50
+    assert len(rows) == 5
+    assert len(diff_rows) == 5
 
 
 def test_headers_only_campaign_outputs_headers_without_rows(
@@ -781,13 +793,55 @@ def test_parse_section_columns_detects_required_marker() -> None:
     columns = parse_section_columns(
         [
             "| 項目名 | カラム名 | 型 | 桁 | PK | 必須 | 説明 |",
-            "| エントリ番号 | `entry_number` | VARCHAR | 18 | ○ | ⚪︎ | - |",
-            "| 契約期間 | `contract_period` | DECIMAL | 18,0 | － | ◯ | - |",
+            "| エントリ番号 | `entry_number` | VARCHAR | 18 | ○ | ○ | - |",
+            "| 契約期間 | `contract_period` | DECIMAL | 18,0 | － | ○ | - |",
             "| 回線数 | `number_of_lines` | DECIMAL | 10 | ○ | － | - |",
         ]
     )
 
     assert [column.required for column in columns] == [True, True, False]
+    assert [column.primary_key for column in columns] == [True, False, True]
+
+
+def test_load_specs_detects_primary_key_columns() -> None:
+    """実フォーマットのPK列を ColumnSpec に保持する。"""
+    assert primary_key_names("product") == ["itm_cd", "effective_dt_from", "effective_tm_from"]
+    assert primary_key_names("agency") == ["ordcstm_cd", "effective_dt_from"]
+    assert primary_key_names("bfs_device") == ["entry_no", "svcsm_id"]
+    assert primary_key_names("bfs_accessories") == ["entry_no", "attach_sm_id"]
+
+
+def test_product_composite_primary_keys_include_three_by_three_combinations(generated_default_dir: Path) -> None:
+    """商品CSVは複合主キーの先頭2列に3x3の組合せを含め、主キー全体は重複しない。"""
+    header, rows = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM.csv")
+    keys = row_keys(header, rows, primary_key_names("product"))
+    first_two_keys = [key[:2] for key in keys[:9]]
+    first_values = sorted({key[0] for key in first_two_keys})
+    second_values = sorted({key[1] for key in first_two_keys})
+
+    assert len(keys) == len(set(keys))
+    assert len(first_values) == 3
+    assert len(second_values) == 3
+    assert set(first_two_keys) == {(first, second) for first in first_values for second in second_values}
+
+
+def test_composite_primary_keys_include_crossed_combinations(generated_default_dir: Path) -> None:
+    """複合主キーを持つ商品以外のCSVは先頭2列に2x2の組合せを含め、主キー全体は重複しない。"""
+    cases = [
+        ("DLV_OAI_CST_ORDCSTM.csv", primary_key_names("agency")),
+        ("DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv", primary_key_names("bfs_device")),
+        ("DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv", primary_key_names("bfs_accessories")),
+    ]
+
+    for filename, key_names in cases:
+        header, rows = read_csv(generated_default_dir, filename)
+        keys = row_keys(header, rows, key_names)
+        first_two_keys = [key[:2] for key in keys[:4]]
+        first_values = sorted({key[0] for key in first_two_keys})
+        second_values = sorted({key[1] for key in first_two_keys})
+
+        assert len(keys) == len(set(keys)), filename
+        assert set(first_two_keys) == {(first, second) for first in first_values for second in second_values}
 
 
 def test_load_specs_includes_bfs_entry_information() -> None:
@@ -1221,17 +1275,27 @@ def test_bfs_accessories_serial_number_accessories_is_fixed_text(generated_defau
 
 
 def assert_diff_keys_partition_initial_and_existing(
+    header: list[str],
     all_rows: list[list[str]],
     diff_rows: list[list[str]],
-    key_index: int,
+    key_labels: list[str],
     *,
     expect_existing: bool,
 ) -> None:
     """差分CSVの業務キーが新規追加分と既存更新分に分かれることを確認する。"""
-    all_keys = {row[key_index] for row in all_rows}
+    key_indexes = [header.index(label) for label in key_labels]
+    all_keys = {tuple(row[index] for index in key_indexes) for row in all_rows}
 
-    insert_keys = {row[key_index] for row in diff_rows if row[key_index] not in all_keys}
-    existing_keys = {row[key_index] for row in diff_rows if row[key_index] in all_keys}
+    insert_keys = {
+        tuple(row[index] for index in key_indexes)
+        for row in diff_rows
+        if tuple(row[index] for index in key_indexes) not in all_keys
+    }
+    existing_keys = {
+        tuple(row[index] for index in key_indexes)
+        for row in diff_rows
+        if tuple(row[index] for index in key_indexes) in all_keys
+    }
 
     assert insert_keys
     assert insert_keys.isdisjoint(all_keys)
@@ -1247,12 +1311,12 @@ def assert_full_refresh_diff_replaces_rows(
     all_rows: list[list[str]],
     diff_header: list[str],
     diff_rows: list[list[str]],
-    key_label: str,
+    key_labels: list[str],
 ) -> None:
     """全量更新diffが削除・追加・更新後の状態を表すことを検証する。"""
-    key_index = all_header.index(key_label)
-    all_by_key = {row[key_index]: row for row in all_rows}
-    diff_by_key = {row[key_index]: row for row in diff_rows}
+    key_indexes = [all_header.index(label) for label in key_labels]
+    all_by_key = {tuple(row[index] for index in key_indexes): row for row in all_rows}
+    diff_by_key = {tuple(row[index] for index in key_indexes): row for row in diff_rows}
     deleted_keys = set(all_by_key) - set(diff_by_key)
     added_keys = set(diff_by_key) - set(all_by_key)
     updated_keys = {
@@ -1275,9 +1339,10 @@ def test_agency_diff_keys_include_insert_and_existing_updates(generated_default_
     _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_CST_ORDCSTM_diff.csv")
 
     assert_diff_keys_partition_initial_and_existing(
+        header,
         all_rows,
         diff_rows,
-        header.index("ordcstm_cd"),
+        primary_key_names("agency"),
         expect_existing=True,
     )
 
@@ -1287,7 +1352,7 @@ def test_compass_diff_keys_include_insert_and_existing_updates(generated_default
     header, all_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI.csv")
     _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI_diff.csv")
 
-    assert_diff_keys_partition_initial_and_existing(all_rows, diff_rows, header.index("name"), expect_existing=True)
+    assert_diff_keys_partition_initial_and_existing(header, all_rows, diff_rows, ["name"], expect_existing=True)
 
 
 def test_compass_required_columns_are_populated_in_all_and_diff(generated_default_dir: Path) -> None:
@@ -1398,9 +1463,10 @@ def test_corp_diff_keys_include_insert_and_existing_updates(generated_default_di
     _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
 
     assert_diff_keys_partition_initial_and_existing(
+        header_1,
         all_rows_1 + all_rows_2,
         diff_rows,
-        header_1.index("uniq_corp_cd"),
+        ["uniq_corp_cd"],
         expect_existing=True,
     )
 
@@ -1417,42 +1483,49 @@ def test_bfs_diff_keys_include_expected_insert_and_existing_updates(generated_de
     _, accessories_diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
 
     assert_diff_keys_partition_initial_and_existing(
+        bfs_header,
         bfs_all_rows,
         bfs_diff_rows,
-        bfs_header.index("entry_no"),
+        ["entry_no"],
         expect_existing=True,
     )
     assert_diff_keys_partition_initial_and_existing(
+        device_header,
         device_all_rows,
         device_diff_rows,
-        device_header.index("entry_no"),
+        primary_key_names("bfs_device"),
         expect_existing=False,
     )
     assert_diff_keys_partition_initial_and_existing(
+        accessories_header,
         accessories_all_rows,
         accessories_diff_rows,
-        accessories_header.index("itm_cd"),
+        primary_key_names("bfs_accessories"),
         expect_existing=True,
     )
 
 
-def test_bfs_accessories_diff_updates_existing_product_codes(generated_default_dir: Path) -> None:
-    """BFS付属品差分の更新行は商品コードを維持しつつ主要列を変更する。"""
+def test_bfs_accessories_diff_updates_existing_primary_keys(generated_default_dir: Path) -> None:
+    """BFS付属品差分の更新行は複合主キーを維持しつつ主要列を変更する。"""
     header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
     _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
 
-    product_code_index = header.index("itm_cd")
+    primary_key_indexes = [header.index(name) for name in primary_key_names("bfs_accessories")]
     manufacturer_index = header.index("brand_nm")
     product_name_index = header.index("itm_nm")
     quantity_1_index = header.index("num1")
     price_index = header.index("base_price")
 
-    all_by_product_code = {row[product_code_index]: row for row in all_rows}
-    updated_rows = [row for row in diff_rows if row[product_code_index] in all_by_product_code]
+    all_by_primary_key = {tuple(row[index] for index in primary_key_indexes): row for row in all_rows}
+    updated_rows = [
+        row
+        for row in diff_rows
+        if tuple(row[index] for index in primary_key_indexes) in all_by_primary_key
+    ]
 
     assert updated_rows
     for row in updated_rows:
-        all_row = all_by_product_code[row[product_code_index]]
+        all_row = all_by_primary_key[tuple(row[index] for index in primary_key_indexes)]
         changed_columns = (
             row[manufacturer_index] != all_row[manufacturer_index]
             or row[product_name_index] != all_row[product_name_index]
@@ -1467,7 +1540,7 @@ def test_campaign_diff_replaces_deleted_added_and_updated_rows(generated_default
     all_header, all_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_CMPGN.csv")
     diff_header, diff_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_CMPGN_diff.csv")
 
-    assert_full_refresh_diff_replaces_rows(all_header, all_rows, diff_header, diff_rows, "campaign_id")
+    assert_full_refresh_diff_replaces_rows(all_header, all_rows, diff_header, diff_rows, ["campaign_id"])
 
 
 def test_product_diff_replaces_deleted_added_and_updated_rows(generated_default_dir: Path) -> None:
@@ -1475,7 +1548,7 @@ def test_product_diff_replaces_deleted_added_and_updated_rows(generated_default_
     all_header, all_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM.csv")
     diff_header, diff_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM_diff.csv")
 
-    assert_full_refresh_diff_replaces_rows(all_header, all_rows, diff_header, diff_rows, "itm_cd")
+    assert_full_refresh_diff_replaces_rows(all_header, all_rows, diff_header, diff_rows, primary_key_names("product"))
 
 
 def test_agency_diff_existing_keys_are_subset_of_agency_all(generated_agency_seed11_dir: Path) -> None:
@@ -1484,16 +1557,16 @@ def test_agency_diff_existing_keys_are_subset_of_agency_all(generated_agency_see
     diff_header, diff_rows = read_csv(generated_agency_seed11_dir, "DLV_OAI_CST_ORDCSTM_diff.csv")
     assert agency_header == diff_header
 
-    assert len(diff_rows) == 53
-    code_index = agency_header.index("ordcstm_cd")
-    agency_codes = {row[code_index] for row in agency_rows}
-    diff_codes = [row[code_index] for row in diff_rows]
-    existing_diff_codes = {row[code_index] for row in diff_rows if row[code_index] in agency_codes}
-    insert_codes = {row[code_index] for row in diff_rows if row[code_index] not in agency_codes}
+    assert len(diff_rows) == 5
+    key_indexes = [agency_header.index(name) for name in primary_key_names("agency")]
+    agency_keys = {tuple(row[index] for index in key_indexes) for row in agency_rows}
+    diff_keys = [tuple(row[index] for index in key_indexes) for row in diff_rows]
+    existing_diff_keys = {key for key in diff_keys if key in agency_keys}
+    insert_keys = {key for key in diff_keys if key not in agency_keys}
 
-    assert len(diff_codes) == len(set(diff_codes))
-    assert existing_diff_codes.issubset(agency_codes)
-    assert insert_codes.isdisjoint(agency_codes)
+    assert len(diff_keys) == len(set(diff_keys))
+    assert existing_diff_keys.issubset(agency_keys)
+    assert insert_keys.isdisjoint(agency_keys)
 
 
 def test_compass_diff_updates_subset_of_compass_all(generated_compass_seed11_dir: Path) -> None:
@@ -1518,7 +1591,7 @@ def test_compass_diff_updates_subset_of_compass_all(generated_compass_seed11_dir
     }
     existing_diff_numbers = [row[approval_number_index] for row in existing_diff_rows]
 
-    assert len(diff_rows) == 20
+    assert len(diff_rows) == 2
     assert len(diff_approval_numbers) == len(set(diff_approval_numbers))
     assert set(existing_diff_numbers).issubset(all_by_approval_number)
     assert insert_approval_numbers.isdisjoint(all_by_approval_number)

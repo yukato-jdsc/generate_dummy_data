@@ -695,12 +695,13 @@ class CsvGenerator:
 
     def _agency_base_context(self, index: int) -> dict[str, str]:
         """取次店の識別子・有効期間などの基本属性を生成する。"""
-        start = BASE_DATE - timedelta(days=index % 720)
+        group_index, agent_slot, effective_slot = self._composite_pair_slots(index)
+        start = BASE_DATE - timedelta(days=effective_slot)
         end = start + timedelta(days=365 if index % 9 else 180)
         primary_index = (index // 10) + 1
         aggregated_index = (index // 5) + 1
         return {
-            "agent_code": self.values.code("AG", index + 1, 10),
+            "agent_code": self.values.code("AG", group_index * 2 + agent_slot + 1, 10),
             "valid_start_date": ymd(start),
             "valid_end_date": ymd(end),
             "common_store_code": self.values.code("ST", index + 1, 8),
@@ -1006,7 +1007,22 @@ class CsvGenerator:
         if self._is_insert_diff_type(diff_type):
             insert_index = self.counts["agency_all"] + diff_index
             return self._agency_row(self.agency_context(insert_index), insert_index, diff_type=diff_type)
-        return self._agency_row(context, index, diff_type=diff_type)
+        return self._agency_row(self._agency_diff_context(context, index), index, diff_type=diff_type)
+
+    def _agency_diff_context(self, base_context: dict[str, str], index: int) -> dict[str, str]:
+        """取次店の複合主キーを維持した更新後の文脈を組み立てる。"""
+        context = dict(base_context)
+        end = BASE_DATE + timedelta(days=365 + (index % 120))
+        context.update(
+            {
+                "valid_end_date": ymd(end),
+                "effective_dt_to": ymd(end),
+                "long_nm": f"{context.get('long_nm', '取次店')} 改定",
+                "short_nm": clip(f"{context.get('short_nm', '代理店')}改", 1200),
+                "tel_no": self.values.phone("03", 80_000_000 + index),
+            }
+        )
+        return context
 
     def _compass_row(self, context: dict[str, str], index: int, diff_type: str | None = None) -> list[str]:
         """営業決裁文脈を列順の行へ変換する。"""
@@ -1346,12 +1362,13 @@ class CsvGenerator:
         """商品1行ぶんの主要属性をテンプレートから組み立てる。"""
         template = PRODUCT_TEMPLATES[index % len(PRODUCT_TEMPLATES)]
         color_name, color_abbr = COLORS[index % len(COLORS)]
-        start = BASE_DATE - timedelta(days=index % 400)
+        group_index, product_slot, effective_slot = self._product_composite_slots(index)
+        start = BASE_DATE - timedelta(days=effective_slot)
         end = start + timedelta(days=730)
         context = {
-            "product_code": self.values.code("PRD", index + 1, 10),
+            "product_code": self.values.code("PRD", group_index * 3 + product_slot + 1, 10),
             "validity_start_date": ymd(start),
-            "validity_start_time": hms(9, index % 60),
+            "validity_start_time": hms(9, effective_slot),
             "validity_end_date": ymd(end),
             "validity_end_time": hms(18, index % 60),
             "area_code": PREFECTURES[index % len(PREFECTURES)]["area_code"],
@@ -1454,14 +1471,12 @@ class CsvGenerator:
     def _product_diff_context(self, index: int) -> dict[str, str]:
         """既存商品コードを維持した更新後の商品文脈を組み立てる。"""
         context = self._product_context(index)
-        start = BASE_DATE + timedelta(days=index % 60 + 1)
-        end = start + timedelta(days=760)
+        end = BASE_DATE + timedelta(days=760 + (index % 60))
         base_name = context["product_official_name"]
         context.update(
             {
-                "validity_start_date": ymd(start),
                 "validity_end_date": ymd(end),
-                "sales_start_date": ymd(start + timedelta(days=10)),
+                "sales_start_date": ymd(BASE_DATE + timedelta(days=index % 60 + 10)),
                 "sales_end_date": ymd(end - timedelta(days=20)),
                 "product_official_name": f"{base_name} 改定",
                 "product_name_in_english": f"{context['product_name_in_english']} Revised",
@@ -1852,6 +1867,21 @@ class CsvGenerator:
     def _bfs_sequence_number(self, index: int) -> str:
         """BFSエントリ番号用に桁あふれで重複しない連番文字列を返す。"""
         return f"{index + 1:08d}"
+
+    def _composite_pair_slots(self, index: int) -> tuple[int, int, int]:
+        """2列複合キー用に、2x2組合せのグループ番号と各キーのスロットを返す。"""
+        return index // 4, (index // 2) % 2, index % 2
+
+    def _product_composite_slots(self, index: int) -> tuple[int, int, int]:
+        """商品複合キー用に、商品コードと有効開始値の3x3組合せスロットを返す。"""
+        return index // 9, (index // 3) % 3, index % 3
+
+    def _bfs_summary_pair_context(self, index: int) -> dict[str, str]:
+        """BFSサマリの `entry_no, summary_no` が2x2組合せになる文脈を返す。"""
+        group_index, entry_slot, summary_slot = self._composite_pair_slots(index)
+        entry_number = f"EN{BASE_DATE:%Y%m%d}{self._bfs_sequence_number(group_index * 2 + entry_slot)}"
+        summary_number = f"SM{self._bfs_sequence_number(group_index * 2 + summary_slot)}"
+        return {"entry_number": entry_number, "summary_number": summary_number}
 
     def _bfs_service_context(self, index: int, variant: str, diff_type: str | None = None) -> dict[str, str]:
         """BFSエントリとサービスサマリで共有する文脈を組み立てる。"""
@@ -2311,9 +2341,9 @@ class CsvGenerator:
         base_index = int(context["base_index"])
         value_index = self._bfs_accessories_value_index(context)
         summary_number = f"{context['summary_number']}001"
-        product_code = self.values.code("ACC", base_index + 1, 3)
+        product_code = context.get("accessory_product_code", self.values.code("ACC", base_index + 1, 3))
         if context["variant"] == "diff" and context.get("diff_type") == INITIAL_DIFF_TYPE:
-            product_code = self.values.code("ACI", base_index + 1, 4)
+            product_code = context.get("accessory_product_code", self.values.code("ACI", base_index + 1, 4))
         return apply_column_aliases({
             "summary_number": summary_number,
             "serial_number_accessories": "シリアルなし",
@@ -2347,6 +2377,7 @@ class CsvGenerator:
         device_context = dict(context)
         device_context["diff_type"] = diff_type or ""
         base_index = int(context["base_index"])
+        device_context.update(self._bfs_summary_pair_context(base_index))
         device_context.update(self._bfs_device_summary_context(device_context))
         self._populate_bfs_device_option_context(device_context, base_index)
         self._populate_bfs_device_relative_context(device_context, base_index)
@@ -2434,6 +2465,7 @@ class CsvGenerator:
         """BFSサービスサマリ付属品の1行を生成する。"""
         accessories_context = dict(context)
         accessories_context["diff_type"] = diff_type or ""
+        accessories_context.update(self._bfs_summary_pair_context(int(context["base_index"])))
         accessories_context.update(self._bfs_accessories_summary_context(accessories_context))
         apply_column_aliases(accessories_context, BFS_ACCESSORIES_COLUMN_ALIASES)
         row = self._resolved_bfs_accessories_row(accessories_context, index)
