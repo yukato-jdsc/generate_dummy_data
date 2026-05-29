@@ -85,6 +85,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--full", action="store_true")
     parser.add_argument("--gzip", action="store_true")
     parser.add_argument("--headers-only", action="store_true")
+    parser.add_argument("--duplicate-primary-keys", action="store_true")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--jobs", default="auto")
     return parser.parse_args()
@@ -182,6 +183,7 @@ def build_jobs(
     counts: dict[str, int],
     compress: bool,
     output_date: date,
+    duplicate_primary_keys: bool = False,
 ) -> list[CsvWriteJob]:
     """target 指定をファイル単位の実行ジョブへ展開する。"""
     jobs: list[CsvWriteJob] = []
@@ -192,6 +194,7 @@ def build_jobs(
         "counts": counts,
         "compress": compress,
         "output_date": output_date,
+        "duplicate_primary_keys": duplicate_primary_keys,
     }
     for target in targets:
         if target == "campaign":
@@ -379,7 +382,13 @@ def main() -> None:
         write_headers_only_csvs(output_dir, specs, targets, compress, output_date)
         return
 
-    generator = CsvGenerator(specs=specs, seed=args.seed, counts=counts, output_date=output_date)
+    generator = CsvGenerator(
+        specs=specs,
+        seed=args.seed,
+        counts=counts,
+        output_date=output_date,
+        duplicate_primary_keys=args.duplicate_primary_keys,
+    )
     if requested_jobs == 1:
         for target in targets:
             if target == "campaign":
@@ -396,6 +405,15 @@ def main() -> None:
                 _write_bfs_csvs(output_dir, generator, compress)
         return
 
-    jobs = build_jobs(targets, output_dir, format_dir, args.seed, counts, compress, output_date)
+    jobs = build_jobs(
+        targets,
+        output_dir,
+        format_dir,
+        args.seed,
+        counts,
+        compress,
+        output_date,
+        duplicate_primary_keys=args.duplicate_primary_keys,
+    )
     announce_outputs(job_output_paths(jobs, output_dir))
     execute_jobs(jobs, resolve_job_count(requested_jobs, len(jobs), args.full))

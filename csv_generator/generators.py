@@ -339,6 +339,7 @@ class CsvWriteJob:
     counts: dict[str, int]
     compress: bool
     output_date: date
+    duplicate_primary_keys: bool = False
     output_key: str | None = None
     spec_key: str | None = None
     variant: str | None = None
@@ -362,7 +363,13 @@ def run_csv_write_job(
     if progress_factory is None and progress_queue is not None:
         progress_factory = _build_queue_progress_factory(progress_queue)
     specs = load_specs(Path(job.format_dir))
-    generator = CsvGenerator(specs=specs, seed=job.seed, counts=job.counts, output_date=job.output_date)
+    generator = CsvGenerator(
+        specs=specs,
+        seed=job.seed,
+        counts=job.counts,
+        output_date=job.output_date,
+        duplicate_primary_keys=job.duplicate_primary_keys,
+    )
     output_dir = Path(job.output_dir)
     if job.job_type == "campaign":
         generator.write_campaign_files(output_dir, compress=job.compress, progress_factory=progress_factory)
@@ -407,11 +414,13 @@ class CsvGenerator:
         seed: int,
         counts: dict[str, int],
         output_date: date | None = None,
+        duplicate_primary_keys: bool = False,
     ) -> None:
         self.specs = specs
         self.seed = seed
         self.counts = counts
         self.output_date = output_date or date.today()
+        self.duplicate_primary_keys = duplicate_primary_keys
         self.values = ValueFactory(seed)
         self.campaign_diff_change_size = self._full_refresh_diff_change_size("campaign", "campaign_diff")
         self.product_diff_change_size = self._full_refresh_diff_change_size("product", "product_diff")
@@ -428,6 +437,7 @@ class CsvGenerator:
     def _write_rows(
         self,
         path: Path,
+        spec_key: str,
         headers: list[str],
         count: int,
         row_factory: Callable[[int], list[str]],
@@ -439,14 +449,29 @@ class CsvGenerator:
             if progress_reporter is not None:
                 progress_reporter.start()
             writer.writerow(headers)
+            first_row: list[str] | None = None
             for index in range(count):
-                writer.writerow(row_factory(index))
+                row = row_factory(index)
+                if first_row is None:
+                    first_row = row
+                writer.writerow(row)
                 if progress_reporter is not None:
                     progress_reporter.advance(index + 1)
+            duplicate_row = self._duplicate_primary_key_row(spec_key, first_row)
+            if duplicate_row is not None:
+                writer.writerow(duplicate_row)
+                if progress_reporter is not None:
+                    progress_reporter.advance(count + 1)
         finally:
             if progress_reporter is not None:
                 progress_reporter.finish()
             handle.close()
+
+    def _progress_row_count(self, spec_key: str, row_count: int) -> int:
+        """主キー重複行を出力する場合の進捗用総行数を返す。"""
+        if row_count > 0 and self._can_duplicate_primary_key(spec_key):
+            return row_count + 1
+        return row_count
 
     def _build_progress_reporter(
         self,
@@ -458,6 +483,60 @@ class CsvGenerator:
         if progress_factory is None:
             return None
         return progress_factory(path, row_count)
+
+    def _can_duplicate_primary_key(self, spec_key: str) -> bool:
+        """指定仕様で主キー重複行を生成できるかどうかを返す。"""
+        if not self.duplicate_primary_keys:
+            return False
+        columns = self.specs[spec_key]
+        return any(column.primary_key for column in columns) and any(not column.primary_key for column in columns)
+
+    def _duplicate_primary_key_row(self, spec_key: str, row: list[str] | None) -> list[str] | None:
+        """先頭行を元に、主キーだけ同じで非主キー列を変えた行を返す。"""
+        if row is None or not self._can_duplicate_primary_key(spec_key):
+            return None
+        duplicate = list(row)
+        for index, column in enumerate(self.specs[spec_key]):
+            if column.primary_key:
+                continue
+            duplicate[index] = self._duplicate_non_key_value(column, duplicate[index])
+            return duplicate
+        return None
+
+    def _duplicate_non_key_value(self, column: ColumnSpec, current_value: str) -> str:
+        """重複PK行の非キー列へ入れる、元値と異なる値を返す。"""
+        candidates = self._duplicate_value_candidates(column, current_value)
+        for candidate in candidates:
+            value = clip(candidate, column.max_length)
+            if value and value != current_value:
+                return value
+        return ""
+
+    def _duplicate_value_candidates(self, column: ColumnSpec, current_value: str) -> list[str]:
+        """列の型や名前に合わせた重複行用の候補値を返す。"""
+        name = column.name
+        if column.data_type.startswith("DECIMAL"):
+            return ["9", "8", "1"]
+        if "date_and_time" in name:
+            return ["2026/04/30 12:34:56", "2026-04-30 12:34:56.000"]
+        if name.endswith("_date") or name.endswith("_dt") or "日" in column.header_label:
+            if "-" in current_value:
+                return ["2026-04-30", "2026-05-01"]
+            if "/" in current_value:
+                return ["2026/04/30", "2026/05/01"]
+            return ["20260430", "20260501"]
+        if name.endswith("_time") or name.endswith("_tm"):
+            return ["12:34:56", "123456"]
+        if current_value in {"TRUE", "FALSE"}:
+            return ["FALSE", "TRUE"]
+        return ["DUPLICATE_TEST", "DUP1", "X"]
+
+    def _rows_with_duplicate_primary_key(self, spec_key: str, rows: list[list[str]]) -> list[list[str]]:
+        """必要に応じて、行一覧の末尾へ主キー重複行を1件追加する。"""
+        duplicate_row = self._duplicate_primary_key_row(spec_key, rows[0] if rows else None)
+        if duplicate_row is None:
+            return rows
+        return [*rows, duplicate_row]
 
     def _output_path(self, output_dir: Path, output_key: str, compress: bool) -> Path:
         """出力キーから日付プレフィックス付き実ファイルパスを返す。"""
@@ -481,21 +560,27 @@ class CsvGenerator:
         path = self._output_path(output_dir, "campaign", compress)
         self._write_rows(
             path,
+            "campaign",
             self._output_headers("campaign", "campaign"),
             self.counts["campaign"],
             self._campaign_row,
-            progress_reporter=self._build_progress_reporter(progress_factory, path, self.counts["campaign"]),
+            progress_reporter=self._build_progress_reporter(
+                progress_factory,
+                path,
+                self._progress_row_count("campaign", self.counts["campaign"]),
+            ),
         )
         diff_path = self._output_path(output_dir, "campaign_diff", compress)
         self._write_rows(
             diff_path,
+            "campaign",
             self._output_headers("campaign", "campaign_diff"),
             self.counts["campaign_diff"],
             self._campaign_diff_row,
             progress_reporter=self._build_progress_reporter(
                 progress_factory,
                 diff_path,
-                self.counts["campaign_diff"],
+                self._progress_row_count("campaign", self.counts["campaign_diff"]),
             ),
         )
 
@@ -564,19 +649,32 @@ class CsvGenerator:
         sampled: list[tuple[int, dict[str, str]]] = []
         sampler = random.Random(self.seed)
         all_path = self._output_path(output_dir, "agency_all", compress)
-        all_progress = self._build_progress_reporter(progress_factory, all_path, self.counts["agency_all"])
+        all_progress = self._build_progress_reporter(
+            progress_factory,
+            all_path,
+            self._progress_row_count("agency", self.counts["agency_all"]),
+        )
         all_diff_types = build_initial_diff_types("agency_all", self.counts["agency_all"])
         handle, writer = open_csv_writer(all_path)
         try:
             if all_progress is not None:
                 all_progress.start()
             writer.writerow(all_headers)
+            first_row: list[str] | None = None
             for index in range(self.counts["agency_all"]):
                 context = self.agency_context(index)
-                writer.writerow(self._agency_row(context, index, diff_type=all_diff_types[index]))
+                row = self._agency_row(context, index, diff_type=all_diff_types[index])
+                if first_row is None:
+                    first_row = row
+                writer.writerow(row)
                 if all_progress is not None:
                     all_progress.advance(index + 1)
                 self._update_reservoir(sampled, (index, context), index, sampler)
+            duplicate_row = self._duplicate_primary_key_row("agency", first_row)
+            if duplicate_row is not None:
+                writer.writerow(duplicate_row)
+                if all_progress is not None:
+                    all_progress.advance(self.counts["agency_all"] + 1)
         finally:
             if all_progress is not None:
                 all_progress.finish()
@@ -587,6 +685,7 @@ class CsvGenerator:
             self._agency_diff_row(context, index, diff_type=diff_types[row_index], diff_index=row_index)
             for row_index, (index, context) in enumerate(sampled)
         ]
+        diff_rows = self._rows_with_duplicate_primary_key("agency", diff_rows)
         diff_path = self._output_path(output_dir, "agency_diff", compress)
         diff_progress = self._build_progress_reporter(progress_factory, diff_path, len(diff_rows))
         write_csv(diff_path, diff_headers, diff_rows, progress_reporter=diff_progress)
@@ -611,19 +710,32 @@ class CsvGenerator:
         sampled: list[tuple[int, dict[str, str]]] = []
         sampler = random.Random(self.seed + 1)
         all_path = self._output_path(output_dir, "compass_all", compress)
-        all_progress = self._build_progress_reporter(progress_factory, all_path, self.counts["compass_all"])
+        all_progress = self._build_progress_reporter(
+            progress_factory,
+            all_path,
+            self._progress_row_count("compass", self.counts["compass_all"]),
+        )
         all_diff_types = build_initial_diff_types("compass_all", self.counts["compass_all"])
         handle, writer = open_csv_writer(all_path)
         try:
             if all_progress is not None:
                 all_progress.start()
             writer.writerow(all_headers)
+            first_row: list[str] | None = None
             for index in range(self.counts["compass_all"]):
                 context = self._compass_context(index)
-                writer.writerow(self._compass_row(context, index, diff_type=all_diff_types[index]))
+                row = self._compass_row(context, index, diff_type=all_diff_types[index])
+                if first_row is None:
+                    first_row = row
+                writer.writerow(row)
                 if all_progress is not None:
                     all_progress.advance(index + 1)
                 self._update_compass_reservoir(sampled, (index, context), index, sampler)
+            duplicate_row = self._duplicate_primary_key_row("compass", first_row)
+            if duplicate_row is not None:
+                writer.writerow(duplicate_row)
+                if all_progress is not None:
+                    all_progress.advance(self.counts["compass_all"] + 1)
         finally:
             if all_progress is not None:
                 all_progress.finish()
@@ -634,6 +746,7 @@ class CsvGenerator:
             self._compass_diff_row(context, index, diff_type=diff_types[row_index], diff_index=row_index)
             for row_index, (index, context) in enumerate(sampled)
         ]
+        diff_rows = self._rows_with_duplicate_primary_key("compass", diff_rows)
         diff_path = self._output_path(output_dir, "compass_diff", compress)
         diff_progress = self._build_progress_reporter(progress_factory, diff_path, len(diff_rows))
         write_csv(diff_path, diff_headers, diff_rows, progress_reporter=diff_progress)
@@ -949,21 +1062,27 @@ class CsvGenerator:
         path = self._output_path(output_dir, "product", compress)
         self._write_rows(
             path,
+            "product",
             self._output_headers("product", "product"),
             self.counts["product"],
             lambda index: self._product_row(self._product_context(index), index),
-            progress_reporter=self._build_progress_reporter(progress_factory, path, self.counts["product"]),
+            progress_reporter=self._build_progress_reporter(
+                progress_factory,
+                path,
+                self._progress_row_count("product", self.counts["product"]),
+            ),
         )
         diff_path = self._output_path(output_dir, "product_diff", compress)
         self._write_rows(
             diff_path,
+            "product",
             self._output_headers("product", "product_diff"),
             self.counts["product_diff"],
             self._product_diff_row,
             progress_reporter=self._build_progress_reporter(
                 progress_factory,
                 diff_path,
-                self.counts["product_diff"],
+                self._progress_row_count("product", self.counts["product_diff"]),
             ),
         )
 
@@ -1583,13 +1702,18 @@ class CsvGenerator:
         path = self._output_path(output_dir, output_key, compress)
         self._write_rows(
             path,
+            "corp",
             self._output_headers("corp", output_key),
             row_count,
             lambda index: self._corp_row(
                 self._corp_context(index, variant, diff_type=diff_types[index]),
                 diff_type=diff_types[index],
             ),
-            progress_reporter=self._build_progress_reporter(progress_factory, path, row_count),
+            progress_reporter=self._build_progress_reporter(
+                progress_factory,
+                path,
+                self._progress_row_count("corp", row_count),
+            ),
         )
 
     def _corp_row(self, context: dict[str, str], diff_type: str | None = None) -> list[str]:
@@ -1803,6 +1927,7 @@ class CsvGenerator:
         path = self._output_path(output_dir, output_key, compress)
         self._write_rows(
             path,
+            spec_key,
             self._output_headers(spec_key, output_key),
             self.counts[output_key],
             lambda index: row_factory(
@@ -1810,7 +1935,11 @@ class CsvGenerator:
                 index,
                 diff_type=diff_types[index],
             ),
-            progress_reporter=self._build_progress_reporter(progress_factory, path, self.counts[output_key]),
+            progress_reporter=self._build_progress_reporter(
+                progress_factory,
+                path,
+                self._progress_row_count(spec_key, self.counts[output_key]),
+            ),
         )
 
     def _bfs_row(self, context: dict[str, str], index: int, diff_type: str | None = None) -> list[str]:

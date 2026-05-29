@@ -176,6 +176,24 @@ def row_keys(header: list[str], rows: list[list[str]], key_names: list[str]) -> 
     return [tuple(row[index] for index in indexes) for row in rows]
 
 
+def assert_has_one_changed_duplicate_key(
+    header: list[str],
+    rows: list[list[str]],
+    key_names: list[str],
+) -> None:
+    """主キーが重複し、非主キー列が異なる行が1組あることを検証する。"""
+    keys = row_keys(header, rows, key_names)
+    duplicated_keys = [key for key in set(keys) if keys.count(key) == 2]
+    assert len(duplicated_keys) == 1
+
+    duplicated_rows = [row for row, key in zip(rows, keys, strict=True) if key == duplicated_keys[0]]
+    primary_key_indexes = {header.index(name) for name in key_names}
+    non_key_indexes = [index for index in range(len(header)) if index not in primary_key_indexes]
+
+    assert duplicated_rows[0] != duplicated_rows[1]
+    assert any(duplicated_rows[0][index] != duplicated_rows[1][index] for index in non_key_indexes)
+
+
 @pytest.fixture(scope="module")
 def generated_default_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """デフォルト実行結果をモジュール内で使い回す。"""
@@ -310,6 +328,12 @@ def test_readme_mentions_headers_only_option() -> None:
     """README に headers-only 実行手順を載せる。"""
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "--headers-only" in readme
+
+
+def test_readme_mentions_duplicate_primary_keys_option() -> None:
+    """README に主キー重複行生成オプションを載せる。"""
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "--duplicate-primary-keys" in readme
 
 
 def test_targets_compass_only_generates_single_file(tmp_path: Path) -> None:
@@ -458,6 +482,40 @@ def test_headers_only_can_write_gzip_csv(tmp_path: Path) -> None:
 
     _, rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN.csv.gz")
     _, diff_rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN_diff.csv.gz")
+
+    assert rows == []
+    assert diff_rows == []
+
+
+def test_duplicate_primary_keys_adds_changed_duplicate_rows(tmp_path: Path) -> None:
+    """主キー重複行生成指定時は各CSVに主キーだけ重複する行を1件追加する。"""
+    run_script(str(tmp_path), "--targets", "campaign", "--duplicate-primary-keys")
+
+    header, rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN.csv")
+    diff_header, diff_rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN_diff.csv")
+
+    assert len(rows) == DEFAULT_COUNTS["campaign"] + 1
+    assert len(diff_rows) == DEFAULT_COUNTS["campaign_diff"] + 1
+    assert_has_one_changed_duplicate_key(header, rows, ["campaign_id"])
+    assert_has_one_changed_duplicate_key(diff_header, diff_rows, ["campaign_id"])
+
+
+def test_duplicate_primary_keys_works_with_direct_jobs_branch(tmp_path: Path) -> None:
+    """jobs=1指定の直列生成経路でも主キー重複行を追加する。"""
+    run_script(str(tmp_path), "--targets", "campaign", "--jobs", "1", "--duplicate-primary-keys")
+
+    header, rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN.csv")
+
+    assert len(rows) == DEFAULT_COUNTS["campaign"] + 1
+    assert_has_one_changed_duplicate_key(header, rows, ["campaign_id"])
+
+
+def test_headers_only_ignores_duplicate_primary_keys_option(tmp_path: Path) -> None:
+    """headers-only指定では主キー重複行生成指定があってもデータ行を出力しない。"""
+    run_script(str(tmp_path), "--targets", "campaign", "--headers-only", "--duplicate-primary-keys")
+
+    _, rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN.csv")
+    _, diff_rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN_diff.csv")
 
     assert rows == []
     assert diff_rows == []
