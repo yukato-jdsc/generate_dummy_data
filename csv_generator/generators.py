@@ -2469,7 +2469,7 @@ class CsvGenerator:
         """BFSサービスサマリ付属品の基本列をまとめて構築する。"""
         base_index = int(context["base_index"])
         value_index = self._bfs_accessories_value_index(context)
-        summary_number = f"{context['summary_number']}001"
+        summary_number = f"{context['summary_number']}01"
         product_code = context.get("accessory_product_code", self.values.code("ACC", base_index + 1, 3))
         if context["variant"] == "diff" and context.get("diff_type") == INITIAL_DIFF_TYPE:
             product_code = context.get("accessory_product_code", self.values.code("ACI", base_index + 1, 4))

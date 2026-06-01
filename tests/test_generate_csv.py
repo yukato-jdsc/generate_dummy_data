@@ -176,6 +176,40 @@ def row_keys(header: list[str], rows: list[list[str]], key_names: list[str]) -> 
     return [tuple(row[index] for index in indexes) for row in rows]
 
 
+def assert_values_fit_format_lengths(
+    header: list[str],
+    rows: list[list[str]],
+    spec_key: str,
+    name: str,
+) -> None:
+    """CSV値が仕様Markdownの桁数を超えていないことを検証する。"""
+    specs = load_specs(ROOT / "docs/format")
+    columns_by_header = {
+        header_value: column
+        for column in specs[spec_key]
+        for header_value in (column.name, column.header_label)
+    }
+    length_columns = [
+        (index, columns_by_header[header_value])
+        for index, header_value in enumerate(header)
+        if header_value in columns_by_header and columns_by_header[header_value].max_length is not None
+    ]
+    offenders: list[str] = []
+    for row_index, row in enumerate(rows, start=2):
+        for column_index, column in length_columns:
+            if column_index >= len(row):
+                continue
+            value = row[column_index]
+            max_length = column.max_length
+            if max_length is not None and len(value) > max_length:
+                offenders.append(
+                    f"{name}: row={row_index}, column={column.name}, "
+                    f"length={len(value)}, max={max_length}, value={value}"
+                )
+
+    assert not offenders, "\n".join(offenders[:20])
+
+
 def assert_has_one_changed_duplicate_key(
     header: list[str],
     rows: list[list[str]],
@@ -1106,6 +1140,32 @@ def test_bfs_device_contract_period_uses_two_digit_decimal_values(generated_defa
         assert len(value) <= 2
 
 
+def test_bfs_generated_values_fit_updated_format_lengths(generated_default_dir: Path) -> None:
+    """生成したBFSエントリ情報・付属品CSVが更新後の桁数に収まる。"""
+    cases = [
+        ("bfs", "DLV_OAI_BFS_BFS_ENTRY_INFO.csv"),
+        ("bfs", "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv"),
+        ("bfs_accessories", "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv"),
+        ("bfs_accessories", "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv"),
+    ]
+
+    for spec_key, filename in cases:
+        header, rows = read_csv(generated_default_dir, filename)
+        assert_values_fit_format_lengths(header, rows, spec_key, filename)
+
+
+def test_bfs_sample_data_values_fit_updated_format_lengths() -> None:
+    """BFS系サンプルCSVが更新後の仕様桁数に収まる。"""
+    cases = [
+        ("bfs", "bfs_entry_informations.csv"),
+        ("bfs_accessories", "bfs_service_summary_accessories.csv"),
+    ]
+
+    for spec_key, filename in cases:
+        header, rows = read_csv(ROOT / "sample_data", filename)
+        assert_values_fit_format_lengths(header, rows, spec_key, filename)
+
+
 def test_bfs_device_required_columns_are_populated_in_all_and_diff(generated_default_dir: Path) -> None:
     """BFSサービスサマリ端末の必須列は全量・差分とも空欄にしない。"""
     specs = load_specs(ROOT / "docs/format")
@@ -1697,14 +1757,12 @@ def test_corp_all_files_split_rows_in_order(generated_seed7_dir: Path) -> None:
     assert rows_1[-1][code_index] < rows_2[0][code_index]
 
 
-def test_unified_company_codes_use_same_ten_character_format(generated_seed7_dir: Path) -> None:
-    """各CSVの統一企業コード系項目は `UC` + 8桁の10文字形式に揃える。"""
+def test_non_bfs_unified_company_codes_use_ten_character_format(generated_seed7_dir: Path) -> None:
+    """BFS以外の統一企業コード系項目は `UC` + 8桁の10文字形式に揃える。"""
     code_pattern = re.compile(r"^UC\d{8}$")
     targets = [
         ("DLV_OAI_COM_EIG_KESSAI.csv", "compass", ["統一企業コード"]),
         ("DLV_OAI_COM_EIG_KESSAI_diff.csv", "compass", ["統一企業コード"]),
-        ("DLV_OAI_BFS_BFS_ENTRY_INFO.csv", "bfs", ["統一企業コード"]),
-        ("DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv", "bfs", ["統一企業コード"]),
         ("DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv", "corp", ["統一企業コード", "親企業番号", "合併企業番号"]),
         ("DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv", "corp", ["統一企業コード", "親企業番号", "合併企業番号"]),
         ("DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv", "corp", ["統一企業コード", "親企業番号", "合併企業番号"]),
