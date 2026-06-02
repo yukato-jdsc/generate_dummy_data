@@ -2343,12 +2343,15 @@ class CsvGenerator:
             "applicable_relative_discount_end_date": (BASE_DATE + timedelta(days=(base_index % 180) + 30)).strftime(
                 "%Y%m%d"
             ),
+            "cancel_exemption_rate": str((value_index % 10) * 10),
+            "reckon_change_type_nm": ["変更なし", "月初起算", "翌月起算"][value_index % 3],
             "summary_creation_staff_id": f"U{base_index % 100}",
             "summary_creation_date_and_time": created_at.strftime("%Y%m%d%H%M"),
             "summary_updater_id": f"U{base_index % 100}",
             "summary_update_date_and_time": updated_at.strftime("%Y%m%d%H%M"),
             "minimum_number_of_lines": "1",
             "provision_generation_type": ["4G", "5G"][base_index % 2],
+            "esim_regist_flg_nm": ["登録済", "未登録"][value_index % 2],
             "current_device_contract_period": ["12", "24", "36", "48"][value_index % 4],
             "reflected_in_summary_unit": ["1", "0"][value_index % 2],
             "offered_price_step1": "1",
@@ -2410,7 +2413,9 @@ class CsvGenerator:
             device_context[f"relative_billing_amount_{option_index}"] = "1"
             device_context[f"relative_discount_amount_{option_index}"] = "1"
             device_context[f"relative_discount_rate_{option_index}"] = "1"
-            device_context[f"relative_discount_start_month_{option_index}"] = f"2025{option_index:02d}"
+            discount_start_month = f"{((relative_index - 1) % 12) + 1:02d}"
+            device_context[f"dsm{option_index}"] = discount_start_month
+            device_context[f"relative_discount_start_month_{option_index}"] = discount_start_month
             device_context[f"relative_period_{option_index}"] = "1"
 
     def _populate_bfs_device_other_relative_context(self, device_context: dict[str, str]) -> None:
@@ -2434,7 +2439,9 @@ class CsvGenerator:
             device_context[f"relative_other_invoice_amount_{option_index}"] = "1"
             device_context[f"relative_other_discount_amount_{option_index}"] = "1"
             device_context[f"relative_other_discount_rate_{option_index}"] = "1"
-            device_context[f"relative_other_discount_start_month_{option_index}"] = f"2025{option_index:02d}"
+            other_discount_start_month = f"{option_index:02d}"
+            device_context[f"odsm{option_index}"] = other_discount_start_month
+            device_context[f"relative_other_discount_start_month_{option_index}"] = other_discount_start_month
             device_context[f"relative_other_period_{option_index}"] = "1"
             device_context[f"r_relative_op_{option_index}"] = f"RO{option_index}"
             device_context[f"r_relative_plan_{option_index}"] = f"RP{option_index}"

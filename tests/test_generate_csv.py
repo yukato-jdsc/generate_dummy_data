@@ -1140,11 +1140,29 @@ def test_bfs_device_contract_period_uses_two_digit_decimal_values(generated_defa
         assert len(value) <= 2
 
 
+def test_bfs_device_discount_start_months_use_two_digit_values(generated_default_dir: Path) -> None:
+    """BFSサービスサマリ端末の割引開始月は2桁の月文字列で出力する。"""
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
+    labels = [
+        *(f"相対割引開始月{index}" for index in range(1, 11)),
+        *(f"相対他割引開始月{index}" for index in range(1, 6)),
+    ]
+    indexes = [header_index(header, "bfs_device", label) for label in labels]
+
+    values = [row[index] for row in all_rows + diff_rows for index in indexes if row[index] != ""]
+
+    assert values
+    assert all(value.isdecimal() and len(value) == 2 for value in values)
+
+
 def test_bfs_generated_values_fit_updated_format_lengths(generated_default_dir: Path) -> None:
-    """生成したBFSエントリ情報・付属品CSVが更新後の桁数に収まる。"""
+    """生成したBFS系CSVが更新後の桁数に収まる。"""
     cases = [
         ("bfs", "DLV_OAI_BFS_BFS_ENTRY_INFO.csv"),
         ("bfs", "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv"),
+        ("bfs_device", "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv"),
+        ("bfs_device", "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv"),
         ("bfs_accessories", "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv"),
         ("bfs_accessories", "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv"),
     ]

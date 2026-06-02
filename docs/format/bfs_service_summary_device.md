@@ -167,7 +167,7 @@
 | 相対請求金額1 | `bpr1` | VARCHAR | 8 | － | － | - |
 | 相対割引金額1 | `dpr1` | VARCHAR | 8 | － | － | - |
 | 相対割引率1 | `drt1` | VARCHAR | 6 | － | － | - |
-| 相対割引開始月1 | `dsm1` | VARCHAR | 3 | － | － | - |
+| 相対割引開始月1 | `dsm1` | VARCHAR | 2 | － | － | - |
 | 相対期間1 | `dtm1` | DECIMAL | 3 | － | － | - |
 | 相対pdカテゴリ2 | `pcn2` | VARCHAR | 600 | － | － | - |
 | 相対pd名称2 | `pdn2` | VARCHAR | 600 | － | － | - |
@@ -387,8 +387,8 @@
 | プラン変更許可範囲7 | `chplan7` | VARCHAR | 600 | － | － | - |
 | プラン変更許可範囲8 | `chplan8` | VARCHAR | 600 | － | － | - |
 | プラン変更許可範囲9 | `chplan9` | VARCHAR | 600 | － | － | - |
-| 解除料免除率 | `cancel_exemption_rate` | VARCHAR | 12 | － | － | - |
-| 起算日変更 | `reckon_change_type_nm` | VARCHAR | 600 | － | － | - |
+| 解除料免除率 | `cancel_exemption_rate` | VARCHAR | 4 | － | － | - |
+| 起算日変更 | `reckon_change_type_nm` | VARCHAR | 200 | － | － | - |
 | サマリ作成担当者id | `svcsm_ins_user_id` | VARCHAR | 20 | － | － | - |
 | サマリ作成日時 | `svcsm_ins_tstamp` | VARCHAR | 26 | － | － | - |
 | サマリ更新担当者id | `svcsm_last_upd_user_id` | VARCHAR | 20 | － | － | - |
@@ -523,9 +523,9 @@
 | 未対応商品名称 | `unreleased_itm_nm` | VARCHAR | 300 | － | － | - |
 | 疑似シェア試算容量 | `mock_share_calc_capacity` | VARCHAR | 5 | － | － | - |
 | 疑似シェア超過料 | `over_capacity_fee` | VARCHAR | 5 | － | － | - |
-| esim登録 | `esim_regist_flg_nm` | VARCHAR | 2295 | － | － | - |
+| esim登録 | `esim_regist_flg_nm` | VARCHAR | 765 | － | － | - |
 | 現端末契約期間 | `old_trmnl_contract_period` | DECIAML | 2 | － | - | - |
-| サマリ単位反映 | `summary_unit_reflection_nm` | VARCHAR | 60 | － | - | - |
+| サマリ単位反映 | `summary_unit_reflection_nm` | VARCHAR | 30 | － | - | - |
 | 提供価格段階1 | `offered_price_step1` | DECIMAL | 10 | － | - | - |
 | 提供価格段階2 | `offered_price_step2` | DECIMAL | 10 | － | - | - |
 | 提供価格段階3 | `offered_price_step3` | DECIMAL | 10 | － | - | - |
