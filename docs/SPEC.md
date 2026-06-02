@@ -49,6 +49,7 @@ uv run python generate_csv.py
 | --- | --- |
 | `--output-dir <dir>` | 出力先ディレクトリ。既定値は `generated_data` |
 | `--targets <csv>` | 生成対象。カンマ区切りで指定する。既定値は `campaign,agency,compass,product,corp,bfs` |
+| `--output-date <YYYYMMDD>` | 出力ファイル名の日付プレフィックスに使う基準日。未指定時は実行日のローカル日付 |
 | `--full` | 本番想定件数で生成する |
 | `--gzip` | gzip 圧縮された `*.csv.gz` を生成する |
 | `--seed <int>` | 乱数シード。既定値は `42` |
@@ -69,6 +70,7 @@ uv run python generate_csv.py
 - ヘッダ行あり
 - すべてのセルをダブルクォート付きで出力する
 - 通常実行時は `.csv`、`--gzip` 時は `.csv.gz`
+- 出力ファイル名は `YYYYMMDD_<CSV名>` とし、`*_diff.csv` は基準日の翌日を `YYYYMMDD` に使う
 
 ### 4.2 ヘッダ定義
 

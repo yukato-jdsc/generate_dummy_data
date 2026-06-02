@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import csv
 import gzip
 import os
@@ -18,6 +19,7 @@ sys.path.insert(0, str(ROOT))
 from csv_generator import progress as progress_module
 from csv_generator.cli import (
     parse_jobs,
+    parse_output_date,
     parse_targets,
     resolve_job_count,
     write_target_csv,
@@ -325,6 +327,18 @@ def test_targets_campaign_only_generates_campaign_files(tmp_path: Path) -> None:
     assert generated_files(tmp_path) == expected_output_files("DLV_OAI_MRS_CMPGN.csv", "DLV_OAI_MRS_CMPGN_diff.csv")
 
 
+def test_output_date_option_uses_specified_base_date(tmp_path: Path) -> None:
+    """output-date指定時は指定日を基準に出力ファイル名を生成する。"""
+    completed = run_script(str(tmp_path), "--targets", "campaign", "--output-date", "20260501")
+
+    assert generated_files(tmp_path) == [
+        "20260501_DLV_OAI_MRS_CMPGN.csv",
+        "20260502_DLV_OAI_MRS_CMPGN_diff.csv",
+    ]
+    assert "20260501_DLV_OAI_MRS_CMPGN.csv" in completed.stdout
+    assert "20260502_DLV_OAI_MRS_CMPGN_diff.csv" in completed.stdout
+
+
 def test_targets_product_only_generates_product_files(tmp_path: Path) -> None:
     """product 指定では商品全量と全量更新diffだけを生成する。"""
     run_script(str(tmp_path), "--targets", "product")
@@ -407,6 +421,15 @@ def test_parse_jobs_accepts_auto_and_positive_integer() -> None:
     """jobs指定は auto または正の整数だけを受け付ける。"""
     assert parse_jobs("auto") is None
     assert parse_jobs(" 3 ") == 3
+
+
+def test_parse_output_date_accepts_only_valid_yyyymmdd() -> None:
+    """output-date指定は妥当なYYYYMMDD形式だけを受け付ける。"""
+    assert parse_output_date("20260501") == date(2026, 5, 1)
+
+    for raw_output_date in ("2026-05-01", "20260532", "abc"):
+        with pytest.raises(argparse.ArgumentTypeError):
+            parse_output_date(raw_output_date)
 
 
 def test_resolve_job_count_uses_serial_by_default_and_caps_requested_jobs() -> None:

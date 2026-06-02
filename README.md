@@ -27,7 +27,8 @@
 ## 出力ファイル名
 
 出力ファイル名は `YYYYMMDD_<CSV名>` です。`YYYYMMDD` は実行日のローカル日付です。
-`*_diff.csv` は差分データとして扱い、実行日の翌日を `YYYYMMDD` に使います。
+`--output-date YYYYMMDD` を指定した場合は、指定日を基準日にします。
+`*_diff.csv` は差分データとして扱い、基準日の翌日を `YYYYMMDD` に使います。
 
 例: 2026年5月1日に実行した場合
 
@@ -56,6 +57,7 @@ uv run python generate_csv.py --targets corp
 uv run python generate_csv.py --targets bfs
 uv run python generate_csv.py --full --gzip --output-dir generated_data/full
 uv run python generate_csv.py --seed 7
+uv run python generate_csv.py --output-date 20260501
 uv run python generate_csv.py --headers-only
 uv run python generate_csv.py --duplicate-primary-keys
 ```
@@ -66,6 +68,7 @@ uv run python generate_csv.py --duplicate-primary-keys
 | --- | --- |
 | `--output-dir` | 出力先ディレクトリ。既定値は `generated_data` |
 | `--targets` | 生成対象。`campaign,agency,compass,product,corp,bfs` をカンマ区切りで指定 |
+| `--output-date` | 出力ファイル名の日付プレフィックスに使う基準日。`YYYYMMDD` 形式。未指定時は実行日 |
 | `--full` | 本番想定件数で生成 |
 | `--gzip` | gzip 圧縮された `YYYYMMDD_*.csv.gz` を生成 |
 | `--headers-only` | ヘッダー行のみのCSVを生成 |

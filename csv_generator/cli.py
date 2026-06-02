@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import os
 from concurrent.futures import ProcessPoolExecutor
-from datetime import date
+from datetime import date, datetime
 from multiprocessing import Manager
 from pathlib import Path
 from queue import Empty
@@ -82,6 +82,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate dummy CSV files from docs/format/")
     parser.add_argument("--output-dir", default="generated_data")
     parser.add_argument("--targets", default="campaign,agency,compass,product,corp,bfs")
+    parser.add_argument("--output-date", type=parse_output_date)
     parser.add_argument("--full", action="store_true")
     parser.add_argument("--gzip", action="store_true")
     parser.add_argument("--headers-only", action="store_true")
@@ -89,6 +90,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--jobs", default="auto")
     return parser.parse_args()
+
+
+def parse_output_date(raw_output_date: str) -> date:
+    """YYYYMMDD形式の出力日付指定を date へ変換する。"""
+    if len(raw_output_date) != 8 or not raw_output_date.isdecimal():
+        raise argparse.ArgumentTypeError("--output-date must be a valid YYYYMMDD date")
+    try:
+        return datetime.strptime(raw_output_date, "%Y%m%d").date()
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("--output-date must be a valid YYYYMMDD date") from exc
 
 
 def parse_targets(raw_targets: str) -> list[str]:
@@ -373,7 +384,7 @@ def main() -> None:
     counts = FULL_COUNTS if args.full else DEFAULT_COUNTS
     compress = args.gzip
     output_dir = Path(args.output_dir)
-    output_date = date.today()
+    output_date = args.output_date or date.today()
     format_dir = Path("docs/format")
     output_dir.mkdir(parents=True, exist_ok=True)
 
