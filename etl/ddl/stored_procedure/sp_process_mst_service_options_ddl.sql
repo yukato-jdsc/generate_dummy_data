@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS sp_output_mst_service_options (
 );
 
 CREATE OR REPLACE PROCEDURE sp_process_mst_service_options()
-LANGUAGE plpgsql
+LANGUAGE PLPGSQL
 AS $$
 DECLARE
     v_now TIMESTAMP := NOW();
@@ -38,87 +38,88 @@ BEGIN
 
     -- ステップ1: option_categoryおよびoption_serviceカラムをアンピボットする
     INSERT INTO tmp_all_service_options (service_type, category, option)
-    SELECT 'オプション', option_category_1, option_service_1 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'オプション', optcate1, optsvc1 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'オプション', option_category_2, option_service_2 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'オプション', optcate2, optsvc2 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'オプション', option_category_3, option_service_3 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'オプション', optcate3, optsvc3 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'オプション', option_category_4, option_service_4 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'オプション', optcate4, optsvc4 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'オプション', option_category_5, option_service_5 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'オプション', optcate5, optsvc5 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'オプション', option_category_6, option_service_6 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'オプション', optcate6, optsvc6 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'オプション', option_category_7, option_service_7 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'オプション', optcate7, optsvc7 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'オプション', option_category_8, option_service_8 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'オプション', optcate8, optsvc8 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'オプション', option_category_9, option_service_9 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'オプション', optcate9, optsvc9 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'オプション', option_category_10, option_service_10 FROM tmp_diff_bfs_service_summary_devices;
+    SELECT 'オプション', optcate10, optsvc10 FROM tmp_diff_bfs_service_summary_devices;
 
     -- ステップ2: rntopt_categoryおよびrntopt_planカラムをアンピボットする (レンタルオプション)
     INSERT INTO tmp_all_service_options (service_type, category, option)
-    SELECT 'レンタルオプション', rntopt_category_1, rntopt_plan_1 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'レンタルオプション', rntopt1, rntpln1 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'レンタルオプション', rntopt_category_2, rntopt_plan_2 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'レンタルオプション', rntopt2, rntpln2 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'レンタルオプション', rntopt_category_3, rntopt_plan_3 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'レンタルオプション', rntopt3, rntpln3 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'レンタルオプション', rntopt_category_4, rntopt_plan_4 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'レンタルオプション', rntopt4, rntpln4 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'レンタルオプション', rntopt_category_5, rntopt_plan_5 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'レンタルオプション', rntopt5, rntpln5 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'レンタルオプション', rntopt_category_6, rntopt_plan_6 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'レンタルオプション', rntopt6, rntpln6 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'レンタルオプション', rntopt_category_7, rntopt_plan_7 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'レンタルオプション', rntopt7, rntpln7 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'レンタルオプション', rntopt_category_8, rntopt_plan_8 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'レンタルオプション', rntopt8, rntpln8 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'レンタルオプション', rntopt_category_9, rntopt_plan_9 FROM tmp_diff_bfs_service_summary_devices
+    SELECT 'レンタルオプション', rntopt9, rntpln9 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT 'レンタルオプション', rntopt_category_10, rntopt_plan_10 FROM tmp_diff_bfs_service_summary_devices;
+    SELECT 'レンタルオプション', rntopt10, rntpln10 FROM tmp_diff_bfs_service_summary_devices;
 
     -- ステップ3: relative_pd_categoryおよびrelative_pd_nameカラムをアンピボットする (相対プロダクト)
     INSERT INTO tmp_all_service_options (service_type, category, option)
-    SELECT '相対プロダクト', relative_pd_category_1, relative_pd_name_1 FROM tmp_diff_bfs_service_summary_devices
+    SELECT '相対プロダクト', pcn1, pdn1 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT '相対プロダクト', relative_pd_category_2, relative_pd_name_2 FROM tmp_diff_bfs_service_summary_devices
+    SELECT '相対プロダクト', pcn2, pdn2 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT '相対プロダクト', relative_pd_category_3, relative_pd_name_3 FROM tmp_diff_bfs_service_summary_devices
+    SELECT '相対プロダクト', pcn3, pdn3 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT '相対プロダクト', relative_pd_category_4, relative_pd_name_4 FROM tmp_diff_bfs_service_summary_devices
+    SELECT '相対プロダクト', pcn4, pdn4 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT '相対プロダクト', relative_pd_category_5, relative_pd_name_5 FROM tmp_diff_bfs_service_summary_devices
+    SELECT '相対プロダクト', pcn5, pdn5 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT '相対プロダクト', relative_pd_category_6, relative_pd_name_6 FROM tmp_diff_bfs_service_summary_devices
+    SELECT '相対プロダクト', pcn6, pdn6 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT '相対プロダクト', relative_pd_category_7, relative_pd_name_7 FROM tmp_diff_bfs_service_summary_devices
+    SELECT '相対プロダクト', pcn7, pdn7 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT '相対プロダクト', relative_pd_category_8, relative_pd_name_8 FROM tmp_diff_bfs_service_summary_devices
+    SELECT '相対プロダクト', pcn8, pdn8 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT '相対プロダクト', relative_pd_category_9, relative_pd_name_9 FROM tmp_diff_bfs_service_summary_devices
+    SELECT '相対プロダクト', pcn9, pdn9 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT '相対プロダクト', relative_pd_category_10, relative_pd_name_10 FROM tmp_diff_bfs_service_summary_devices;
+    SELECT '相対プロダクト', pcn10, pdn10 FROM tmp_diff_bfs_service_summary_devices;
 
     -- ステップ4: relative_other_pd_categoryおよびrelative_other_pd_nameカラムをアンピボットする (相対その他プロダクト)
     INSERT INTO tmp_all_service_options (service_type, category, option)
-    SELECT '相対その他プロダクト', relative_other_pd_category_1, relative_other_pd_name_1 FROM tmp_diff_bfs_service_summary_devices
+    SELECT '相対その他プロダクト', opcn1, opdn1 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT '相対その他プロダクト', relative_other_pd_category_2, relative_other_pd_name_2 FROM tmp_diff_bfs_service_summary_devices
+    SELECT '相対その他プロダクト', opcn2, opdn2 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT '相対その他プロダクト', relative_other_pd_category_3, relative_other_pd_name_3 FROM tmp_diff_bfs_service_summary_devices
+    SELECT '相対その他プロダクト', opcn3, opdn3 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT '相対その他プロダクト', relative_other_pd_category_4, relative_other_pd_name_4 FROM tmp_diff_bfs_service_summary_devices
+    SELECT '相対その他プロダクト', opcn4, opdn4 FROM tmp_diff_bfs_service_summary_devices
     UNION ALL
-    SELECT '相対その他プロダクト', relative_other_pd_category_5, relative_other_pd_name_5 FROM tmp_diff_bfs_service_summary_devices;
+    SELECT '相対その他プロダクト', opcn5, opdn5 FROM tmp_diff_bfs_service_summary_devices;
 
-    -- ステップ5: アンピボットしたデータを重複排除し、categoryとoptionの両方がNULLである行を除去する
+    -- ステップ5: アンピボットしたデータを重複排除し、categoryとoptionの両方がNULLまたは空文字である行を除去する
     CREATE TEMP TABLE tmp_distinct_service_options AS
     SELECT DISTINCT service_type, category, option
     FROM tmp_all_service_options
-    WHERE category IS NOT NULL OR option IS NOT NULL;
+    WHERE NULLIF(TRIM(category), '') IS NOT NULL
+       OR NULLIF(TRIM(option), '') IS NOT NULL;
 
     -- ステップ6: 単一カラムの個別値を処理する
     -- 既に収集済みのサービス種別データ内に(category, option)の組み合わせとして存在するかを確認する。
@@ -126,33 +127,33 @@ BEGIN
     INSERT INTO tmp_distinct_service_options (service_type, category, option)
     SELECT DISTINCT t.service_type, s.column_name, s.value
     FROM (
-        SELECT 'campaign_1' AS column_name, campaign_1 AS value FROM tmp_diff_bfs_service_summary_devices WHERE campaign_1 IS NOT NULL
+        SELECT 'campnm1' AS column_name, campnm1 AS value FROM tmp_diff_bfs_service_summary_devices WHERE campnm1 IS NOT NULL
         UNION ALL
-        SELECT 'campaign_2', campaign_2 FROM tmp_diff_bfs_service_summary_devices WHERE campaign_2 IS NOT NULL
+        SELECT 'campnm2', campnm2 FROM tmp_diff_bfs_service_summary_devices WHERE campnm2 IS NOT NULL
         UNION ALL
-        SELECT 'campaign_3', campaign_3 FROM tmp_diff_bfs_service_summary_devices WHERE campaign_3 IS NOT NULL
+        SELECT 'campnm3', campnm3 FROM tmp_diff_bfs_service_summary_devices WHERE campnm3 IS NOT NULL
         UNION ALL
-        SELECT 'campaign_4', campaign_4 FROM tmp_diff_bfs_service_summary_devices WHERE campaign_4 IS NOT NULL
+        SELECT 'campnm4', campnm4 FROM tmp_diff_bfs_service_summary_devices WHERE campnm4 IS NOT NULL
         UNION ALL
-        SELECT 'campaign_5', campaign_5 FROM tmp_diff_bfs_service_summary_devices WHERE campaign_5 IS NOT NULL
+        SELECT 'campnm5', campnm5 FROM tmp_diff_bfs_service_summary_devices WHERE campnm5 IS NOT NULL
         UNION ALL
-        SELECT 'plan', plan FROM tmp_diff_bfs_service_summary_devices WHERE plan IS NOT NULL
+        SELECT 'cate01', cate01 FROM tmp_diff_bfs_service_summary_devices WHERE cate01 IS NOT NULL
         UNION ALL
-        SELECT 'call_discount_w_white', call_discount_w_white FROM tmp_diff_bfs_service_summary_devices WHERE call_discount_w_white IS NOT NULL
+        SELECT 'cate02', cate02 FROM tmp_diff_bfs_service_summary_devices WHERE cate02 IS NOT NULL
         UNION ALL
-        SELECT 'breaking_contract_gold_annual_contract', breaking_contract_gold_annual_contract FROM tmp_diff_bfs_service_summary_devices WHERE breaking_contract_gold_annual_contract IS NOT NULL
+        SELECT 'cate03', cate03 FROM tmp_diff_bfs_service_summary_devices WHERE cate03 IS NOT NULL
         UNION ALL
-        SELECT 's_basic_pack', s_basic_pack FROM tmp_diff_bfs_service_summary_devices WHERE s_basic_pack IS NOT NULL
+        SELECT 'cate04', cate04 FROM tmp_diff_bfs_service_summary_devices WHERE cate04 IS NOT NULL
         UNION ALL
-        SELECT 'data_communication_basic_fee_4g', data_communication_basic_fee_4g FROM tmp_diff_bfs_service_summary_devices WHERE data_communication_basic_fee_4g IS NOT NULL
+        SELECT 'cate05', cate05 FROM tmp_diff_bfs_service_summary_devices WHERE cate05 IS NOT NULL
         UNION ALL
-        SELECT 'basic_fee_5g', basic_fee_5g FROM tmp_diff_bfs_service_summary_devices WHERE basic_fee_5g IS NOT NULL
+        SELECT 'cate06', cate06 FROM tmp_diff_bfs_service_summary_devices WHERE cate06 IS NOT NULL
         UNION ALL
-        SELECT 'packet_discount', packet_discount FROM tmp_diff_bfs_service_summary_devices WHERE packet_discount IS NOT NULL
+        SELECT 'cate07', cate07 FROM tmp_diff_bfs_service_summary_devices WHERE cate07 IS NOT NULL
         UNION ALL
-        SELECT 'option_pack', option_pack FROM tmp_diff_bfs_service_summary_devices WHERE option_pack IS NOT NULL
+        SELECT 'cate08', cate08 FROM tmp_diff_bfs_service_summary_devices WHERE cate08 IS NOT NULL
         UNION ALL
-        SELECT 'anshin_guarantee_pack', anshin_guarantee_pack FROM tmp_diff_bfs_service_summary_devices WHERE anshin_guarantee_pack IS NOT NULL
+        SELECT 'cate09', cate09 FROM tmp_diff_bfs_service_summary_devices WHERE cate09 IS NOT NULL
     ) s
     JOIN tmp_distinct_service_options t ON t.category = s.column_name AND t.option = s.value;
 
@@ -175,7 +176,7 @@ BEGIN
             LOWER(
                 REPLACE(
                     REGEXP_REPLACE(
-                        TRIM(normalize(COALESCE(category, ''), NFKC)),
+                        TRIM(NORMALIZE(COALESCE(category, ''), NFKC)),
                         '\s+',
                         ' ',
                         'g'
@@ -191,7 +192,7 @@ BEGIN
             LOWER(
                 REPLACE(
                     REGEXP_REPLACE(
-                        TRIM(normalize(COALESCE(option, ''), NFKC)),
+                        TRIM(NORMALIZE(COALESCE(option, ''), NFKC)),
                         '\s+',
                         ' ',
                         'g'

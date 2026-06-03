@@ -10,10 +10,10 @@ CREATE TABLE IF NOT EXISTS sp_output_mst_accessories (
 );
 
 CREATE OR REPLACE PROCEDURE sp_process_mst_accessories()
-LANGUAGE plpgsql
+LANGUAGE PLPGSQL
 AS $$
 DECLARE
-    v_now TIMESTAMP := NOW();
+    v_now timestamp := now();
 BEGIN
     -- 処理開始前に出力テーブルをクリア
     TRUNCATE TABLE sp_output_mst_accessories;
@@ -31,11 +31,11 @@ BEGIN
         created_at,
         updated_at
     )
-    SELECT DISTINCT ON (product_code)
+    SELECT DISTINCT ON (itm_cd)
         -- varchar(255)上限に合わせて切り詰める
-        LEFT(COALESCE(product_code::text, ''), 255) AS product_code,
-        LEFT(COALESCE(manufacturer::text, ''), 255) AS manufacturer,
-        LEFT(COALESCE(product_name::text, ''), 255) AS product_name,
+        LEFT(COALESCE(itm_cd::text, ''), 255) AS product_code,
+        LEFT(COALESCE(brand_nm::text, ''), 255) AS manufacturer,
+        LEFT(COALESCE(itm_nm::text, ''), 255) AS product_name,
         -- product_nameを正規化
         -- 1. NFKC正規化 (全角から半角への変換等)
         -- 2. 前後の空白を除去
@@ -46,7 +46,7 @@ BEGIN
             LOWER(
                 REPLACE(
                     REGEXP_REPLACE(
-                        TRIM(normalize(COALESCE(product_name::text, ''), NFKC)),
+                        TRIM(NORMALIZE(COALESCE(itm_nm::text, ''), NFKC)),
                         '\s+',
                         ' ',
                         'g'
@@ -60,9 +60,9 @@ BEGIN
         v_now AS created_at,
         v_now AS updated_at
     FROM tmp_diff_bfs_service_summary_accessories
-    WHERE product_code IS NOT NULL
-      AND product_code != ''
-    ORDER BY product_code;
+    WHERE itm_cd IS NOT NULL
+      AND itm_cd != ''
+    ORDER BY itm_cd;
 
 END;
 $$;

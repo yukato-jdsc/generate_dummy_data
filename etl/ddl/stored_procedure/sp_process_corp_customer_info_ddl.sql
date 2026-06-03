@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS sp_output_mst_corp_customer_info (
 );
 
 CREATE OR REPLACE PROCEDURE sp_process_corp_customer_info()
-LANGUAGE plpgsql
+LANGUAGE PLPGSQL
 AS $$
 DECLARE
     v_now TIMESTAMP := NOW();
@@ -71,39 +71,39 @@ BEGIN
     CREATE TEMP TABLE tmp_bfs_target_companies AS
     WITH ranked_billing AS (
         SELECT
-            unified_company_code,
-            billing_number,
-            COUNT(*) as cnt,
+            corp_cd,
+            bill_no,
+            count(*) AS cnt,
             ROW_NUMBER() OVER (
-                PARTITION BY unified_company_code
-                ORDER BY COUNT(*) DESC, billing_number DESC
-            ) as rn
+                PARTITION BY corp_cd
+                ORDER BY count(*) desc, bill_no desc
+            ) AS rn
         FROM tmp_diff_bfs_entry_informations
-        WHERE unified_company_code IS NOT NULL
-          AND unified_company_code != ''
-        GROUP BY unified_company_code, billing_number
+        WHERE corp_cd IS NOT NULL
+          AND corp_cd != ''
+        GROUP BY corp_cd, bill_no
     ),
     ranked_contractor AS (
         SELECT
-            unified_company_code,
-            contractor_number,
-            COUNT(*) as cnt,
+            corp_cd,
+            contract_no,
+            count(*) AS cnt,
             ROW_NUMBER() OVER (
-                PARTITION BY unified_company_code
-                ORDER BY COUNT(*) DESC, contractor_number DESC
-            ) as rn
+                PARTITION BY corp_cd
+                ORDER BY count(*) desc, contract_no desc
+            ) AS rn
         FROM tmp_diff_bfs_entry_informations
-        WHERE unified_company_code IS NOT NULL
-          AND unified_company_code != ''
-        GROUP BY unified_company_code, contractor_number
+        WHERE corp_cd IS NOT NULL
+          AND corp_cd != ''
+        GROUP BY corp_cd, contract_no
     )
     SELECT
-        rb.unified_company_code AS company_id,
-        rb.billing_number AS billing_number_main,
-        rc.contractor_number AS contractor_number_main
+        rb.corp_cd AS company_id,
+        rb.bill_no AS billing_number_main,
+        rc.contract_no AS contractor_number_main
     FROM ranked_billing rb
     LEFT JOIN ranked_contractor rc
-        ON rb.unified_company_code = rc.unified_company_code AND rc.rn = 1
+        ON rb.corp_cd = rc.corp_cd AND rc.rn = 1
     WHERE rb.rn = 1;
 
     -- 新しい値が存在する場合、billing_number_mainおよびcontractor_number_mainを更新する
