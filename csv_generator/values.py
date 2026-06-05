@@ -25,9 +25,19 @@ def ymd(value: date) -> str:
     return value.strftime("%Y/%m/%d")
 
 
+def ymd_compact(value: date) -> str:
+    """日付を `YYYYMMDD` 形式へ変換する。"""
+    return value.strftime("%Y%m%d")
+
+
 def hms(hour: int, minute: int, second: int = 0) -> str:
     """時刻要素を `HH:MM:SS` 形式へ変換する。"""
     return f"{hour:02d}:{minute:02d}:{second:02d}"
+
+
+def hms_compact(hour: int, minute: int, second: int = 0) -> str:
+    """時刻要素を `HHMMSS` 形式へ変換する。"""
+    return f"{hour:02d}{minute:02d}{second:02d}"
 
 
 def ymd_dash(value: date) -> str:

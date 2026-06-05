@@ -37,7 +37,15 @@ from .diff_type import (
 from .format_spec import load_specs
 from .io import build_dated_output_path, open_csv_writer, write_csv
 from .progress import NullProgressReporter, QueueProgressReporter, TqdmProgressReporter
-from .values import ValueFactory, clip, hms, ymd, ymd_dash, ymdhms_millis
+from .values import (
+    ValueFactory,
+    clip,
+    hms_compact,
+    ymd,
+    ymd_compact,
+    ymd_dash,
+    ymdhms_millis,
+)
 
 BFS_FAMILY_FILES = (
     ("bfs", "bfs_all", "all"),
@@ -815,8 +823,8 @@ class CsvGenerator:
         aggregated_index = (index // 5) + 1
         return {
             "agent_code": self.values.code("AG", group_index * 2 + agent_slot + 1, 10),
-            "valid_start_date": ymd(start),
-            "valid_end_date": ymd(end),
+            "valid_start_date": ymd_compact(start),
+            "valid_end_date": ymd_compact(end),
             "common_store_code": self.values.code("ST", index + 1, 8),
             "chkdigit_common_store_cd": self.values.code("9", index + 1, 10),
             "logistics_agent_code": self.values.code("LG", index + 1, 8),
@@ -830,9 +838,9 @@ class CsvGenerator:
             "chkdigit_aggregated_agent_cd": self.values.code("5", aggregated_index, 10),
             "store_unique_code": self.values.code("SU", index + 1, 12),
             "operating_store_corporate_code": self.values.code("OC", (index // 7) + 1, 10),
-            "business_start_date": ymd(start - timedelta(days=30)),
-            "business_end_date": ymd(end),
-            "backup_date": ymd(BASE_DATE),
+            "business_start_date": ymd_compact(start - timedelta(days=30)),
+            "business_end_date": ymd_compact(end),
+            "backup_date": ymd_compact(BASE_DATE),
         }
 
     def _agency_category_context(self, index: int) -> dict[str, str]:
@@ -947,10 +955,10 @@ class CsvGenerator:
             "supervisor_organization_code__right_1_digit_": str((index + 1) % 10),
             "manager_employee_number": self.values.code("EM", index + 1, 10),
             "approval_form_number": self.values.code("APV", index + 1, 8),
-            "commission_calculation_end_date": ymd(end),
-            "shop_outsourcing_dt": ymd(start - timedelta(days=5)),
-            "order_start_date": ymd(start),
-            "order_stop_date": ymd(end - timedelta(days=30)),
+            "commission_calculation_end_date": ymd_compact(end),
+            "shop_outsourcing_dt": ymd_compact(start - timedelta(days=5)),
+            "order_start_date": ymd_compact(start),
+            "order_stop_date": ymd_compact(end - timedelta(days=30)),
             "route_code": self.values.code("RT", (index % 20) + 1, 4),
             "route_code__official_name_": "標準ルート",
             "performance_computing_department_code": self.values.code("PD", (index % 20) + 1, 6),
@@ -1031,10 +1039,10 @@ class CsvGenerator:
         name = column.name
         if column.data_type.startswith("DECIMAL"):
             return self.values.decimal_value(index, modulo=9, minimum=1)
-        if name.endswith("_date") or name.endswith("_dt"):
-            return ymd(BASE_DATE - timedelta(days=index % 365))
-        if name.endswith("_time"):
-            return hms((index * 3) % 24, (index * 7) % 60)
+        if name.endswith("_date") or "_date_" in name or name.endswith("_dt") or "_dt_" in name:
+            return ymd_compact(BASE_DATE - timedelta(days=index % 365))
+        if name.endswith("_time") or "_time_" in name or name.endswith("_tm") or "_tm_" in name:
+            return hms_compact((index * 3) % 24, (index * 7) % 60)
         if "tel_no" in name or "fax_no" in name:
             pref = PREFECTURES[index % len(PREFECTURES)]
             return self.values.phone(pref["phone_area"], 70000000 + index)
@@ -1134,8 +1142,8 @@ class CsvGenerator:
         end = BASE_DATE + timedelta(days=365 + (index % 120))
         context.update(
             {
-                "valid_end_date": ymd(end),
-                "effective_dt_to": ymd(end),
+                "valid_end_date": ymd_compact(end),
+                "effective_dt_to": ymd_compact(end),
                 "long_nm": f"{context.get('long_nm', '取次店')} 改定",
                 "short_nm": clip(f"{context.get('short_nm', '代理店')}改", 1200),
                 "tel_no": self.values.phone("03", 80_000_000 + index),
@@ -1486,10 +1494,10 @@ class CsvGenerator:
         end = start + timedelta(days=730)
         context = {
             "product_code": self.values.code("PRD", group_index * 3 + product_slot + 1, 10),
-            "validity_start_date": ymd(start),
-            "validity_start_time": hms(9, effective_slot),
-            "validity_end_date": ymd(end),
-            "validity_end_time": hms(18, index % 60),
+            "validity_start_date": ymd_compact(start),
+            "validity_start_time": hms_compact(9, effective_slot),
+            "validity_end_date": ymd_compact(end),
+            "validity_end_time": hms_compact(18, index % 60),
             "area_code": PREFECTURES[index % len(PREFECTURES)]["area_code"],
             "product_official_name": f"{template[1]} {100 + (index % 900)}",
             "product_name_in_kana": f"{self.values.katakana_word(index)}モデル",
@@ -1531,13 +1539,13 @@ class CsvGenerator:
             "standard_color_name_in_english": color_name,
             "model_code": self.values.code("MD", index + 1, 8),
             "model_official_name": f"{template[1]}-{100 + (index % 900)}",
-            "fee_payment_stop_date": ymd(end - timedelta(days=30)),
+            "fee_payment_stop_date": ymd_compact(end - timedelta(days=30)),
             "mvno_identification_id": str((index % 5) + 1),
             "mvno_identification_abbreviation_2": f"MV{(index % 5) + 1}",
-            "sales_start_date": ymd(start + timedelta(days=14)),
-            "sales_end_date": ymd(end - timedelta(days=14)),
-            "additional_purchase_validity_start_date": ymd(start + timedelta(days=30)),
-            "additional_purchase_validity_end_date": ymd(end - timedelta(days=90)),
+            "sales_start_date": ymd_compact(start + timedelta(days=14)),
+            "sales_end_date": ymd_compact(end - timedelta(days=14)),
+            "additional_purchase_validity_start_date": ymd_compact(start + timedelta(days=30)),
+            "additional_purchase_validity_end_date": ymd_compact(end - timedelta(days=90)),
             "cic_product_code": self.values.code("CIC", index + 1, 8),
             "non_essential_flag": str(index % 2),
             "service_generation_id": str((index % 4) + 1),
@@ -1545,7 +1553,7 @@ class CsvGenerator:
             "capacity": template[5],
             "installment_review_limit_chk_target_flg": str(index % 2),
             "opt_installment_sales_applicable_flg": str((index + 1) % 2),
-            "opt_installment_sales_applicable_from": ymd(start + timedelta(days=7)),
+            "opt_installment_sales_applicable_from": ymd_compact(start + timedelta(days=7)),
             "sales_price": str(template[6] + (index % 10) * 1000),
             "device_category": str((index % 5) + 1),
             "device_category_official_name": template[4],
@@ -1594,9 +1602,9 @@ class CsvGenerator:
         base_name = context["product_official_name"]
         context.update(
             {
-                "validity_end_date": ymd(end),
-                "sales_start_date": ymd(BASE_DATE + timedelta(days=index % 60 + 10)),
-                "sales_end_date": ymd(end - timedelta(days=20)),
+                "validity_end_date": ymd_compact(end),
+                "sales_start_date": ymd_compact(BASE_DATE + timedelta(days=index % 60 + 10)),
+                "sales_end_date": ymd_compact(end - timedelta(days=20)),
                 "product_official_name": f"{base_name} 改定",
                 "product_name_in_english": f"{context['product_name_in_english']} Revised",
                 "product_abbreviation": clip(f"{context['product_abbreviation']}改", 20),
@@ -1613,17 +1621,18 @@ class CsvGenerator:
             return value
         if column.data_type.startswith("DECIMAL"):
             return self.values.decimal_value(index, modulo=9, minimum=1)
-        if column.name.endswith("_date") or column.name.endswith("_dt"):
-            return ymd(BASE_DATE - timedelta(days=index % 300))
-        if column.name.endswith("_time") or column.name.endswith("_tm"):
-            return hms((index * 5) % 24, (index * 11) % 60)
-        if "english" in column.name or column.name.endswith("_eng_nm"):
+        name = column.name
+        if name.endswith("_date") or "_date_" in name or name.endswith("_dt") or "_dt_" in name:
+            return ymd_compact(BASE_DATE - timedelta(days=index % 300))
+        if name.endswith("_time") or "_time_" in name or name.endswith("_tm") or "_tm_" in name:
+            return hms_compact((index * 5) % 24, (index * 11) % 60)
+        if "english" in name or name.endswith("_eng_nm"):
             return f"{self.values.english_word(index)} {self.values.english_word(index + 1)}"
-        if "kana" in column.name or column.name.endswith("_kana_nm"):
+        if "kana" in name or name.endswith("_kana_nm"):
             return self.values.katakana_word(index) + self.values.katakana_word(index + 1)
-        if "name" in column.name or column.name.endswith("_nm"):
+        if "name" in name or name.endswith("_nm"):
             return f"商品サンプル{index % 100:02d}"
-        if "code" in column.name or column.name.endswith("_id") or column.name.endswith("_cd"):
+        if "code" in name or name.endswith("_id") or name.endswith("_cd"):
             return self.values.code("P", index + 1, 8)
         return f"VAL{index % 1000}"
 

@@ -829,6 +829,70 @@ def test_product_headers_reflect_updated_format_columns(generated_default_dir: P
     assert "pickup_flg" in header
 
 
+def test_agency_product_generated_values_fit_updated_format_lengths(generated_default_dir: Path) -> None:
+    """取次店・商品CSVの生成値が更新後の仕様桁数に収まる。"""
+    cases = [
+        ("agency", "DLV_OAI_CST_ORDCSTM.csv"),
+        ("agency", "DLV_OAI_CST_ORDCSTM_diff.csv"),
+        ("product", "DLV_OAI_MRS_ITEM.csv"),
+        ("product", "DLV_OAI_MRS_ITEM_diff.csv"),
+    ]
+
+    for spec_key, filename in cases:
+        header, rows = read_csv(generated_default_dir, filename)
+        assert_values_fit_format_lengths(header, rows, spec_key, filename)
+
+
+def test_agency_product_dates_and_times_use_compact_formats(generated_default_dir: Path) -> None:
+    """取次店・商品CSVの短縮日付時刻列はYYYYMMDD/HHMMSS形式で出力する。"""
+    date_cases = [
+        ("DLV_OAI_CST_ORDCSTM.csv", ["effective_dt_from", "effective_dt_to", "svc_start_dt", "svc_stop_dt"]),
+        ("DLV_OAI_CST_ORDCSTM_diff.csv", ["effective_dt_from", "effective_dt_to", "svc_start_dt", "svc_stop_dt"]),
+        (
+            "DLV_OAI_MRS_ITEM.csv",
+            [
+                "effective_dt_from",
+                "effective_dt_to",
+                "pay_stop_dt",
+                "sale_dt_from",
+                "sale_dt_to",
+                "add_item_effective_dt_from",
+                "add_item_effective_dt_to",
+                "option_allotment_dt_from",
+            ],
+        ),
+        (
+            "DLV_OAI_MRS_ITEM_diff.csv",
+            [
+                "effective_dt_from",
+                "effective_dt_to",
+                "pay_stop_dt",
+                "sale_dt_from",
+                "sale_dt_to",
+                "add_item_effective_dt_from",
+                "add_item_effective_dt_to",
+                "option_allotment_dt_from",
+            ],
+        ),
+    ]
+    time_cases = [
+        ("DLV_OAI_MRS_ITEM.csv", ["effective_tm_from", "effective_tm_to"]),
+        ("DLV_OAI_MRS_ITEM_diff.csv", ["effective_tm_from", "effective_tm_to"]),
+    ]
+
+    for filename, column_names in date_cases:
+        header, rows = read_csv(generated_default_dir, filename)
+        for column_name in column_names:
+            values = [row[header.index(column_name)] for row in rows[:20]]
+            assert all(re.fullmatch(r"\d{8}", value) for value in values), column_name
+
+    for filename, column_names in time_cases:
+        header, rows = read_csv(generated_default_dir, filename)
+        for column_name in column_names:
+            values = [row[header.index(column_name)] for row in rows[:20]]
+            assert all(re.fullmatch(r"\d{6}", value) for value in values), column_name
+
+
 def test_product_decimal_values_fit_updated_format_lengths(generated_default_dir: Path) -> None:
     """商品CSVの更新対象DECIMAL列は数値で新しい整数桁数に収まる。"""
     header, all_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_ITEM.csv")
