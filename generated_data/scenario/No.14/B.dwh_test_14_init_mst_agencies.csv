@@ -1,3 +1,3 @@
-﻿"agency_code","effective_start_date","effective_end_date","agency_name","updated_at"
-"AG001","20260401","99991231","No12更新前取次店A","2026-04-27 10:00:00.000000"
-"AG002","20260401","99991231","No12維持取次店B","2026-04-27 10:00:00.000000"
+﻿"ordcstm_cd","effective_dt_from","effective_dt_to","long_nm","short_nm","area_cd","area_eng_cd","post_cd","pref_cd","pref_long_nm","city_cd","city_cd_long_nm","street_cd","street_cd_long_nm","add_nbr_cd","add_nbr_cd_long_nm","add_complement","created_at","updated_at"
+"AG001","20260401","99991231","No14更新前取次店A","取次店A","03","K","1000014","13","東京都","101","千代田区","014","丸の内","001","1丁目","14番地","2026-04-27 10:00:00.000000","2026-04-27 10:00:00.000000"
+"AG002","20260401","99991231","No14維持取次店B","取次店B","03","K","1000014","13","東京都","101","千代田区","014","丸の内","001","1丁目","14番地","2026-04-27 10:00:00.000000","2026-04-27 10:00:00.000000"

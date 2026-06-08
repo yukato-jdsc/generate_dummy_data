@@ -6,7 +6,7 @@
   - 差分データ: `YYYYMMDD_DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv`
 - 全量更新 or 差分更新: 差分更新
 - 更新頻度: 日次
-- データ数: 初期移行（300,000件）、日次差分（3,907件）
+- データ数: 初期移行（384,000件）、日次差分（3,907件）
 - データ量: 初期移行（5MB、2年分）、日次差分（8.81MB）
 - データ概要: BFSのモバイル_サービスサマリ_付属品情報を保有。
 - 参考データ: `sample_data/bfs_service_summary_accessories.csv`

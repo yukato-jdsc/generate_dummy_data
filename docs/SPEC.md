@@ -22,7 +22,7 @@ CLI は次の6ターゲットをサポートする。
 
 ### 2.2 生成ファイル
 
-通常実行時は次の17ファイルを生成する。
+通常実行時は次の16ファイルを生成する。
 
 | ターゲット | 出力ファイル |
 | --- | --- |
@@ -30,7 +30,7 @@ CLI は次の6ターゲットをサポートする。
 | `agency` | `DLV_OAI_CST_ORDCSTM.csv`、`DLV_OAI_CST_ORDCSTM_diff.csv` |
 | `compass` | `DLV_OAI_COM_EIG_KESSAI.csv`、`DLV_OAI_COM_EIG_KESSAI_diff.csv` |
 | `product` | `DLV_OAI_MRS_ITEM.csv`、`DLV_OAI_MRS_ITEM_diff.csv` |
-| `corp` | `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv`、`DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv`、`DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv` |
+| `corp` | `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv`、`DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv` |
 | `bfs` | `DLV_OAI_BFS_BFS_ENTRY_INFO.csv`、`DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv`、`DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv`、`DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv`、`DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv`、`DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv` |
 
 `--gzip` 指定時は各ファイルを gzip 圧縮し、拡張子は `*.csv.gz` になる。
@@ -92,8 +92,7 @@ uv run python generate_csv.py
 | `DLV_OAI_COM_EIG_KESSAI_diff.csv` | 20 |
 | `DLV_OAI_MRS_ITEM.csv` | 1,000 |
 | `DLV_OAI_MRS_ITEM_diff.csv` | 1,000 |
-| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv` | 500 |
-| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv` | 500 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv` | 1,000 |
 | `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv` | 100 |
 | `DLV_OAI_BFS_BFS_ENTRY_INFO.csv` | 1,000 |
 | `DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv` | 100 |
@@ -108,26 +107,25 @@ uv run python generate_csv.py
 | --- | ---: |
 | `DLV_OAI_MRS_CMPGN.csv` | 1,612 |
 | `DLV_OAI_MRS_CMPGN_diff.csv` | 1,612 |
-| `DLV_OAI_CST_ORDCSTM.csv` | 1,200,000 |
+| `DLV_OAI_CST_ORDCSTM.csv` | 1,110,000 |
 | `DLV_OAI_CST_ORDCSTM_diff.csv` | 53 |
-| `DLV_OAI_COM_EIG_KESSAI.csv` | 160,000 |
+| `DLV_OAI_COM_EIG_KESSAI.csv` | 188,000 |
 | `DLV_OAI_COM_EIG_KESSAI_diff.csv` | 2,000 |
-| `DLV_OAI_MRS_ITEM.csv` | 122,802 |
-| `DLV_OAI_MRS_ITEM_diff.csv` | 122,802 |
-| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv` | 1,500,000 |
-| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv` | 1,500,000 |
+| `DLV_OAI_MRS_ITEM.csv` | 350,000 |
+| `DLV_OAI_MRS_ITEM_diff.csv` | 350,000 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv` | 5,600,000 |
 | `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv` | 46,021 |
-| `DLV_OAI_BFS_BFS_ENTRY_INFO.csv` | 2,000,000 |
+| `DLV_OAI_BFS_BFS_ENTRY_INFO.csv` | 2,530,000 |
 | `DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv` | 5,921 |
-| `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv` | 1,200,000 |
+| `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv` | 1,310,000 |
 | `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv` | 1,210 |
-| `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv` | 300,000 |
+| `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv` | 384,000 |
 | `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv` | 3,907 |
 
 補足:
 
-- `corp` の全量件数は内部的に `corp_all` として管理し、2ファイルへ前半・後半で分割する
-- 奇数分割時は `_1` 側を1件多くする
+- `corp` の全量件数は内部的に `corp_all` として管理し、1ファイルへ出力する
+- `--full --gzip` は `.csv.gz` のサイズをフォーマット資料のデータ量に近づける。非圧縮CSVサイズは調整対象外とする
 
 ## 6. データ生成仕様
 
@@ -192,13 +190,12 @@ uv run python generate_csv.py
 
 ### 6.6 `corp`
 
-- 全量は `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv` と `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv` に分割して出力する
+- 全量は `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv` に出力する
 - `diff_type` 列は出力しない
-- `_1` は前半、`_2` は後半の連続した順序で出力する
-- `統一企業コード` は `_1` と `_2` をまたいで重複しない
+- `統一企業コード` は重複しない
 - `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv` は新規追加行と既存更新行を混在させる
-- 新規追加行は全量2ファイルに未存在の `統一企業コード` を使う
-- 既存更新行は全量2ファイルに存在する `統一企業コード` を使う
+- 新規追加行は全量に未存在の `統一企業コード` を使う
+- 既存更新行は全量に存在する `統一企業コード` を使う
 - 差分CSVは削除行を出力しない
 - 親企業関連・無効理由関連・登録日時/更新日時には最低限の整合ルールを持たせる
 
@@ -255,5 +252,5 @@ uv run python generate_csv.py
 - `campaign_diff` が全量更新として追加・削除・更新後の状態を表すこと
 - `product_diff` が全量更新として追加・削除・更新後の状態を表すこと
 - `compass_diff` が `compass_all` の一部を更新した内容であること
-- `corp` 全量2ファイルの分割順と一意性が保たれること
+- `corp` 全量ファイルの順序と一意性が保たれること
 - BFSサービスサマリがBFSエントリ番号を参照していること

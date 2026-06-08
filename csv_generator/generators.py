@@ -19,6 +19,8 @@ from .config import (
     COMPASS_SALES_CHANNELS,
     COMPASS_SERVICE_TYPES,
     DEPARTMENTS,
+    FULL_COUNTS,
+    FULL_GZIP_SIZE_PROFILES,
     OPERATION_PERMISSION_NAMES,
     OUTPUT_FILES,
     POSITIONS,
@@ -56,8 +58,7 @@ BFS_FAMILY_FILES = (
     ("bfs_accessories", "bfs_accessories_diff", "diff"),
 )
 CORP_FAMILY_FILES = (
-    ("corp_all_1", "all_1"),
-    ("corp_all_2", "all_2"),
+    ("corp_all", "all"),
     ("corp_diff", "diff"),
 )
 CORP_PRIMARY_INDUSTRY_NAMES = ["情報サービス業", "総合工事業", "保険業", "銀行業", "専門サービス業"]
@@ -450,6 +451,8 @@ class CsvGenerator:
         count: int,
         row_factory: Callable[[int], list[str]],
         progress_reporter: ProgressReporter | None = None,
+        output_key: str | None = None,
+        compress: bool = False,
     ) -> None:
         """指定件数ぶんの行を逐次書き出す。"""
         handle, writer = open_csv_writer(path)
@@ -460,6 +463,7 @@ class CsvGenerator:
             first_row: list[str] | None = None
             for index in range(count):
                 row = row_factory(index)
+                row = self._apply_full_gzip_size_profile(spec_key, output_key, row, index, compress)
                 if first_row is None:
                     first_row = row
                 writer.writerow(row)
@@ -474,6 +478,87 @@ class CsvGenerator:
             if progress_reporter is not None:
                 progress_reporter.finish()
             handle.close()
+
+    def _apply_full_gzip_size_profile(
+        self,
+        spec_key: str,
+        output_key: str | None,
+        row: list[str],
+        index: int,
+        compress: bool,
+    ) -> list[str]:
+        """full gzip出力時だけ、目標サイズへ近づける行プロファイルを適用する。"""
+        if not compress or output_key is None or not self._uses_full_counts():
+            return row
+        profile = FULL_GZIP_SIZE_PROFILES.get(output_key)
+        if profile is None:
+            return row
+        profiled = list(row)
+        if profile.get("compact"):
+            profiled = self._compact_size_profile_row(spec_key, profiled, index)
+        padding = int(profile.get("padding", 0))
+        if padding > 0:
+            profiled = self._add_size_profile_padding(spec_key, profiled, index, padding)
+        return profiled
+
+    def _uses_full_counts(self) -> bool:
+        """現在の件数設定がfull出力用の件数と一致するかを返す。"""
+        return all(self.counts.get(key) == value for key, value in FULL_COUNTS.items())
+
+    def _compact_size_profile_row(self, spec_key: str, row: list[str], index: int) -> list[str]:
+        """gzipサイズを抑えるため、非キー列を短い型別値へ寄せる。"""
+        compacted = list(row)
+        offset = len(row) - len(self.specs[spec_key])
+        for column_index, column in enumerate(self.specs[spec_key], start=offset):
+            if column_index < 0 or column_index >= len(compacted) or column.primary_key:
+                continue
+            compacted[column_index] = self._compact_size_profile_value(column, index)
+        return compacted
+
+    def _compact_size_profile_value(self, column: ColumnSpec, index: int) -> str:
+        """列型に応じた短い代表値を返す。"""
+        name = column.name
+        if column.data_type.startswith("DECIMAL"):
+            return "1"
+        if name.endswith("_time") or name.endswith("_tm") or "time" in name:
+            return "000000"
+        if name.endswith("_date") or name.endswith("_dt") or "date" in name or "日" in column.header_label:
+            return "20260421"
+        if name.endswith("_flg") or name.endswith("_flag"):
+            return str(index % 2)
+        return "X"
+
+    def _add_size_profile_padding(self, spec_key: str, row: list[str], index: int, padding_length: int) -> list[str]:
+        """指定長の決定的な疑似ランダム文字列を可変長列へ分配する。"""
+        padded = list(row)
+        remaining = padding_length
+        offset = len(row) - len(self.specs[spec_key])
+        for column_index, column in enumerate(self.specs[spec_key], start=offset):
+            if remaining <= 0:
+                break
+            if column_index < 0 or column_index >= len(padded) or column.primary_key:
+                continue
+            if column.data_type.startswith("DECIMAL"):
+                continue
+            max_length = column.max_length
+            current = padded[column_index]
+            capacity = remaining if max_length is None else max(max_length - len(current), 0)
+            if capacity <= 0:
+                continue
+            chunk_length = min(remaining, capacity)
+            padded[column_index] = f"{current}{self._size_profile_noise(index, column_index, chunk_length)}"
+            remaining -= chunk_length
+        return padded
+
+    def _size_profile_noise(self, index: int, column_index: int, length: int) -> str:
+        """gzipで過度に圧縮されにくい決定的な英数字列を生成する。"""
+        alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+        state = (self.seed + 1) * 1_000_003 + (index + 1) * 9_176 + (column_index + 1) * 131
+        chars: list[str] = []
+        for _ in range(length):
+            state = (state * 1_664_525 + 1_013_904_223) & 0xFFFFFFFF
+            chars.append(alphabet[state % len(alphabet)])
+        return "".join(chars)
 
     def _progress_row_count(self, spec_key: str, row_count: int) -> int:
         """主キー重複行を出力する場合の進捗用総行数を返す。"""
@@ -577,6 +662,8 @@ class CsvGenerator:
                 path,
                 self._progress_row_count("campaign", self.counts["campaign"]),
             ),
+            output_key="campaign",
+            compress=compress,
         )
         diff_path = self._output_path(output_dir, "campaign_diff", compress)
         self._write_rows(
@@ -590,6 +677,8 @@ class CsvGenerator:
                 diff_path,
                 self._progress_row_count("campaign", self.counts["campaign_diff"]),
             ),
+            output_key="campaign_diff",
+            compress=compress,
         )
 
     def _full_refresh_diff_change_size(self, base_key: str, diff_key: str) -> int:
@@ -672,6 +761,7 @@ class CsvGenerator:
             for index in range(self.counts["agency_all"]):
                 context = self.agency_context(index)
                 row = self._agency_row(context, index, diff_type=all_diff_types[index])
+                row = self._apply_full_gzip_size_profile("agency", "agency_all", row, index, compress)
                 if first_row is None:
                     first_row = row
                 writer.writerow(row)
@@ -692,6 +782,10 @@ class CsvGenerator:
         diff_rows = [
             self._agency_diff_row(context, index, diff_type=diff_types[row_index], diff_index=row_index)
             for row_index, (index, context) in enumerate(sampled)
+        ]
+        diff_rows = [
+            self._apply_full_gzip_size_profile("agency", "agency_diff", row, index, compress)
+            for index, row in enumerate(diff_rows)
         ]
         diff_rows = self._rows_with_duplicate_primary_key("agency", diff_rows)
         diff_path = self._output_path(output_dir, "agency_diff", compress)
@@ -733,6 +827,7 @@ class CsvGenerator:
             for index in range(self.counts["compass_all"]):
                 context = self._compass_context(index)
                 row = self._compass_row(context, index, diff_type=all_diff_types[index])
+                row = self._apply_full_gzip_size_profile("compass", "compass_all", row, index, compress)
                 if first_row is None:
                     first_row = row
                 writer.writerow(row)
@@ -753,6 +848,10 @@ class CsvGenerator:
         diff_rows = [
             self._compass_diff_row(context, index, diff_type=diff_types[row_index], diff_index=row_index)
             for row_index, (index, context) in enumerate(sampled)
+        ]
+        diff_rows = [
+            self._apply_full_gzip_size_profile("compass", "compass_diff", row, index, compress)
+            for index, row in enumerate(diff_rows)
         ]
         diff_rows = self._rows_with_duplicate_primary_key("compass", diff_rows)
         diff_path = self._output_path(output_dir, "compass_diff", compress)
@@ -1079,6 +1178,8 @@ class CsvGenerator:
                 path,
                 self._progress_row_count("product", self.counts["product"]),
             ),
+            output_key="product",
+            compress=compress,
         )
         diff_path = self._output_path(output_dir, "product_diff", compress)
         self._write_rows(
@@ -1092,6 +1193,8 @@ class CsvGenerator:
                 diff_path,
                 self._progress_row_count("product", self.counts["product_diff"]),
             ),
+            output_key="product_diff",
+            compress=compress,
         )
 
     def compass_rows(self) -> list[list[str]]:
@@ -1723,6 +1826,8 @@ class CsvGenerator:
                 path,
                 self._progress_row_count("corp", row_count),
             ),
+            output_key=output_key,
+            compress=compress,
         )
 
     def _corp_row(self, context: dict[str, str], diff_type: str | None = None) -> list[str]:
@@ -1843,8 +1948,8 @@ class CsvGenerator:
 
     def _corp_base_index(self, index: int, variant: str, diff_type: str | None = None) -> int:
         """corpファイル種別ごとの基準インデックスを返す。"""
-        if variant in {"all_1", "all_2"}:
-            return self._corp_split_offset(variant) + index
+        if variant == "all":
+            return index
         if variant == "diff":
             if self._is_existing_diff_type(diff_type):
                 return index
@@ -1853,29 +1958,11 @@ class CsvGenerator:
 
     def _corp_row_count(self, variant: str) -> int:
         """corpファイル種別ごとの出力件数を返す。"""
-        first_count, second_count = self._corp_split_counts()
-        if variant == "all_1":
-            return first_count
-        if variant == "all_2":
-            return second_count
+        if variant == "all":
+            return self.counts["corp_all"]
         if variant == "diff":
             return self.counts["corp_diff"]
         raise ValueError(f"Unknown corp variant: {variant}")
-
-    def _corp_split_counts(self) -> tuple[int, int]:
-        """corp全量件数を前半・後半の2ファイルぶんへ分割する。"""
-        first_count = (self.counts["corp_all"] + 1) // 2
-        second_count = self.counts["corp_all"] - first_count
-        return first_count, second_count
-
-    def _corp_split_offset(self, variant: str) -> int:
-        """corp全量分割ファイルの開始インデックスを返す。"""
-        if variant == "all_1":
-            return 0
-        if variant == "all_2":
-            first_count, _ = self._corp_split_counts()
-            return first_count
-        raise ValueError(f"Unknown corp split variant: {variant}")
 
     def write_bfs_files(
         self,
@@ -1949,6 +2036,8 @@ class CsvGenerator:
                 path,
                 self._progress_row_count(spec_key, self.counts[output_key]),
             ),
+            output_key=output_key,
+            compress=compress,
         )
 
     def _bfs_row(self, context: dict[str, str], index: int, diff_type: str | None = None) -> list[str]:

@@ -2,21 +2,20 @@
 
 - マート名: `m_hjn_smt_統一企業情報`
 - CSVファイル名: 
-  - 初期データ: `YYYYMMDD_DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv`, `YYYYMMDD_DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv`
+  - 初期データ: `YYYYMMDD_DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv`
   - 差分データ: `YYYYMMDD_DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv`
 - 全量更新 or 差分更新: 差分更新
 - 更新頻度: 日次
-- データ数: 全件（300万件）、差分更新（46,021件）
-- データ量: 全件（800MB）、差分更新（34.02MB）
+- データ数: 初期データ（560万件）、差分更新（46,021件）
+- データ量: 初期データ（900MB）、差分更新（34.02MB）
 - データ概要: SUMMITの統一企業情報を保有。
 - 参考データ: `sample_data/corp_customer_info.csv`
-- 補足: 初期データは二分割すること
 
 ## 差分データの考え方
 
 - `m_hjn_smt_統一企業情報_diff.csv` は `diff_type` 列を持たない。
-- 新規追加行は初期データ2ファイルに存在しない `統一企業コード` を使う。
-- 既存更新行は初期データ2ファイルに存在する `統一企業コード` を使う。
+- 新規追加行は初期データに存在しない `統一企業コード` を使う。
+- 既存更新行は初期データに存在する `統一企業コード` を使う。
 - 削除行は出力しない。
 
 ## カラム定義

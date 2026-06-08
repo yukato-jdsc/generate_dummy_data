@@ -2,7 +2,7 @@
 
 `docs/format/` 配下の定義をもとに、アプリ取り込み用のテストCSVを生成します。
 
-対象は次の17ファイルです。実際の出力ファイル名には日付プレフィックスが付きます。
+対象は次の16ファイルです。実際の出力ファイル名には日付プレフィックスが付きます。
 
 - `DLV_OAI_MRS_CMPGN.csv`
 - `DLV_OAI_MRS_CMPGN_diff.csv`
@@ -12,8 +12,7 @@
 - `DLV_OAI_COM_EIG_KESSAI_diff.csv`
 - `DLV_OAI_MRS_ITEM.csv`
 - `DLV_OAI_MRS_ITEM_diff.csv`
-- `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv`
-- `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv`
+- `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv`
 - `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv`
 - `DLV_OAI_BFS_BFS_ENTRY_INFO.csv`
 - `DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv`
@@ -83,21 +82,22 @@ uv run python generate_csv.py --duplicate-primary-keys
 | --- | ---: | ---: |
 | `DLV_OAI_MRS_CMPGN.csv` | 5 | 1,612 |
 | `DLV_OAI_MRS_CMPGN_diff.csv` | 5 | 1,612 |
-| `DLV_OAI_CST_ORDCSTM.csv` | 100 | 1,200,000 |
+| `DLV_OAI_CST_ORDCSTM.csv` | 100 | 1,110,000 |
 | `DLV_OAI_CST_ORDCSTM_diff.csv` | 5 | 53 |
-| `DLV_OAI_COM_EIG_KESSAI.csv` | 10 | 160,000 |
+| `DLV_OAI_COM_EIG_KESSAI.csv` | 10 | 188,000 |
 | `DLV_OAI_COM_EIG_KESSAI_diff.csv` | 2 | 2,000 |
-| `DLV_OAI_MRS_ITEM.csv` | 100 | 122,802 |
-| `DLV_OAI_MRS_ITEM_diff.csv` | 100 | 122,802 |
-| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv` | 50 | 1,500,000 |
-| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv` | 50 | 1,500,000 |
+| `DLV_OAI_MRS_ITEM.csv` | 100 | 350,000 |
+| `DLV_OAI_MRS_ITEM_diff.csv` | 100 | 350,000 |
+| `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv` | 100 | 5,600,000 |
 | `DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv` | 10 | 46,021 |
-| `DLV_OAI_BFS_BFS_ENTRY_INFO.csv` | 100 | 2,000,000 |
+| `DLV_OAI_BFS_BFS_ENTRY_INFO.csv` | 100 | 2,530,000 |
 | `DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv` | 10 | 5,921 |
-| `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv` | 100 | 1,200,000 |
+| `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv` | 100 | 1,310,000 |
 | `DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv` | 10 | 1,210 |
-| `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv` | 100 | 300,000 |
+| `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv` | 100 | 384,000 |
 | `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv` | 10 | 3,907 |
+
+`--full --gzip` では、更新後のフォーマット資料に記載されたデータ量に近づくよう、`.csv.gz` のサイズを目安として行データを調整します。非圧縮CSVのサイズは列数やクォートを維持するため調整対象外です。
 
 ## Output
 
@@ -107,9 +107,8 @@ uv run python generate_csv.py --duplicate-primary-keys
   - `YYYYMMDD_DLV_OAI_COM_EIG_KESSAI.csv`
   - `YYYYMMDD_DLV_OAI_COM_EIG_KESSAI_diff.csv`
 - `product` を含む場合は `YYYYMMDD_DLV_OAI_MRS_ITEM.csv` と `YYYYMMDD_DLV_OAI_MRS_ITEM_diff.csv` を同時に生成します
-- `corp` を含む場合は次の3ファイルを生成します
-  - `YYYYMMDD_DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv`
-  - `YYYYMMDD_DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv`
+- `corp` を含む場合は次の2ファイルを生成します
+  - `YYYYMMDD_DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv`
   - `YYYYMMDD_DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv`
 - `bfs` を含む場合は次の6ファイルを生成します
   - `YYYYMMDD_DLV_OAI_BFS_BFS_ENTRY_INFO.csv`

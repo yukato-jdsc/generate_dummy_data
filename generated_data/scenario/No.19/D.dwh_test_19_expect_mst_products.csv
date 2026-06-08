@@ -1,4 +1,4 @@
-﻿"product_code","effective_start_date","effective_start_time","effective_end_date","effective_end_time","product_official_name","product_middle_category_official_name","brand_official_name","product_color_official_name","model_code","model_official_name","imsi_type","imsi_type_official_name"
-"IP15PRO","20260415","090000","99991231","235959","No16 iPhone 15 Pro 更新後","スマートフォン 改定","Apple","ナチュラルチタニウム","MD-IP15PRO-R","iPhone 15 Pro 改定","2","eSIM対応IMSI"
-"IP15","20260401","090000","99991231","235959","No16 iPhone 15 維持","スマートフォン","Apple","ブルー","MD-IP15","iPhone 15","1","標準IMSI"
-"IP16","20260427","090000","99991231","235959","No16 iPhone 16 新規","スマートフォン","Apple","ホワイト","MD-IP16","iPhone 16","1","標準IMSI"
+﻿"itm_cd","effective_dt_from","effective_tm_from","effective_dt_to","effective_tm_to","long_nm","itm_lvl2_id","lvl2_long_nm","brand_long_nm","color_nm","model_cd","model_long_nm","ins_itm_typ_cd","imsi_typ","imsi_typ_nm","created_at","updated_at"
+"IP15PRO","20260401","090000","99991231","235959","No19 iPhone 15 Pro 更新後","20","スマートフォン 改定","Apple","ナチュラルチタニウム","MD-IP15PRO-R","iPhone 15 Pro 改定","1","2","eSIM対応IMSI","2026-04-27 10:00:00.000000","2026-04-27 10:00:00.000000"
+"IP15","20260401","090000","99991231","235959","No19 iPhone 15 維持","20","スマートフォン","Apple","ブルー","MD-IP15","iPhone 15","1","1","標準IMSI","2026-04-27 10:00:00.000000","2026-04-27 10:00:00.000000"
+"IP16","20260427","090000","99991231","235959","No19 iPhone 16 新規","20","スマートフォン","Apple","ホワイト","MD-IP16","iPhone 16","1","1","標準IMSI","2026-04-27 10:00:00.000000","2026-04-27 10:00:00.000000"

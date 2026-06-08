@@ -24,7 +24,7 @@ from csv_generator.cli import (
     resolve_job_count,
     write_target_csv,
 )
-from csv_generator.config import DEFAULT_COUNTS
+from csv_generator.config import DEFAULT_COUNTS, FULL_COUNTS, FULL_GZIP_SIZE_TARGETS
 from csv_generator.format_spec import load_specs, parse_section_columns
 from csv_generator.generators import CsvGenerator
 from csv_generator.io import (
@@ -47,8 +47,7 @@ BASE_OUTPUT_FILES = [
     "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv",
     "DLV_OAI_COM_EIG_KESSAI.csv",
     "DLV_OAI_COM_EIG_KESSAI_diff.csv",
-    "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv",
-    "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv",
+    "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv",
     "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv",
     "DLV_OAI_MRS_CMPGN.csv",
     "DLV_OAI_MRS_CMPGN_diff.csv",
@@ -65,6 +64,65 @@ def test_unit_tests_do_not_use_full_option() -> None:
     source = Path(__file__).read_text(encoding="utf-8")
     forbidden = "--" + "full"
     assert f'"{forbidden}"' not in source
+
+
+def test_full_counts_match_latest_format_documents() -> None:
+    """full出力件数は最新のフォーマット資料に合わせる。"""
+    assert FULL_COUNTS == {
+        "campaign": 1_612,
+        "campaign_diff": 1_612,
+        "agency_all": 1_110_000,
+        "agency_diff": 53,
+        "compass_all": 188_000,
+        "compass_diff": 2_000,
+        "product": 350_000,
+        "product_diff": 350_000,
+        "corp_all": 5_600_000,
+        "corp_diff": 46_021,
+        "bfs_all": 2_530_000,
+        "bfs_diff": 5_921,
+        "bfs_device_all": 1_310_000,
+        "bfs_device_diff": 1_210,
+        "bfs_accessories_all": 384_000,
+        "bfs_accessories_diff": 3_907,
+    }
+
+
+def test_full_gzip_size_targets_use_decimal_bytes() -> None:
+    """full gzipのサイズ目標は資料表記に合わせたdecimal byteで管理する。"""
+    assert FULL_GZIP_SIZE_TARGETS["product"] == 8_100_000
+    assert FULL_GZIP_SIZE_TARGETS["corp_all"] == 900_000_000
+    assert FULL_GZIP_SIZE_TARGETS["bfs_all"] == 461_000_000
+
+
+def test_full_gzip_profile_only_applies_to_full_compressed_rows() -> None:
+    """サイズ調整はfull件数かつgzip出力の対象ファイルだけに適用する。"""
+    specs = load_specs(ROOT / "docs/format")
+    generator = CsvGenerator(specs=specs, seed=42, counts=FULL_COUNTS)
+    row = generator._product_row(generator._product_context(0), 0)
+
+    unchanged = generator._apply_full_gzip_size_profile("product", "product", row, 0, compress=False)
+    changed = generator._apply_full_gzip_size_profile("product", "product", row, 0, compress=True)
+
+    assert unchanged == row
+    assert changed != row
+    assert changed[0] == row[0]
+    assert all(
+        len(value) <= column.max_length
+        for value, column in zip(changed, specs["product"], strict=True)
+        if column.max_length is not None
+    )
+
+
+def test_full_gzip_profile_is_disabled_for_default_counts() -> None:
+    """通常件数ではgzip出力でもサイズ調整を行わない。"""
+    specs = load_specs(ROOT / "docs/format")
+    generator = CsvGenerator(specs=specs, seed=42, counts=DEFAULT_COUNTS)
+    row = generator._product_row(generator._product_context(0), 0)
+
+    changed = generator._apply_full_gzip_size_profile("product", "product", row, 0, compress=True)
+
+    assert changed == row
 
 
 def test_company_code_uses_unified_ten_character_format() -> None:
@@ -271,8 +329,7 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
     _, bfs_device_diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
     _, bfs_accessories_all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
     _, bfs_accessories_diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
-    _, corp_all_1_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
-    _, corp_all_2_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv")
+    _, corp_all_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv")
     _, corp_diff_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
     _, campaign_diff_rows = read_csv(generated_default_dir, "DLV_OAI_MRS_CMPGN_diff.csv")
 
@@ -290,8 +347,7 @@ def test_default_run_generates_all_expected_files(generated_default_dir: Path) -
     assert len(bfs_device_diff_rows) == 10
     assert len(bfs_accessories_all_rows) == 100
     assert len(bfs_accessories_diff_rows) == 10
-    assert len(corp_all_1_rows) == 50
-    assert len(corp_all_2_rows) == 50
+    assert len(corp_all_rows) == 100
     assert len(corp_diff_rows) == 10
 
 
@@ -401,12 +457,11 @@ def test_targets_bfs_only_generates_two_files(tmp_path: Path) -> None:
     )
 
 
-def test_targets_corp_only_generates_three_files(tmp_path: Path) -> None:
-    """corp 指定では統一企業情報の3ファイルだけを生成する。"""
+def test_targets_corp_only_generates_two_files(tmp_path: Path) -> None:
+    """corp 指定では統一企業情報の2ファイルだけを生成する。"""
     run_script(str(tmp_path), "--targets", "corp")
     assert generated_files(tmp_path) == expected_output_files(
-        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv",
-        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv",
+        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv",
         "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv",
     )
 
@@ -456,8 +511,7 @@ def test_console_outputs_generated_file_names(tmp_path: Path) -> None:
     assert "DLV_OAI_CST_ORDCSTM_diff.csv" in completed.stdout
     assert "DLV_OAI_COM_EIG_KESSAI.csv" in completed.stdout
     assert "DLV_OAI_COM_EIG_KESSAI_diff.csv" in completed.stdout
-    assert "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv" in completed.stdout
-    assert "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv" in completed.stdout
+    assert "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv" in completed.stdout
     assert "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv" in completed.stdout
     assert "DLV_OAI_MRS_ITEM.csv" not in completed.stdout
 
@@ -708,8 +762,7 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
     bfs_device_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
     bfs_accessories_all_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
     bfs_accessories_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
-    corp_all_1_header, _ = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
-    corp_all_2_header, _ = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv")
+    corp_all_header, _ = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv")
     corp_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
 
     assert campaign_header[0] == "campaign_id"
@@ -726,8 +779,7 @@ def test_csv_headers_start_with_business_keys(generated_default_dir: Path) -> No
     assert bfs_device_diff_header[0] == "entry_no"
     assert bfs_accessories_all_header[0] == "entry_no"
     assert bfs_accessories_diff_header[0] == "entry_no"
-    assert corp_all_1_header[0] == "uniq_corp_cd"
-    assert corp_all_2_header[0] == "uniq_corp_cd"
+    assert corp_all_header[0] == "uniq_corp_cd"
     assert corp_diff_header[0] == "uniq_corp_cd"
 
 
@@ -738,8 +790,7 @@ def test_diff_type_header_is_not_output_to_any_csv(generated_default_dir: Path) 
         "DLV_OAI_CST_ORDCSTM_diff.csv",
         "DLV_OAI_COM_EIG_KESSAI.csv",
         "DLV_OAI_COM_EIG_KESSAI_diff.csv",
-        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv",
-        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv",
+        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv",
         "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv",
         "DLV_OAI_BFS_BFS_ENTRY_INFO.csv",
         "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv",
@@ -774,8 +825,7 @@ def test_csv_headers_use_column_names_from_format_spec(generated_default_dir: Pa
     bfs_device_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
     bfs_accessories_all_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
     bfs_accessories_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
-    corp_all_1_header, _ = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
-    corp_all_2_header, _ = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv")
+    corp_all_header, _ = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv")
     corp_diff_header, _ = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
 
     expected_headers = {
@@ -805,9 +855,8 @@ def test_csv_headers_use_column_names_from_format_spec(generated_default_dir: Pa
     assert bfs_device_all_header == bfs_device_diff_header
     assert bfs_accessories_all_header[:4] == expected_headers["bfs_accessories"]
     assert bfs_accessories_all_header == bfs_accessories_diff_header
-    assert corp_all_1_header[:4] == expected_headers["corp"]
-    assert corp_all_1_header == corp_all_2_header
-    assert corp_all_1_header == corp_diff_header
+    assert corp_all_header[:4] == expected_headers["corp"]
+    assert corp_all_header == corp_diff_header
 
 
 def test_product_headers_reflect_updated_format_columns(generated_default_dir: Path) -> None:
@@ -1100,8 +1149,7 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
     _, bfs_device_diff_rows = read_csv(generated_seed7_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
     _, bfs_accessories_all_rows = read_csv(generated_seed7_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
     _, bfs_accessories_diff_rows = read_csv(generated_seed7_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
-    _, corp_all_1_rows = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
-    _, corp_all_2_rows = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv")
+    _, corp_all_rows = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv")
     _, corp_diff_rows = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
 
     expected_prefixes = {
@@ -1116,8 +1164,7 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
         "bfs_device_diff": "EN",
         "bfs_accessories_all": "EN",
         "bfs_accessories_diff": "EN",
-        "corp_all_1": "",
-        "corp_all_2": "",
+        "corp_all": "",
         "corp_diff": "",
     }
 
@@ -1149,9 +1196,7 @@ def test_csv_rows_start_with_primary_business_keys(generated_seed7_dir: Path) ->
         assert row[0].startswith(expected_prefixes["bfs_accessories_all"])
     for row in bfs_accessories_diff_rows[:2]:
         assert row[0].startswith(expected_prefixes["bfs_accessories_diff"])
-    for row in corp_all_1_rows[:2]:
-        assert len(row[0]) > 0
-    for row in corp_all_2_rows[:2]:
+    for row in corp_all_rows[:2]:
         assert len(row[0]) > 0
     for row in corp_diff_rows[:2]:
         assert len(row[0]) > 0
@@ -1681,13 +1726,12 @@ def test_compass_date_columns_follow_documented_formats(generated_default_dir: P
 
 def test_corp_diff_keys_include_insert_and_existing_updates(generated_default_dir: Path) -> None:
     """統一企業情報差分の業務キーは新規追加分と既存更新分を含む。"""
-    header_1, all_rows_1 = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
-    _, all_rows_2 = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv")
     _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
 
     assert_diff_keys_partition_initial_and_existing(
-        header_1,
-        all_rows_1 + all_rows_2,
+        header,
+        all_rows,
         diff_rows,
         ["uniq_corp_cd"],
         expect_existing=True,
@@ -1844,22 +1888,21 @@ def test_default_run_fills_every_cell_in_all_csvs(generated_seed7_dir: Path) -> 
 
 
 def test_corp_company_codes_are_unique_across_all_files(generated_seed7_dir: Path) -> None:
-    """corp 全量CSVの統一企業コードは分割後も重複しない。"""
-    header, rows_1 = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
-    _, rows_2 = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv")
+    """corp 全量CSVの統一企業コードは重複しない。"""
+    header, rows = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv")
     code_index = header.index("uniq_corp_cd")
 
-    codes = [row[code_index] for row in [*rows_1, *rows_2]]
+    codes = [row[code_index] for row in rows]
     assert len(codes) == len(set(codes))
 
 
-def test_corp_all_files_split_rows_in_order(generated_seed7_dir: Path) -> None:
-    """corp 全量CSVは前半と後半に分割され、統一企業コードの順序が連続する。"""
-    header, rows_1 = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv")
-    _, rows_2 = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv")
+def test_corp_all_file_rows_are_in_code_order(generated_seed7_dir: Path) -> None:
+    """corp 全量CSVは統一企業コードの順序が連続する。"""
+    header, rows = read_csv(generated_seed7_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv")
     code_index = header.index("uniq_corp_cd")
 
-    assert rows_1[-1][code_index] < rows_2[0][code_index]
+    codes = [row[code_index] for row in rows]
+    assert codes == sorted(codes)
 
 
 def test_non_bfs_unified_company_codes_use_ten_character_format(generated_seed7_dir: Path) -> None:
@@ -1868,8 +1911,7 @@ def test_non_bfs_unified_company_codes_use_ten_character_format(generated_seed7_
     targets = [
         ("DLV_OAI_COM_EIG_KESSAI.csv", "compass", ["統一企業コード"]),
         ("DLV_OAI_COM_EIG_KESSAI_diff.csv", "compass", ["統一企業コード"]),
-        ("DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv", "corp", ["統一企業コード", "親企業番号", "合併企業番号"]),
-        ("DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv", "corp", ["統一企業コード", "親企業番号", "合併企業番号"]),
+        ("DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv", "corp", ["統一企業コード", "親企業番号", "合併企業番号"]),
         ("DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv", "corp", ["統一企業コード", "親企業番号", "合併企業番号"]),
     ]
 
@@ -1901,14 +1943,22 @@ def test_approval_numbers_use_same_format(generated_seed7_dir: Path) -> None:
         assert all(approval_pattern.match(value) for value in values)
 
 
-def test_corp_split_counts_put_extra_row_in_first_file() -> None:
-    """奇数件のcorp全量は先頭ファイルを1件多くして分割する。"""
+def test_corp_all_row_count_uses_single_full_count() -> None:
+    """corp全量は分割せず、corp_all件数をそのまま出力する。"""
     specs = load_specs(ROOT / "docs/format")
     counts = dict(DEFAULT_COUNTS)
     counts["corp_all"] = 5
     generator = CsvGenerator(specs=specs, seed=42, counts=counts)
 
-    assert generator._corp_split_counts() == (3, 2)
+    assert generator._corp_row_count("all") == 5
+
+
+def test_full_corp_all_row_count_uses_single_full_count() -> None:
+    """full出力のcorp全量は560万件を1ファイルへ出力する。"""
+    specs = load_specs(ROOT / "docs/format")
+    generator = CsvGenerator(specs=specs, seed=42, counts=FULL_COUNTS)
+
+    assert generator._corp_row_count("all") == 5_600_000
 
 
 def test_corp_parent_and_invalidity_fields_are_consistent(generated_seed7_dir: Path) -> None:
@@ -1955,8 +2005,7 @@ def test_corp_datetime_columns_use_millisecond_timestamp_format(generated_seed7_
     timestamp_pattern = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.000$")
 
     for file_name in (
-        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_1.csv",
-        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_2.csv",
+        "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv",
         "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv",
     ):
         header, rows = read_csv(generated_seed7_dir, file_name)

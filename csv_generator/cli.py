@@ -44,7 +44,7 @@ HEADER_OUTPUT_DEFINITIONS_BY_TARGET = {
     "agency": (("agency", "agency_all"), ("agency", "agency_diff")),
     "compass": (("compass", "compass_all"), ("compass", "compass_diff")),
     "product": (("product", "product"), ("product", "product_diff")),
-    "corp": (("corp", "corp_all_1"), ("corp", "corp_all_2"), ("corp", "corp_diff")),
+    "corp": (("corp", "corp_all"), ("corp", "corp_diff")),
     "bfs": (
         ("bfs", "bfs_all"),
         ("bfs", "bfs_diff"),
