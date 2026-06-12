@@ -55,7 +55,7 @@ FULL_GZIP_SIZE_PROFILES = {
     "compass_all": {"padding": 1_050},
     "product": {"compact": True, "padding": 15},
     "product_diff": {"compact": True, "padding": 15},
-    "corp_all": {"padding": 183},
+    "corp_all": {"padding": 22},
     "bfs_device_all": {"compact": True, "padding": 158},
     "bfs_accessories_all": {"compact": True, "padding": 9},
 }

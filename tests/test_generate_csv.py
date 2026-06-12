@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import gzip
+import io
 import os
 import re
 import subprocess
@@ -24,7 +25,12 @@ from csv_generator.cli import (
     resolve_job_count,
     write_target_csv,
 )
-from csv_generator.config import DEFAULT_COUNTS, FULL_COUNTS, FULL_GZIP_SIZE_TARGETS
+from csv_generator.config import (
+    DEFAULT_COUNTS,
+    FULL_COUNTS,
+    FULL_GZIP_SIZE_PROFILES,
+    FULL_GZIP_SIZE_TARGETS,
+)
 from csv_generator.format_spec import load_specs, parse_section_columns
 from csv_generator.generators import CsvGenerator
 from csv_generator.io import (
@@ -93,6 +99,29 @@ def test_full_gzip_size_targets_use_decimal_bytes() -> None:
     assert FULL_GZIP_SIZE_TARGETS["product"] == 8_100_000
     assert FULL_GZIP_SIZE_TARGETS["corp_all"] == 900_000_000
     assert FULL_GZIP_SIZE_TARGETS["bfs_all"] == 461_000_000
+    assert FULL_GZIP_SIZE_PROFILES["corp_all"] == {"padding": 22}
+
+
+def test_corp_full_gzip_profile_estimates_near_target_size() -> None:
+    """corp full gzipのサンプル圧縮サイズは900MB目標に近い。"""
+    sample_count = 10_000
+    specs = load_specs(ROOT / "docs/format")
+    generator = CsvGenerator(specs=specs, seed=42, counts=FULL_COUNTS)
+    compressed = io.BytesIO()
+
+    with gzip.GzipFile(fileobj=compressed, mode="wb") as gzipped:
+        text = io.TextIOWrapper(gzipped, encoding="utf-8-sig", newline="")
+        writer = csv.writer(text, quoting=csv.QUOTE_ALL, lineterminator="\n")
+        writer.writerow(generator._output_headers("corp", "corp_all"))
+        for index in range(sample_count):
+            row = generator._corp_row(generator._corp_context(index, "all", diff_type=None), diff_type=None)
+            row = generator._apply_full_gzip_size_profile("corp", "corp_all", row, index, compress=True)
+            writer.writerow(row)
+        text.flush()
+
+    estimated_full_size = int(len(compressed.getvalue()) / sample_count * FULL_COUNTS["corp_all"])
+
+    assert 850_000_000 <= estimated_full_size <= 950_000_000
 
 
 def test_full_gzip_profile_only_applies_to_full_compressed_rows() -> None:
