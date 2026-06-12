@@ -19,21 +19,21 @@
 | 件名 | `entry_nm` | VARCHAR | 2768 | － | - | - |
 | 作成区分 | `entry_status_nm` | VARCHAR | 300 | － | ○ | いずれか（エントリ作成、試算作成、申込書作成） |
 | オーダ種別 | `entry_type_nm` | VARCHAR | 300 | － | ○ | 追加新規 で固定 |
-| 申込書連携 | `application_make_type` | VARCHAR | 300 | － | ○ | 有 / 無 |
-| 特約分離出力有無 | `latest_appli_output_type` | VARCHAR | 300 | － | ○ | 有 / 無 |
-| 通知書対象 | `corp_notification` | VARCHAR | 300 | － | ○ | 有 / 無 |
-| 開通済有無 | `line_opened_status` | VARCHAR | 300 | － | ○ | 有 / 無 |
+| 申込書連携 | `application_make_type` | VARCHAR | 300 | － | － | 有 / 無 |
+| 特約分離出力有無 | `latest_appli_output_type` | VARCHAR | 300 | － | － | 有 / 無 |
+| 通知書対象 | `corp_notification` | VARCHAR | 300 | － | － | 有 / 無 |
+| 開通済有無 | `line_opened_status` | VARCHAR | 300 | － | － | 有 / 無 |
 | 開通日 | `open_date` | VARCHAR | 20 | － | - | yyyy/M/d H:mm |
 | 非完結依頼種別 | `incomplete_type_nm` | VARCHAR | 300 | － | - | - |
 | コピー元エントリ種別 | `src_entry_type_nm` | VARCHAR | 300 | － | － | - |
 | 営業担当者コード | `cmn_staff_no_bizchrg` | VARCHAR | 7 | － | － | - |
 | 営業担当者 | `entry_user_nm` | VARCHAR | 765 | － | － | - |
-| 取次店コード | `unit_agent_cd` | VARCHAR | 9 | － | ○ | - |
-| 所属代理店 | `unit_agent_nm` | VARCHAR | 300 | － | ○ | - |
-| キャリア種別 | `carrier_type_nm` | VARCHAR | 765 | － | ○ | - |
-| 事業者区分 | `enterprise_type_nm` | VARCHAR | 765 | － | ○ | - |
-| 申込書番号 | `application_no` | VARCHAR | 18 | － | ○ | - |
-| 契約種別 | `contract_type_nm` | VARCHAR | 300 | － | ○ | 相対 または 約款 |
+| 取次店コード | `unit_agent_cd` | VARCHAR | 9 | － | － | - |
+| 所属代理店 | `unit_agent_nm` | VARCHAR | 300 | － | － | - |
+| キャリア種別 | `carrier_type_nm` | VARCHAR | 765 | － | － | - |
+| 事業者区分 | `enterprise_type_nm` | VARCHAR | 765 | － | － | - |
+| 申込書番号 | `application_no` | VARCHAR | 18 | － | － | - |
+| 契約種別 | `contract_type_nm` | VARCHAR | 300 | － | － | 相対 または 約款 |
 | 納品予定日 | `delivery_expect_date` | VARCHAR | 20 | － | － | yyyy/MM/dd 0:00:00 |
 | 申込日 | `application_date` | VARCHAR | 20 | － | － | yyyy/MM/dd 0:00:00 |
 | ipad顧客種別 | `ipad_customer_type_nm` | VARCHAR | 300 | － | － | - |
@@ -49,10 +49,10 @@
 | 受付区分 | `receipt_type_nm` | VARCHAR | 300 | － | － | - |
 | webオーダ番号 | `web_ord_no` | VARCHAR | 11 | － | － | - |
 | 請求先割引変更 | `bill_no_discount_change_flg_nm` | VARCHAR | 765 | － | － | - |
-| エントリ作成者id | `entry_create_user_id` | VARCHAR | 20 | － | ○ | - |
-| エントリ作成日時 | `entry_ins_tstamp` | VARCHAR | 26 | － | ○ | yyyy/MM/dd H:mm:ss |
-| エントリ更新担当者id | `entry_last_upd_user_id` | VARCHAR | 20 | － | ○ | - |
-| エントリ更新日時 | `entry_last_upd_tstamp` | VARCHAR | 26 | － | ○ | yyyy/MM/dd H:mm:ss |
+| エントリ作成者id | `entry_create_user_id` | VARCHAR | 20 | － | － | - |
+| エントリ作成日時 | `entry_ins_tstamp` | VARCHAR | 26 | － | － | yyyy/MM/dd H:mm:ss |
+| エントリ更新担当者id | `entry_last_upd_user_id` | VARCHAR | 20 | － | － | - |
+| エントリ更新日時 | `entry_last_upd_tstamp` | VARCHAR | 26 | － | － | yyyy/MM/dd H:mm:ss |
 | 関係者1 | `concerned_user_nm1` | VARCHAR | 765 | － | － | - |
 | 関係者2 | `concerned_user_nm2` | VARCHAR | 765 | － | － | - |
 | 関係者3 | `concerned_user_nm3` | VARCHAR | 765 | － | － | - |

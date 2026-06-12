@@ -27,10 +27,10 @@
 | 回線数 | `linenum` | DECIMAL | 10 | － | － | - |
 | レンタルセット端末 | `rental_set_terminal_flg_nm` | VARCHAR | 765 | － | － | 有 / 無 |
 | mnp | `mnp_flg_nm` | VARCHAR | 765 | － | － | 有 / 無 |
-| 商品コード | `itm_cd` | VARCHAR | 15 | － | ○ | - |
-| メーカ | `brand_nm` | VARCHAR | 600 | － | ○ | - |
-| 移動機分類 | `itm_middle_grp_nm` | VARCHAR | 300 | － | ○ | - |
-| 機種名 | `itm_nm` | VARCHAR | 300 | － | ○ | - |
+| 商品コード | `itm_cd` | VARCHAR | 15 | － | － | - |
+| メーカ | `brand_nm` | VARCHAR | 600 | － | － | - |
+| 移動機分類 | `itm_middle_grp_nm` | VARCHAR | 300 | － | － | - |
+| 機種名 | `itm_nm` | VARCHAR | 300 | － | － | - |
 | カラー1 | `color1` | VARCHAR | 300 | － | － | - |
 | 台数1 | `num1` | DECIMAL | 10 | － | － | - |
 | カラー2 | `color2` | VARCHAR | 300 | － | － | - |
@@ -58,7 +58,7 @@
 | 緊急キャンペーン1 | `urgecamp1` | VARCHAR | 300 | － | － | - |
 | 緊急キャンペーン2 | `urgecamp2` | VARCHAR | 300 | － | － | - |
 | 緊急キャンペーン3 | `urgecamp3` | VARCHAR | 300 | － | － | - |
-| プラン | `cate01` | VARCHAR | 600 | － | ○ | 基本プラン（音声）、基本プラン（データ）、通話定額基本料（ケータイ）、ホワイト特別相対S、ホワイト特別相対L など |
+| プラン | `cate01` | VARCHAR | 600 | － | － | 基本プラン（音声）、基本プラン（データ）、通話定額基本料（ケータイ）、ホワイト特別相対S、ホワイト特別相対L など |
 | ホワイト法人 | `cate02` | VARCHAR | 600 | － | － | - |
 | 通話料割引wホワイト | `cate03` | VARCHAR | 600 | － | － | - |
 | 通話料割引ホワイトl | `cate04` | VARCHAR | 600 | － | － | - |

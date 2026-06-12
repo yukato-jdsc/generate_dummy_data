@@ -59,6 +59,7 @@ uv run python generate_csv.py --seed 7
 uv run python generate_csv.py --output-date 20260501
 uv run python generate_csv.py --headers-only
 uv run python generate_csv.py --duplicate-primary-keys
+uv run python generate_csv.py --null-optional-columns
 ```
 
 ## オプション
@@ -72,6 +73,7 @@ uv run python generate_csv.py --duplicate-primary-keys
 | `--gzip` | gzip 圧縮された `YYYYMMDD_*.csv.gz` を生成 |
 | `--headers-only` | ヘッダー行のみのCSVを生成 |
 | `--duplicate-primary-keys` | テスト用に各CSVへ主キーが重複する行を1件追加 |
+| `--null-optional-columns` | `docs/format/` で必須でない列をすべて空文字で出力。`--duplicate-primary-keys` とは併用不可 |
 | `--seed` | 乱数シード。既定値は `42` |
 
 ## 件数
@@ -98,6 +100,8 @@ uv run python generate_csv.py --duplicate-primary-keys
 | `DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv` | 10 | 3,907 |
 
 `--full --gzip` では、更新後のフォーマット資料に記載されたデータ量に近づくよう、`.csv.gz` のサイズを目安として行データを調整します。非圧縮CSVのサイズは列数やクォートを維持するため調整対象外です。
+
+`--null-optional-columns` 指定時は、仕様上NULL許容の列を全データ行で空文字セルとして出力します。CSV上のNULL表現は空文字です。
 
 ## Output
 

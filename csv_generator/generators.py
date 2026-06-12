@@ -69,6 +69,18 @@ CORP_INVALID_REASONS = ("10", "20", "30", "40")
 CORP_SB_LARGE_CATEGORIES = ["情報通信", "建設", "金融"]
 CORP_SB_MIDDLE_CATEGORIES = ["ソフトウェア", "設備工事", "保険"]
 CORP_SB_SMALL_CATEGORIES = ["SaaS", "通信設備", "法人保険"]
+CORP_NULLABLE_OUTPUT_COLUMNS = {
+    "corp_name_kana",
+    "corp_name_kana_zen",
+    "corp_name",
+    "zip",
+    "addr",
+    "addr1",
+    "addr2",
+    "addr3",
+    "denwa_bng",
+    "url",
+}
 DEVICE_MANUFACTURERS = ["Apple", "Samsung", "Sony", "Google", "SHARP"]
 DEVICE_CLASSES = ["スマートフォン", "タブレット", "モバイルルーター", "フィーチャーフォン", "PC"]
 DEVICE_MODEL_NAMES = ["iPhone 14", "Galaxy S23", "Xperia 10 IV", "Pixel 8", "AQUOS sense8"]
@@ -153,6 +165,12 @@ BFS_ENTRY_REQUIRED_OPTIONAL_COLUMNS = {
 }
 BFS_ACCESSORIES_REQUIRED_OPTIONAL_COLUMNS = {
     "linked_svcsm_id",
+}
+BFS_ACCESSORIES_UPDATE_CHANGE_COLUMNS = {
+    "brand_nm",
+    "itm_nm",
+    "num1",
+    "base_price",
 }
 AGENCY_COLUMN_ALIASES = {
     "ordcstm_cd": "agent_code",
@@ -349,6 +367,7 @@ class CsvWriteJob:
     compress: bool
     output_date: date
     duplicate_primary_keys: bool = False
+    null_optional_columns: bool = False
     output_key: str | None = None
     spec_key: str | None = None
     variant: str | None = None
@@ -378,6 +397,7 @@ def run_csv_write_job(
         counts=job.counts,
         output_date=job.output_date,
         duplicate_primary_keys=job.duplicate_primary_keys,
+        null_optional_columns=job.null_optional_columns,
     )
     output_dir = Path(job.output_dir)
     if job.job_type == "campaign":
@@ -424,12 +444,14 @@ class CsvGenerator:
         counts: dict[str, int],
         output_date: date | None = None,
         duplicate_primary_keys: bool = False,
+        null_optional_columns: bool = False,
     ) -> None:
         self.specs = specs
         self.seed = seed
         self.counts = counts
         self.output_date = output_date or date.today()
         self.duplicate_primary_keys = duplicate_primary_keys
+        self.null_optional_columns = null_optional_columns
         self.values = ValueFactory(seed)
         self.campaign_diff_change_size = self._full_refresh_diff_change_size("campaign", "campaign_diff")
         self.product_diff_change_size = self._full_refresh_diff_change_size("product", "product_diff")
@@ -463,7 +485,7 @@ class CsvGenerator:
             first_row: list[str] | None = None
             for index in range(count):
                 row = row_factory(index)
-                row = self._apply_full_gzip_size_profile(spec_key, output_key, row, index, compress)
+                row = self._prepare_output_row(spec_key, output_key, row, index, compress)
                 if first_row is None:
                     first_row = row
                 writer.writerow(row)
@@ -478,6 +500,30 @@ class CsvGenerator:
             if progress_reporter is not None:
                 progress_reporter.finish()
             handle.close()
+
+    def _prepare_output_row(
+        self,
+        spec_key: str,
+        output_key: str | None,
+        row: list[str],
+        index: int,
+        compress: bool,
+    ) -> list[str]:
+        """出力直前のサイズ調整とNULL許容列の空欄化を適用する。"""
+        row = self._apply_full_gzip_size_profile(spec_key, output_key, row, index, compress)
+        return self._null_optional_column_values(spec_key, row)
+
+    def _null_optional_column_values(self, spec_key: str, row: list[str]) -> list[str]:
+        """指定時に仕様上のNULL許容列をすべて空文字へ置き換える。"""
+        if not self.null_optional_columns:
+            return row
+        nulled = list(row)
+        offset = len(nulled) - len(self.specs[spec_key])
+        for column_index, column in enumerate(self.specs[spec_key], start=offset):
+            if column_index < 0 or column_index >= len(nulled) or column.required:
+                continue
+            nulled[column_index] = ""
+        return nulled
 
     def _apply_full_gzip_size_profile(
         self,
@@ -761,7 +807,7 @@ class CsvGenerator:
             for index in range(self.counts["agency_all"]):
                 context = self.agency_context(index)
                 row = self._agency_row(context, index, diff_type=all_diff_types[index])
-                row = self._apply_full_gzip_size_profile("agency", "agency_all", row, index, compress)
+                row = self._prepare_output_row("agency", "agency_all", row, index, compress)
                 if first_row is None:
                     first_row = row
                 writer.writerow(row)
@@ -784,7 +830,7 @@ class CsvGenerator:
             for row_index, (index, context) in enumerate(sampled)
         ]
         diff_rows = [
-            self._apply_full_gzip_size_profile("agency", "agency_diff", row, index, compress)
+            self._prepare_output_row("agency", "agency_diff", row, index, compress)
             for index, row in enumerate(diff_rows)
         ]
         diff_rows = self._rows_with_duplicate_primary_key("agency", diff_rows)
@@ -827,7 +873,7 @@ class CsvGenerator:
             for index in range(self.counts["compass_all"]):
                 context = self._compass_context(index)
                 row = self._compass_row(context, index, diff_type=all_diff_types[index])
-                row = self._apply_full_gzip_size_profile("compass", "compass_all", row, index, compress)
+                row = self._prepare_output_row("compass", "compass_all", row, index, compress)
                 if first_row is None:
                     first_row = row
                 writer.writerow(row)
@@ -850,7 +896,7 @@ class CsvGenerator:
             for row_index, (index, context) in enumerate(sampled)
         ]
         diff_rows = [
-            self._apply_full_gzip_size_profile("compass", "compass_diff", row, index, compress)
+            self._prepare_output_row("compass", "compass_diff", row, index, compress)
             for index, row in enumerate(diff_rows)
         ]
         diff_rows = self._rows_with_duplicate_primary_key("compass", diff_rows)
@@ -1819,6 +1865,7 @@ class CsvGenerator:
             row_count,
             lambda index: self._corp_row(
                 self._corp_context(index, variant, diff_type=diff_types[index]),
+                index,
                 diff_type=diff_types[index],
             ),
             progress_reporter=self._build_progress_reporter(
@@ -1830,9 +1877,27 @@ class CsvGenerator:
             compress=compress,
         )
 
-    def _corp_row(self, context: dict[str, str], diff_type: str | None = None) -> list[str]:
+    def _corp_row(self, context: dict[str, str], index: int, diff_type: str | None = None) -> list[str]:
         """統一企業情報の文脈を列順の1行へ変換する。"""
-        return prepend_diff_type(self._row_from_context(self.specs["corp"], context), diff_type)
+        return prepend_diff_type(self._resolved_corp_row(context, index), diff_type)
+
+    def _resolved_corp_row(self, context: dict[str, str], index: int) -> list[str]:
+        """統一企業情報の必須・任意列方針を反映して行を生成する。"""
+        columns = self.specs["corp"]
+        return [
+            ""
+            if self._should_blank_corp_column(column, index, column_index)
+            else clip(context_column_value(context, column) or "", column.max_length)
+            for column_index, column in enumerate(columns)
+        ]
+
+    def _should_blank_corp_column(self, column: ColumnSpec, index: int, column_index: int) -> bool:
+        """統一企業情報で今回NULL許容になった列を決定的な比率で空欄にする。"""
+        if column.required:
+            return False
+        if column.name not in CORP_NULLABLE_OUTPUT_COLUMNS:
+            return False
+        return (index + column_index) % 3 == 0
 
     def _corp_context(self, index: int, variant: str, diff_type: str | None = None) -> dict[str, str]:
         """統一企業情報1行ぶんの主要属性を組み立てる。"""
@@ -2711,14 +2776,22 @@ class CsvGenerator:
         columns = self.specs["bfs_accessories"]
         return [
             ""
-            if self._should_blank_bfs_accessories_column(column, base_index, column_index)
+            if self._should_blank_bfs_accessories_column(column, context, base_index, column_index)
             else clip(self.resolve_bfs_accessories_value(column, context, index), column.max_length)
             for column_index, column in enumerate(columns)
         ]
 
-    def _should_blank_bfs_accessories_column(self, column: ColumnSpec, base_index: int, column_index: int) -> bool:
+    def _should_blank_bfs_accessories_column(
+        self,
+        column: ColumnSpec,
+        context: dict[str, str],
+        base_index: int,
+        column_index: int,
+    ) -> bool:
         """BFSサービスサマリ付属品の任意列を決定的な比率で空欄にする。"""
         if column.required or column.name in BFS_ACCESSORIES_REQUIRED_OPTIONAL_COLUMNS:
+            return False
+        if context.get("diff_type") == UPDATE_DIFF_TYPE and column.name in BFS_ACCESSORIES_UPDATE_CHANGE_COLUMNS:
             return False
         return (base_index + column_index) % 3 == 0
 

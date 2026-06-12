@@ -87,9 +87,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--gzip", action="store_true")
     parser.add_argument("--headers-only", action="store_true")
     parser.add_argument("--duplicate-primary-keys", action="store_true")
+    parser.add_argument("--null-optional-columns", action="store_true")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--jobs", default="auto")
     return parser.parse_args()
+
+
+def validate_option_combinations(args: argparse.Namespace) -> None:
+    """互いに矛盾するCLIオプションの組み合わせを検出する。"""
+    if args.duplicate_primary_keys and args.null_optional_columns:
+        raise SystemExit("--duplicate-primary-keys cannot be used with --null-optional-columns")
 
 
 def parse_output_date(raw_output_date: str) -> date:
@@ -195,6 +202,7 @@ def build_jobs(
     compress: bool,
     output_date: date,
     duplicate_primary_keys: bool = False,
+    null_optional_columns: bool = False,
 ) -> list[CsvWriteJob]:
     """target 指定をファイル単位の実行ジョブへ展開する。"""
     jobs: list[CsvWriteJob] = []
@@ -206,6 +214,7 @@ def build_jobs(
         "compress": compress,
         "output_date": output_date,
         "duplicate_primary_keys": duplicate_primary_keys,
+        "null_optional_columns": null_optional_columns,
     }
     for target in targets:
         if target == "campaign":
@@ -379,6 +388,7 @@ def _write_corp_csvs(output_dir: Path, generator: CsvGenerator, compress: bool) 
 def main() -> None:
     """CLIの入口として、仕様読込からCSV出力までを統括する。"""
     args = parse_args()
+    validate_option_combinations(args)
     targets = parse_targets(args.targets)
     requested_jobs = parse_jobs(args.jobs)
     counts = FULL_COUNTS if args.full else DEFAULT_COUNTS
@@ -399,6 +409,7 @@ def main() -> None:
         counts=counts,
         output_date=output_date,
         duplicate_primary_keys=args.duplicate_primary_keys,
+        null_optional_columns=args.null_optional_columns,
     )
     if requested_jobs == 1:
         for target in targets:
@@ -425,6 +436,7 @@ def main() -> None:
         compress,
         output_date,
         duplicate_primary_keys=args.duplicate_primary_keys,
+        null_optional_columns=args.null_optional_columns,
     )
     announce_outputs(job_output_paths(jobs, output_dir))
     execute_jobs(jobs, resolve_job_count(requested_jobs, len(jobs), args.full))

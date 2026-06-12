@@ -114,7 +114,7 @@ def test_corp_full_gzip_profile_estimates_near_target_size() -> None:
         writer = csv.writer(text, quoting=csv.QUOTE_ALL, lineterminator="\n")
         writer.writerow(generator._output_headers("corp", "corp_all"))
         for index in range(sample_count):
-            row = generator._corp_row(generator._corp_context(index, "all", diff_type=None), diff_type=None)
+            row = generator._corp_row(generator._corp_context(index, "all", diff_type=None), index, diff_type=None)
             row = generator._apply_full_gzip_size_profile("corp", "corp_all", row, index, compress=True)
             writer.writerow(row)
         text.flush()
@@ -257,6 +257,20 @@ def primary_key_names(spec_key: str) -> list[str]:
     """仕様定義から主キーのカラム名一覧を返す。"""
     specs = load_specs(ROOT / "docs/format")
     return [column.name for column in specs[spec_key] if column.primary_key]
+
+
+def assert_null_optional_columns(header: list[str], rows: list[list[str]], spec_key: str) -> None:
+    """NULL許容列が全行空欄で、必須列が非空欄であることを検証する。"""
+    specs = load_specs(ROOT / "docs/format")
+    required_indexes = [header.index(column.name) for column in specs[spec_key] if column.required]
+    optional_indexes = [header.index(column.name) for column in specs[spec_key] if not column.required]
+
+    assert rows
+    assert required_indexes
+    assert optional_indexes
+    for row in rows:
+        assert all(row[index] != "" for index in required_indexes)
+        assert all(row[index] == "" for index in optional_indexes)
 
 
 def row_keys(header: list[str], rows: list[list[str]], key_names: list[str]) -> list[tuple[str, ...]]:
@@ -469,6 +483,12 @@ def test_readme_mentions_duplicate_primary_keys_option() -> None:
     assert "--duplicate-primary-keys" in readme
 
 
+def test_readme_mentions_null_optional_columns_option() -> None:
+    """README にNULL許容列の全空欄化オプションを載せる。"""
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "--null-optional-columns" in readme
+
+
 def test_targets_compass_only_generates_single_file(tmp_path: Path) -> None:
     run_script(str(tmp_path), "--targets", "compass")
     assert generated_files(tmp_path) == expected_output_files("DLV_OAI_COM_EIG_KESSAI.csv", "DLV_OAI_COM_EIG_KESSAI_diff.csv")
@@ -571,6 +591,47 @@ def test_gzip_option_outputs_gzip_csv(tmp_path: Path) -> None:
     assert len(diff_rows) == 5
 
 
+def test_null_optional_columns_blanks_all_nullable_bfs_values(tmp_path: Path) -> None:
+    """NULL許容列全空欄モードではBFS系の任意列を全行空欄にする。"""
+    run_script(str(tmp_path), "--targets", "bfs", "--null-optional-columns")
+
+    cases = [
+        ("bfs", "DLV_OAI_BFS_BFS_ENTRY_INFO.csv"),
+        ("bfs", "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv"),
+        ("bfs_device", "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv"),
+        ("bfs_device", "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv"),
+        ("bfs_accessories", "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv"),
+        ("bfs_accessories", "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv"),
+    ]
+    for spec_key, filename in cases:
+        header, rows = read_csv(tmp_path, filename)
+        assert_null_optional_columns(header, rows, spec_key)
+
+
+def test_null_optional_columns_keeps_all_required_campaign_values(tmp_path: Path) -> None:
+    """全列必須のcampaignはNULL許容列全空欄モードでも値を維持する。"""
+    run_script(str(tmp_path), "--targets", "campaign", "--null-optional-columns")
+
+    for filename in ("DLV_OAI_MRS_CMPGN.csv", "DLV_OAI_MRS_CMPGN_diff.csv"):
+        header, rows = read_csv(tmp_path, filename)
+        assert_all_cells_filled(header, rows, filename)
+
+
+def test_null_optional_columns_works_with_parallel_jobs(tmp_path: Path) -> None:
+    """NULL許容列全空欄モードは並列ジョブ経路にも伝播する。"""
+    run_script(str(tmp_path), "--targets", "product,corp", "--jobs", "2", "--null-optional-columns", timeout=120)
+
+    cases = [
+        ("product", "DLV_OAI_MRS_ITEM.csv"),
+        ("product", "DLV_OAI_MRS_ITEM_diff.csv"),
+        ("corp", "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv"),
+        ("corp", "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv"),
+    ]
+    for spec_key, filename in cases:
+        header, rows = read_csv(tmp_path, filename)
+        assert_null_optional_columns(header, rows, spec_key)
+
+
 def test_headers_only_campaign_outputs_headers_without_rows(
     tmp_path: Path,
     generated_default_dir: Path,
@@ -627,6 +688,17 @@ def test_headers_only_can_write_gzip_csv(tmp_path: Path) -> None:
     assert diff_rows == []
 
 
+def test_headers_only_allows_null_optional_columns_option(tmp_path: Path) -> None:
+    """headers-only指定ではNULL許容列全空欄モードでもヘッダーだけを出力する。"""
+    run_script(str(tmp_path), "--targets", "campaign", "--headers-only", "--null-optional-columns")
+
+    _, rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN.csv")
+    _, diff_rows = read_csv(tmp_path, "DLV_OAI_MRS_CMPGN_diff.csv")
+
+    assert rows == []
+    assert diff_rows == []
+
+
 def test_duplicate_primary_keys_adds_changed_duplicate_rows(tmp_path: Path) -> None:
     """主キー重複行生成指定時は各CSVに主キーだけ重複する行を1件追加する。"""
     run_script(str(tmp_path), "--targets", "campaign", "--duplicate-primary-keys")
@@ -659,6 +731,21 @@ def test_headers_only_ignores_duplicate_primary_keys_option(tmp_path: Path) -> N
 
     assert rows == []
     assert diff_rows == []
+
+
+def test_duplicate_primary_keys_rejects_null_optional_columns_option(tmp_path: Path) -> None:
+    """主キー重複行生成とNULL許容列全空欄モードは同時指定できない。"""
+    completed = run_script(
+        str(tmp_path),
+        "--targets",
+        "campaign",
+        "--duplicate-primary-keys",
+        "--null-optional-columns",
+        expect_success=False,
+    )
+
+    assert completed.returncode != 0
+    assert "--null-optional-columns" in completed.stderr
 
 
 def test_null_progress_reporter_emits_nothing(capsys: pytest.CaptureFixture[str]) -> None:
@@ -1352,7 +1439,7 @@ def test_bfs_device_required_columns_are_populated_in_all_and_diff(generated_def
     header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4.csv")
     _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4_diff.csv")
 
-    assert required_names == ["entry_no", "svcsm_id", "itm_cd", "brand_nm", "itm_middle_grp_nm", "itm_nm", "cate01"]
+    assert required_names == ["entry_no", "svcsm_id"]
     required_indexes = [header.index(name) for name in required_names]
     for row in all_rows + diff_rows:
         assert all(row[index] != "" for index in required_indexes)
@@ -1441,25 +1528,7 @@ def test_bfs_entry_required_columns_are_populated_in_all_and_diff(generated_defa
     all_header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO.csv")
     _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ENTRY_INFO_diff.csv")
 
-    assert required_names == [
-        "entry_no",
-        "entry_status_nm",
-        "entry_type_nm",
-        "application_make_type",
-        "latest_appli_output_type",
-        "corp_notification",
-        "line_opened_status",
-        "unit_agent_cd",
-        "unit_agent_nm",
-        "carrier_type_nm",
-        "enterprise_type_nm",
-        "application_no",
-        "contract_type_nm",
-        "entry_create_user_id",
-        "entry_ins_tstamp",
-        "entry_last_upd_user_id",
-        "entry_last_upd_tstamp",
-    ]
+    assert required_names == ["entry_no", "entry_status_nm", "entry_type_nm"]
     required_indexes = [all_header.index(name) for name in required_names]
     for row in all_rows + diff_rows:
         assert all(row[index] != "" for index in required_indexes)
@@ -1516,8 +1585,10 @@ def test_bfs_entry_dates_follow_updated_formats(generated_default_dir: Path) -> 
     for row in rows:
         if row[activation_date_index] != "":
             assert activation_date_pattern.match(row[activation_date_index])
-        assert date_time_pattern.match(row[entry_creation_index])
-        assert date_time_pattern.match(row[entry_update_index])
+        if row[entry_creation_index] != "":
+            assert date_time_pattern.match(row[entry_creation_index])
+        if row[entry_update_index] != "":
+            assert date_time_pattern.match(row[entry_update_index])
 
 
 def test_bfs_entry_rental_periods_use_month_labels(generated_default_dir: Path) -> None:
@@ -1543,7 +1614,7 @@ def test_bfs_accessories_required_columns_are_populated_in_all_and_diff(generate
     header, all_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY.csv")
     _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
 
-    assert required_names == ["entry_no", "attach_sm_id", "serial_attach_flg_nm", "itm_cd", "brand_nm", "itm_nm", "num1", "base_price"]
+    assert required_names == ["entry_no", "attach_sm_id"]
     required_indexes = [header.index(name) for name in required_names]
     for row in all_rows + diff_rows:
         assert all(row[index] != "" for index in required_indexes)
@@ -1568,7 +1639,7 @@ def test_bfs_accessories_serial_number_accessories_is_fixed_text(generated_defau
     _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY_diff.csv")
     serial_index = header.index("serial_attach_flg_nm")
 
-    assert {row[serial_index] for row in all_rows + diff_rows} == {"シリアルなし"}
+    assert {row[serial_index] for row in all_rows + diff_rows if row[serial_index] != ""} == {"シリアルなし"}
 
 
 def assert_diff_keys_partition_initial_and_existing(
@@ -1659,8 +1730,7 @@ def test_compass_required_columns_are_populated_in_all_and_diff(generated_defaul
     header, all_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI.csv")
     _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_COM_EIG_KESSAI_diff.csv")
 
-    assert required_names[:6] == ["id", "name", "salesapprovaltitle", "status", "applicationdate", "paymenttype"]
-    assert {"contractperiod", "plannedstartdate"} <= set(required_names)
+    assert required_names == ["id", "name"]
     required_indexes = [header.index(name) for name in required_names]
     for row in all_rows + diff_rows:
         assert all(row[index] != "" for index in required_indexes)
@@ -1910,10 +1980,36 @@ def test_default_run_fills_every_cell_in_all_csvs(generated_seed7_dir: Path) -> 
             or "DLV_OAI_BFS_BFS_SERVICE_SUMMARY4" in name
             or "DLV_OAI_BFS_BFS_ATTACHMENT_SUMMALLY" in name
             or "DLV_OAI_COM_EIG_KESSAI" in name
+            or "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE" in name
         ):
             continue
         header, rows = read_csv(generated_seed7_dir, name)
         assert_all_cells_filled(header, rows, name)
+
+
+def test_corp_required_columns_are_populated_in_all_and_diff(generated_default_dir: Path) -> None:
+    """統一企業情報の必須列は全量・差分とも空欄にしない。"""
+    specs = load_specs(ROOT / "docs/format")
+    required_names = [column.name for column in specs["corp"] if column.required]
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
+
+    assert required_names == ["uniq_corp_cd"]
+    required_indexes = [header.index(name) for name in required_names]
+    for row in all_rows + diff_rows:
+        assert all(row[index] != "" for index in required_indexes)
+
+
+def test_corp_optional_columns_include_blanks(generated_default_dir: Path) -> None:
+    """統一企業情報の任意列には空欄を含める。"""
+    specs = load_specs(ROOT / "docs/format")
+    header, all_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE.csv")
+    _, diff_rows = read_csv(generated_default_dir, "DLV_OAI_SMT_DV_SMT_MST_UNIQ_CORP_IE_diff.csv")
+
+    optional_indexes = [header.index(column.name) for column in specs["corp"] if not column.required]
+    values = [row[index] for row in all_rows + diff_rows for index in optional_indexes]
+
+    assert "" in values
 
 
 def test_corp_company_codes_are_unique_across_all_files(generated_seed7_dir: Path) -> None:
@@ -2057,11 +2153,11 @@ def test_campaign_old_flag_is_always_filled(tmp_path: Path) -> None:
 
 
 def test_compass_status_is_fixed_to_approved_and_history_is_filled(generated_seed7_dir: Path) -> None:
-    """営業決裁のステータス固定と承認履歴非空欄を確認する。"""
+    """営業決裁のステータス値と承認履歴非空欄を確認する。"""
     for file_name in ("DLV_OAI_COM_EIG_KESSAI.csv", "DLV_OAI_COM_EIG_KESSAI_diff.csv"):
         header, rows = read_csv(generated_seed7_dir, file_name)
         status_index = header.index("status")
         history_index = header_index(header, "compass", "承認履歴")
 
-        assert {row[status_index] for row in rows} == {"承認"}
+        assert {row[status_index] for row in rows if row[status_index] != ""} == {"承認"}
         assert all(row[history_index] != "" for row in rows)

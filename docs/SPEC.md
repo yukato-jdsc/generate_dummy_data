@@ -52,6 +52,9 @@ uv run python generate_csv.py
 | `--output-date <YYYYMMDD>` | 出力ファイル名の日付プレフィックスに使う基準日。未指定時は実行日のローカル日付 |
 | `--full` | 本番想定件数で生成する |
 | `--gzip` | gzip 圧縮された `*.csv.gz` を生成する |
+| `--headers-only` | ヘッダー行のみのCSVを生成する |
+| `--duplicate-primary-keys` | テスト用に各CSVへ主キーが重複する行を1件追加する |
+| `--null-optional-columns` | `docs/format/` で必須でない列を全データ行で空文字にする |
 | `--seed <int>` | 乱数シード。既定値は `42` |
 | `--jobs <auto\|N>` | 並列実行数。`auto` は通常実行時に1、`--full` 時は `min(CPU数, タスク数)` を採用する |
 
@@ -60,6 +63,7 @@ uv run python generate_csv.py
 - `--targets` の空白は無視する
 - 空文字相当の場合は全ターゲット扱いに戻す
 - 未定義ターゲットを含む場合はエラー終了する
+- `--duplicate-primary-keys` と `--null-optional-columns` の同時指定はエラー終了する
 
 ## 4. 出力形式
 
@@ -126,6 +130,7 @@ uv run python generate_csv.py
 
 - `corp` の全量件数は内部的に `corp_all` として管理し、1ファイルへ出力する
 - `--full --gzip` は `.csv.gz` のサイズをフォーマット資料のデータ量に近づける。非圧縮CSVサイズは調整対象外とする
+- `--null-optional-columns` 指定時は、NULL許容列をCSV上のNULL表現である空文字セルとして出力する
 
 ## 6. データ生成仕様
 
